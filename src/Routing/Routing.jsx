@@ -55,10 +55,10 @@ const EmbassyContact = lazy(() => import("../Pages/embassy/Contact"));
 const EmbassyAuth = lazy(() => import("../Pages/embassy/auth/Auth"));
 const EmbassyDashboard = lazy(() => import("../Pages/embassy/Dashboard/EmbassyDashboard"));
 const EmbassyProfile = lazy(() => import("../Pages/embassy/Dashboard/Profile"));
-const AddEmbassy = lazy(() => import("../Pages/embassy/dashboard/AddEmbassy"));
+const AddEmbassy = lazy(() => import("../Pages/embassy/Dashboard/AddEmbassy"));
 const EmbassyApplications = lazy(() => import("../Pages/embassy/Dashboard/Applications/Applications"));
 const EmbassyApplicationView = lazy(() => import("../Pages/embassy/Dashboard/Applications/ApplicationView"));
-const VisaPolicyManage = lazy(() => import("../Pages/embassy/dashboard/VisaPolicyManage"));
+const VisaPolicyManage = lazy(() => import("../Pages/embassy/Dashboard/VisaPolicyManage"));
 const EmbassyAnalytics = lazy(() => import("../Pages/embassy/Dashboard/EmbassyAnalytics"));
 const Review = lazy(() => import("../Pages/embassy/status/Review"));
 const Rejected = lazy(() => import("../Pages/embassy/status/Rejected"));
@@ -69,7 +69,7 @@ const ContactSetup = lazy(() => import("../Pages/embassy/requirement-form/Contac
 /* ---------- Misc ---------- */
 const Error_404 = lazy(() => import("../Pages/Error_404"));
 const AdminNotifications = lazy(() => import("../Pages/admin/AdminNotifications"));
-const EmbassyNotifications = lazy(() => import("../Pages/embassy/dashboard/EmbassyNotifications"));
+const EmbassyNotifications = lazy(() => import("../Pages/embassy/Dashboard/EmbassyNotifications"));
 
 const Routing = () => {
   return (
