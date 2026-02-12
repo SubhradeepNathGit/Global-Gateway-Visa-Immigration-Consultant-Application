@@ -1,24 +1,102 @@
 import React from 'react'
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+} from 'chart.js';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+);
 
 const WeeklyPerformance = ({ weeklyData }) => {
+
+    const chartData = {
+        labels: weeklyData?.map(d => d.day) || [],
+        datasets: [
+            {
+                label: 'Applications',
+                data: weeklyData?.map(d => d.applications) || [],
+                backgroundColor: '#3b82f6',
+                borderRadius: 8,
+                borderSkipped: false,
+            },
+            {
+                label: 'Approvals',
+                data: weeklyData?.map(d => d.approvals) || [],
+                backgroundColor: '#10b981',
+                borderRadius: 8,
+                borderSkipped: false,
+            }
+        ]
+    };
+
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                labels: {
+                    font: {
+                        size: 12
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: '#fff',
+                borderColor: '#e5e7eb',
+                borderWidth: 1,
+                padding: 12,
+                titleColor: '#111827',
+                bodyColor: '#374151',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false,
+                },
+                ticks: {
+                    color: '#6b7280',
+                    font: {
+                        size: 12
+                    }
+                }
+            },
+            y: {
+                grid: {
+                    color: '#e5e7eb',
+                    drawBorder: false,
+                },
+                ticks: {
+                    color: '#6b7280',
+                    font: {
+                        size: 12
+                    }
+                }
+            }
+        }
+    };
+
     return (
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 sm:p-6">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Weekly Performance</h2>
             <p className="text-sm text-gray-600 mb-6">Daily applications and revenue this week</p>
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={weeklyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="day" stroke="#6b7280" style={{ fontSize: '12px' }} />
-                    <YAxis stroke="#6b7280" style={{ fontSize: '12px' }} />
-                    <Tooltip
-                        contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    />
-                    <Legend wrapperStyle={{ fontSize: '12px' }} />
-                    <Bar dataKey="applications" fill="#3b82f6" radius={[8, 8, 0, 0]} name="Applications" />
-                    <Bar dataKey="approvals" fill="#10b981" radius={[8, 8, 0, 0]} name="Approvals" />
-                </BarChart>
-            </ResponsiveContainer>
+            <div style={{ height: '300px' }}>
+                <Bar data={chartData} options={options} />
+            </div>
             <div className="grid grid-cols-3 gap-4 mt-4">
                 {[
                     { label: 'Total Applications', value: weeklyData?.reduce((sum, d) => sum + d.applications, 0), color: 'text-blue-600' },

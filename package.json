@@ -44,7 +44,6 @@
     "react-router-hash-link": "^2.4.3",
     "react-to-print": "^3.2.0",
     "react-toastify": "^11.0.5",
-    "recharts": "2.15.0",
     "stripe": "^20.0.0",
     "sweetalert2": "^11.26.3",
     "swiper": "^11.2.10",
@@ -52,11 +51,6 @@
     "uuid": "^11.1.0",
     "yup": "^1.7.1",
     "zustand": "^5.0.9"
-  },
-  "overrides": {
-    "react": "$react",
-    "react-dom": "$react-dom",
-    "react-is": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

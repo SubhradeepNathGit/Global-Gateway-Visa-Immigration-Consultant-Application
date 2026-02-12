@@ -1,7 +1,147 @@
 import React from 'react'
-import { Area, AreaChart, CartesianGrid, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Line } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler
+} from 'chart.js';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler
+);
 
 const RevenueTrends = ({ setChartView, chartView, revenueData }) => {
+
+    const datasets = [];
+
+    if (chartView === 'revenue' || chartView === 'both') {
+        datasets.push({
+            label: 'Revenue (₹)',
+            data: revenueData?.map(d => d.revenue) || [],
+            borderColor: '#3b82f6',
+            backgroundColor: (context) => {
+                const ctx = context.chart.ctx;
+                const gradient = ctx.createLinearGradient(0, 0, 0, 320);
+                gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+                gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)');
+                return gradient;
+            },
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.4,
+        });
+    }
+
+    if (chartView === 'applications' || chartView === 'both') {
+        datasets.push({
+            label: 'Applications',
+            data: revenueData?.map(d => d.applications) || [],
+            borderColor: '#10b981',
+            backgroundColor: (context) => {
+                const ctx = context.chart.ctx;
+                const gradient = ctx.createLinearGradient(0, 0, 0, 320);
+                gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+                gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
+                return gradient;
+            },
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.4,
+        });
+    }
+
+    datasets.push({
+        label: 'Target',
+        data: revenueData?.map(d => d.target) || [],
+        borderColor: '#f59e0b',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        fill: false,
+        tension: 0.4,
+        pointRadius: 0,
+    });
+
+    const chartData = {
+        labels: revenueData?.map(d => d.month) || [],
+        datasets: datasets
+    };
+
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                labels: {
+                    font: {
+                        size: 13
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: '#fff',
+                borderColor: '#e5e7eb',
+                borderWidth: 1,
+                padding: 12,
+                titleColor: '#111827',
+                bodyColor: '#374151',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                callbacks: {
+                    label: function (context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.dataset.label.includes('Revenue')) {
+                            label += '₹' + context.parsed.y.toLocaleString();
+                        } else {
+                            label += context.parsed.y;
+                        }
+                        return label;
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    color: '#e5e7eb',
+                    drawBorder: false,
+                },
+                ticks: {
+                    color: '#6b7280',
+                    font: {
+                        size: 12
+                    }
+                }
+            },
+            y: {
+                grid: {
+                    color: '#e5e7eb',
+                    drawBorder: false,
+                },
+                ticks: {
+                    color: '#6b7280',
+                    font: {
+                        size: 12
+                    }
+                }
+            }
+        }
+    };
 
     return (
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 sm:p-6">
@@ -40,35 +180,9 @@ const RevenueTrends = ({ setChartView, chartView, revenueData }) => {
                     </button>
                 </div>
             </div>
-            <ResponsiveContainer width="100%" height={320}>
-                <AreaChart data={revenueData}>
-                    <defs>
-                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05} />
-                        </linearGradient>
-                        <linearGradient id="colorApplications" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                            <stop offset="95%" stopColor="#10b981" stopOpacity={0.05} />
-                        </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="month" stroke="#6b7280" style={{ fontSize: '12px' }} />
-                    <YAxis stroke="#6b7280" style={{ fontSize: '12px' }} />
-                    <Tooltip
-                        contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                        formatter={(value) => ['₹' + value.toLocaleString(), '']}
-                    />
-                    <Legend wrapperStyle={{ fontSize: '13px' }} />
-                    {(chartView === 'revenue' || chartView === 'both') && (
-                        <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRevenue)" name="Revenue (₹)" />
-                    )}
-                    {(chartView === 'applications' || chartView === 'both') && (
-                        <Area type="monotone" dataKey="applications" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorApplications)" name="Applications" />
-                    )}
-                    <Line type="monotone" dataKey="target" stroke="#f59e0b" strokeWidth={2} strokeDasharray="5 5" name="Target" />
-                </AreaChart>
-            </ResponsiveContainer>
+            <div style={{ height: '320px' }}>
+                <Line data={chartData} options={options} />
+            </div>
         </div>
     )
 }

@@ -1,34 +1,54 @@
 import React from 'react'
-import { ResponsiveContainer,PieChart as RechartsPie, Pie, Tooltip, Cell } from 'recharts'
+import { Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
-const ApplicationStatus = ({applicationStatusData}) => {
+ChartJS.register(ArcElement, Tooltip, Legend);
+
+const ApplicationStatus = ({ applicationStatusData }) => {
+
+    const chartData = {
+        labels: applicationStatusData?.map(item => item.name) || [],
+        datasets: [{
+            data: applicationStatusData?.map(item => item.value) || [],
+            backgroundColor: applicationStatusData?.map(item => item.color) || [],
+            borderColor: '#fff',
+            borderWidth: 2,
+            hoverOffset: 8,
+        }]
+    };
+
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                backgroundColor: '#fff',
+                borderColor: '#e5e7eb',
+                borderWidth: 1,
+                padding: 12,
+                titleColor: '#111827',
+                bodyColor: '#374151',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                callbacks: {
+                    label: function (context) {
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                        return `${context.parsed} applications (${percentage}%)`;
+                    }
+                }
+            }
+        }
+    };
+
     return (
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 sm:p-6">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Application Status Overview</h2>
             <p className="text-sm text-gray-600 mb-6">Current status distribution of all applications</p>
-            <div className="flex items-center justify-center">
-                <ResponsiveContainer width="100%" height={300}>
-                    <RechartsPie>
-                        <Pie
-                            data={applicationStatusData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={({ name, percent }) => `${(percent * 100).toFixed(1)}%`}
-                            outerRadius={110}
-                            dataKey="value"
-                            style={{ fontSize: '12px', fontWeight: '700' }}
-                        >
-                            {applicationStatusData?.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} stroke="#fff" strokeWidth={2} />
-                            ))}
-                        </Pie>
-                        <Tooltip
-                            formatter={(value) => [value + ' applications', '']}
-                            contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                        />
-                    </RechartsPie>
-                </ResponsiveContainer>
+            <div className="flex items-center justify-center" style={{ height: '300px' }}>
+                <Pie data={chartData} options={options} />
             </div>
             <div className="grid grid-cols-1 gap-2.5 mt-4">
                 {applicationStatusData?.map((item, idx) => (

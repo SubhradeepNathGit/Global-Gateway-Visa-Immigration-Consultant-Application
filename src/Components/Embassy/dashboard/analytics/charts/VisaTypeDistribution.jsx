@@ -1,35 +1,53 @@
 import React from 'react'
-import { Pie, ResponsiveContainer,PieChart as RechartsPie, Cell, Tooltip } from 'recharts'
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
-const VisaTypeDistribution = ({visaTypeData}) => {
+ChartJS.register(ArcElement, Tooltip, Legend);
+
+const VisaTypeDistribution = ({ visaTypeData }) => {
+
+    const chartData = {
+        labels: visaTypeData?.map(item => item.name) || [],
+        datasets: [{
+            data: visaTypeData?.map(item => item.value) || [],
+            backgroundColor: visaTypeData?.map(item => item.color) || [],
+            borderColor: '#fff',
+            borderWidth: 2,
+            hoverOffset: 8,
+        }]
+    };
+
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '50%',
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                backgroundColor: '#fff',
+                borderColor: '#e5e7eb',
+                borderWidth: 1,
+                padding: 12,
+                titleColor: '#111827',
+                bodyColor: '#374151',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                callbacks: {
+                    label: function (context) {
+                        return `${context.parsed} applications`;
+                    }
+                }
+            }
+        }
+    };
+
     return (
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 sm:p-6">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Visa Type Distribution</h2>
             <p className="text-sm text-gray-600 mb-6">Revenue and application breakdown by visa category</p>
-            <div className="flex items-center justify-center">
-                <ResponsiveContainer width="100%" height={300}>
-                    <RechartsPie>
-                        <Pie
-                            data={visaTypeData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                            innerRadius={70}
-                            outerRadius={110}
-                            dataKey="value"
-                            style={{ fontSize: '11px', fontWeight: '600' }}
-                        >
-                            {visaTypeData?.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} stroke="#fff" strokeWidth={2} />
-                            ))}
-                        </Pie>
-                        <Tooltip
-                            formatter={(value) => [value + ' applications', '']}
-                            contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                        />
-                    </RechartsPie>
-                </ResponsiveContainer>
+            <div className="flex items-center justify-center" style={{ height: '300px' }}>
+                <Doughnut data={chartData} options={options} />
             </div>
             <div className="grid grid-cols-2 gap-3 mt-4">
                 {visaTypeData?.map((item, idx) => (

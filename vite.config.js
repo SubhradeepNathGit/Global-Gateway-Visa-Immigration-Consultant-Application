@@ -25,7 +25,7 @@ export default defineConfig({
             if (id.includes('@mui')) return 'vendor_mui';
             if (id.includes('framer-motion')) return 'vendor_framer';
             if (id.includes('gsap')) return 'vendor_gsap';
-            if (id.includes('recharts') || id.includes('chart.js')) return 'vendor_charts';
+            if (id.includes('chart.js') || id.includes('react-chartjs-2')) return 'vendor_charts';
             if (id.includes('supabase')) return 'vendor_supabase';
             if (id.includes('swiper')) return 'vendor_swiper';
             if (id.includes('lottie')) return 'vendor_lottie';

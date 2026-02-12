@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { useCourseRevenue } from '../../../../tanstack/query/getCourseRevenue';
 import { Loader2 } from 'lucide-react';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function CourseRevenueChart() {
 
@@ -43,18 +46,47 @@ export default function CourseRevenueChart() {
     return `₹${value}`;
   };
 
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const percentage = ((payload[0].value / total) * 100).toFixed(1);
-      return (
-        <div className="bg-[#0f1419] border border-gray-700 rounded-lg p-3 shadow-xl">
-          <p className="text-white font-semibold">{payload[0].name}</p>
-          <p className="text-green-400">{formatCurrency(payload[0].value)}</p>
-          <p className="text-gray-400 text-sm">{percentage}% of total</p>
-        </div>
-      );
+  const data = {
+    labels: chartData.map(item => item.name),
+    datasets: [{
+      data: chartData.map(item => item.value),
+      backgroundColor: chartData.map(item => item.color),
+      borderColor: '#fff',
+      borderWidth: 2,
+      hoverOffset: 10,
+    }]
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '60%',
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: '#0f1419',
+        borderColor: '#374151',
+        borderWidth: 1,
+        padding: 12,
+        titleColor: '#fff',
+        bodyColor: '#10b981',
+        callbacks: {
+          label: function (context) {
+            const percentage = ((context.parsed / total) * 100).toFixed(1);
+            return `${formatCurrency(context.parsed)} (${percentage}%)`;
+          }
+        }
+      }
+    },
+    onHover: (event, activeElements) => {
+      if (activeElements.length > 0) {
+        setActiveIndex(activeElements[0].index);
+      } else {
+        setActiveIndex(null);
+      }
     }
-    return null;
   };
 
   if (isLoading) {
@@ -76,37 +108,7 @@ export default function CourseRevenueChart() {
       </div>
 
       <div className="relative" style={{ height: '320px' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={80}
-              outerRadius={140}
-              paddingAngle={2}
-              dataKey="value"
-              animationBegin={400}
-              animationDuration={1000}
-              onMouseEnter={(_, index) => setActiveIndex(index)}
-              onMouseLeave={() => setActiveIndex(null)}
-            >
-              {chartData?.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.color}
-                  opacity={activeIndex === null || activeIndex === index ? 1 : 0.6}
-                  style={{
-                    transition: 'all 0.3s ease',
-                    filter: activeIndex === index ? 'brightness(1.2)' : 'none',
-                    cursor: 'pointer'
-                  }}
-                />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
+        <Doughnut data={data} options={options} />
 
         {/* Center text */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
