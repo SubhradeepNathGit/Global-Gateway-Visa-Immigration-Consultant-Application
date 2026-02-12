@@ -1,14 +1,14 @@
 import React, { useEffect } from "react";
 import { FileText, CheckCircle, Clock, Calendar, BarChart2 } from "lucide-react";
-import StatsCard from "../../../Components/embassy/dashboard/dashboard/StatsCard";
-import ApplicationVolumeChart from "../../../Components/embassy/dashboard/dashboard/application-volume/ApplicationVolumeChart";
-import ApplicationVolumeHeader from "../../../Components/embassy/dashboard/dashboard/application-volume/ApplicationVolumeHeader";
-import RecentApplicationHeader from "../../../Components/embassy/dashboard/dashboard/recent-application/RecentApplicationHeader";
-import ApplicationTable from "../../../Components/embassy/dashboard/dashboard/recent-application/application-table/ApplicationTable";
-import QuickLinks from "../../../Components/embassy/dashboard/dashboard/quick-links/QuickLinks";
-import UpcommingAppointmtnt from "../../../Components/embassy/dashboard/dashboard/Upcomming-appointmtnt/UpcommingAppointmtnt";
-import AvgProcessingTime from "../../../Components/embassy/dashboard/dashboard/avg-processing-time/AvgProcessingTime";
-import DashboardHeader from "../../../Components/embassy/dashboard/dashboard/DashboardHeader";
+import StatsCard from "../../../Components/Embassy/dashboard/dashboard/StatsCard";
+import ApplicationVolumeChart from "../../../Components/Embassy/dashboard/dashboard/application-volume/ApplicationVolumeChart";
+import ApplicationVolumeHeader from "../../../Components/Embassy/dashboard/dashboard/application-volume/ApplicationVolumeHeader";
+import RecentApplicationHeader from "../../../Components/Embassy/dashboard/dashboard/recent-application/RecentApplicationHeader";
+import ApplicationTable from "../../../Components/Embassy/dashboard/dashboard/recent-application/application-table/ApplicationTable";
+import QuickLinks from "../../../Components/Embassy/dashboard/dashboard/quick-links/QuickLinks";
+import UpcommingAppointmtnt from "../../../Components/Embassy/dashboard/dashboard/Upcomming-appointmtnt/UpcommingAppointmtnt";
+import AvgProcessingTime from "../../../Components/Embassy/dashboard/dashboard/avg-processing-time/AvgProcessingTime";
+import DashboardHeader from "../../../Components/Embassy/dashboard/dashboard/DashboardHeader";
 import getSweetAlert from "../../../util/alert/sweetAlert";
 import { useDispatch, useSelector } from "react-redux";
 import { useFullCountryDetails } from "../../../tanstack/query/getCountryDetails";
@@ -56,7 +56,7 @@ export default function EmbassyDashboard() {
     {
       icon: FileText,
       title: "Total Applications",
-      value: allTypeApplications?.length??0,
+      value: allTypeApplications?.length ?? 0,
       change: totalChange?.changeText,
       trend: totalChange?.trend,
       bgColor: "bg-blue-100",
@@ -66,7 +66,7 @@ export default function EmbassyDashboard() {
     {
       icon: CheckCircle,
       title: "Approved Visas",
-      value: fulfilledTypeApplications?.length??0,
+      value: fulfilledTypeApplications?.length ?? 0,
       change: fulfilledChange?.changeText,
       trend: fulfilledChange?.trend,
       bgColor: "bg-green-100",
@@ -76,7 +76,7 @@ export default function EmbassyDashboard() {
     {
       icon: Clock,
       title: "Pending Review",
-      value: processingTypeApplications?.length??0,
+      value: processingTypeApplications?.length ?? 0,
       change: processingChange?.changeText,
       trend: processingChange?.trend,
       bgColor: "bg-yellow-100",
@@ -86,7 +86,7 @@ export default function EmbassyDashboard() {
     {
       icon: Calendar,
       title: "Upcoming Interviews",
-      value: appointmentStats?.length??0,
+      value: appointmentStats?.length ?? 0,
       change: appointmentChange?.changeText,
       trend: appointmentChange?.trend,
       bgColor: "bg-purple-100",
@@ -104,14 +104,14 @@ export default function EmbassyDashboard() {
     {
       icon: FileText,
       label: "Review Applications",
-      count: processingTypeApplications?.length??0 + " pending",
+      count: processingTypeApplications?.length ?? 0 + " pending",
       path: "/embassy/dashboard/applications",
       color: "bg-blue-500 hover:bg-blue-600"
     },
     {
       icon: Calendar,
       label: "Schedule Interview",
-      count: appointmentStats.length??0 + " upcoming",
+      count: appointmentStats.length ?? 0 + " upcoming",
       path: "/embassy/dashboard/applications",
       color: "bg-purple-500 hover:bg-purple-600"
     },

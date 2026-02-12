@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Search, Filter, CheckCircle, XCircle, Clock, ChevronDown, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import StatsCard from "../../../../Components/embassy/dashboard/applications/StatsCard";
-import ApplicationTable from "../../../../Components/embassy/dashboard/applications/application-table/ApplicationTable";
+import StatsCard from "../../../../Components/Embassy/dashboard/applications/StatsCard";
+import ApplicationTable from "../../../../Components/Embassy/dashboard/applications/application-table/ApplicationTable";
 import { useDispatch, useSelector } from "react-redux";
 import { useFullCountryDetails } from "../../../../tanstack/query/getCountryDetails";
 import { useApplicationsByCountryId } from "../../../../tanstack/query/getApplicationsByCountryId";

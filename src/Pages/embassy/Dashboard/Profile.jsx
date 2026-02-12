@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Camera, CheckCircle, AlertCircle, Award, Shield, FileCheck, Clock } from "lucide-react";
 import { useForm } from "react-hook-form";
-import ProfileSection from "../../../Components/embassy/dashboard/profile/hero-section/ProfileSection";
-import ActionBtn from "../../../Components/embassy/dashboard/profile/hero-section/ActionBtn";
-import StatsCard from "../../../Components/embassy/dashboard/profile/StatsCard";
-import AchievementSection from "../../../Components/embassy/dashboard/profile/AchievementSection";
-import ContactDetails from "../../../Components/embassy/dashboard/profile/ContactDetails";
-import AdditionalInformation from "../../../Components/embassy/dashboard/profile/AdditionalInformation";
+import ProfileSection from "../../../Components/Embassy/dashboard/profile/hero-section/ProfileSection";
+import ActionBtn from "../../../Components/Embassy/dashboard/profile/hero-section/ActionBtn";
+import StatsCard from "../../../Components/Embassy/dashboard/profile/StatsCard";
+import AchievementSection from "../../../Components/Embassy/dashboard/profile/AchievementSection";
+import ContactDetails from "../../../Components/Embassy/dashboard/profile/ContactDetails";
+import AdditionalInformation from "../../../Components/Embassy/dashboard/profile/AdditionalInformation";
 import { useDispatch, useSelector } from "react-redux";
 import { useFullCountryDetails } from "../../../tanstack/query/getCountryDetails";
 import { useApplicationStats } from "../../../tanstack/query/getApplicationStatsForEmbassy";

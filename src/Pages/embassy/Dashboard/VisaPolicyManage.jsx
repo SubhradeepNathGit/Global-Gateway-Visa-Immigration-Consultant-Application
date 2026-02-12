@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Calendar, GraduationCap, Plane, Users, Briefcase, HardHat, Home, Lock, HeartPulse, Ship, Landmark, Globe, ShieldCheck, BookOpen, Stethoscope, Building2, AlertTriangle, Scroll, Navigation, BadgeCheck, FlaskConical, Theater, Trophy, Star } from 'lucide-react';
-import StatsGrid from '../../../Components/embassy/dashboard/manage-visa/stats-section/StatsGrid';
-import CountrySelector from '../../../Components/embassy/dashboard/manage-visa/country-selector-section/CountrySelector';
-import AddVisa from '../../../Components/embassy/dashboard/manage-visa/new-visa/AddVisa';
-import EditVisaDetails from '../../../Components/embassy/dashboard/manage-visa/edit-visa/EditVisaDetails';
-import VisaTypeCard from '../../../Components/embassy/dashboard/manage-visa/visa-type-grid/VisaTypeCard';
-import EmptyVisa from '../../../Components/embassy/dashboard/manage-visa/EmptyVisa';
+import StatsGrid from '../../../Components/Embassy/dashboard/manage-visa/stats-section/StatsGrid';
+import CountrySelector from '../../../Components/Embassy/dashboard/manage-visa/country-selector-section/CountrySelector';
+import AddVisa from '../../../Components/Embassy/dashboard/manage-visa/new-visa/AddVisa';
+import EditVisaDetails from '../../../Components/Embassy/dashboard/manage-visa/edit-visa/EditVisaDetails';
+import VisaTypeCard from '../../../Components/Embassy/dashboard/manage-visa/visa-type-grid/VisaTypeCard';
+import EmptyVisa from '../../../Components/Embassy/dashboard/manage-visa/EmptyVisa';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllCountryDetails } from '../../../Redux/Slice/countrySlice';
 import getSweetAlert from '../../../util/alert/sweetAlert';

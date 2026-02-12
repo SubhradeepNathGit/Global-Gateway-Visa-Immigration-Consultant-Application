@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import CountryInputField from "../../../Components/embassy/addCountry/CountryInputField"
+import CountryInputField from "../../../Components/Embassy/addCountry/CountryInputField"
 import { useDispatch, useSelector } from "react-redux";
 import { checkLoggedInUser } from "../../../Redux/Slice/auth/checkAuthSlice";
 import { fetchEmbassyById, updateEmbassyById } from "../../../Redux/Slice/embassySlice";

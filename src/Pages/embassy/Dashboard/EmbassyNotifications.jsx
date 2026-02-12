@@ -3,16 +3,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { Bell, Check, Filter, Search, AlertCircle, X } from "lucide-react";
 import { fetchNotifications, markNotificationRead } from "../../../Redux/Slice/notificationSlice";
 import getSweetAlert from "../../../util/alert/sweetAlert";
-import EmbassyNotificationRow from "../../../Components/embassy/dashboard/notification/EmbassyNotificationRow";
+import EmbassyNotificationRow from "../../../Components/Embassy/dashboard/notification/EmbassyNotificationRow";
 import { useParams } from "react-router-dom";
 import hotToast from "../../../util/alert/hot-toast";
-import EmbassyNotificationHeader from "../../../Components/embassy/dashboard/notification/EmbassyNotificationHeader";
+import EmbassyNotificationHeader from "../../../Components/Embassy/dashboard/notification/EmbassyNotificationHeader";
 import { decodeBase64Url } from "../../../util/encodeDecode/base64";
 
 export default function EmbassyNotifications() {
   const { countryId } = useParams();
   const country_id = decodeBase64Url(countryId);
-  
+
   const dispatch = useDispatch();
   const { isNotificationLoading, notificationList, hasNotificationError } = useSelector(state => state?.notification);
 

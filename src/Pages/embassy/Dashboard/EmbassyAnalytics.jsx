@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import AnalyticsStats from '../../../Components/embassy/dashboard/analytics/AnalyticsStats';
-import RevenueTrends from '../../../Components/embassy/dashboard/analytics/charts/RevenueTrends';
-import VisaTypeDistribution from '../../../Components/embassy/dashboard/analytics/charts/VisaTypeDistribution';
-import ApplicationStatus from '../../../Components/embassy/dashboard/analytics/charts/ApplicationStatus';
-import WeeklyPerformance from '../../../Components/embassy/dashboard/analytics/charts/WeeklyPerformance';
-import TopCountries from '../../../Components/embassy/dashboard/analytics/charts/TopCountries';
+import AnalyticsStats from '../../../Components/Embassy/dashboard/analytics/AnalyticsStats';
+import RevenueTrends from '../../../Components/Embassy/dashboard/analytics/charts/RevenueTrends';
+import VisaTypeDistribution from '../../../Components/Embassy/dashboard/analytics/charts/VisaTypeDistribution';
+import ApplicationStatus from '../../../Components/Embassy/dashboard/analytics/charts/ApplicationStatus';
+import WeeklyPerformance from '../../../Components/Embassy/dashboard/analytics/charts/WeeklyPerformance';
+import TopCountries from '../../../Components/Embassy/dashboard/analytics/charts/TopCountries';
 import { useApplicationsByCountryId } from '../../../tanstack/query/getApplicationsByCountryId';
 import { useApplicationStats } from '../../../tanstack/query/getApplicationStatsForEmbassy';
 import { getMonthlyChange } from '../../../util/embassy-stats/calcMonthlyChange';
