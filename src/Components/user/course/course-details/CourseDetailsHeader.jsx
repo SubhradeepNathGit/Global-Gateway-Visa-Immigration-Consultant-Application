@@ -42,7 +42,7 @@ const CourseDetailsHeader = ({ isPurchased, course, ratingAvg, ratingCount, user
                 </div> */}
                 <div className="flex items-center gap-2">
                     <Video className="w-5 h-5 text-[#FF5252]" />
-                    <span className="text-base">{(course?.course_content?.[0]?.documents?.length + 1) ?? 'N/A'} lectures</span>
+                    <span className="text-base">{((course?.course_content?.[0]?.documents?.length ?? 0) + 1)} lectures</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <Users className="w-5 h-5 text-[#FF5252]" />

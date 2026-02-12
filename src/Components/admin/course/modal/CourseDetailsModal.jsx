@@ -85,7 +85,7 @@ const CourseDetailsModal = ({ isOpen, onClose, course, iconOptions }) => {
             </div>
             <div>
               <h4 className="text-sm font-medium text-slate-400 mb-2">Lectures</h4>
-              <p className="text-white">{(course?.course_content?.[0]?.documents?.length + 1) ?? 0} lectures</p>
+              <p className="text-white">{((course?.course_content?.[0]?.documents?.length ?? 0) + 1)} lectures</p>
             </div>
             <div>
               <h4 className="text-sm font-medium text-slate-400 mb-2">Status</h4>
