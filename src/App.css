@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: inherit;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0; /* Removes the margin in older versions of Chrome */
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Works on Chrome, Edge, and Safari */
+html::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html::-webkit-scrollbar-track {
+  background: #1e293b; /* slate-800 */
+}
+
+html::-webkit-scrollbar-thumb {
+  background: #808c9e; /* slate-600 */
+  border-radius: 4px;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: #64748b; /* slate-500 */
+}
+
+/* Firefox support */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #1e293b;
+}
+
+/* Glassmorphic Scrollbar */
+/* Chrome / Edge / Safari */
+.glass-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.glass-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.glass-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);   /* frosted white */
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25); /* adds glass edge */
+}
+
+.glass-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* Firefox Support */
+.glass-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+ 
+
+.scroll-bar {
+  scrollbar-width: thin;          /* Firefox */
+  scrollbar-color: #475569 #1e293b;
+}
+
+/* Chrome/Edge/Safari */
+.scroll-bar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scroll-bar::-webkit-scrollbar-track {
+  background: #1e293b;
+  border-radius: 3px;
+}
+
+.scroll-bar::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+
+.scroll-bar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* custom-delete */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out;
+}
+
+
+/* Fix Chrome / Edge autofill white background globally */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: red ;
+}
+
+/* Custom Notification Scrollbar */
+.custom-notification-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #ef4444 #ffffff;
+}
+
+.custom-notification-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-notification-scrollbar::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+
+.custom-notification-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #ef4444;
+  border-radius: 20px;
+  border: 2px solid #ffffff;
+}
+
+.custom-notification-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #dc2626;
+}
