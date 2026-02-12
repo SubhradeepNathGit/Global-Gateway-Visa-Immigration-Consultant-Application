@@ -4,7 +4,7 @@ import authSliceReducer from '../Slice/auth/authSlice';
 import countrySliceReducer from '../Slice/countrySlice';
 import applicationSliceReducer from '../Slice/applicationSlice';
 import visaSliceReducer from '../Slice/visaSlice';
-import visaDetailsSliceReducer from '../Slice/VisaDetailsSlice';
+import visaDetailsSliceReducer from '../Slice/visaDetailsSlice';
 import fetchChargesReducer from '../Slice/chargesSlice';
 import transactionSliceReducer from '../Slice/transactionSlice';
 import contactSliceReducer from '../Slice/contactSlice';
