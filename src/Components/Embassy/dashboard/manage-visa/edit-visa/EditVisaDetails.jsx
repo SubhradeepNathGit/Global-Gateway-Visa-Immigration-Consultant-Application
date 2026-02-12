@@ -5,7 +5,7 @@ import RequiredDocs from './RequiredDocs'
 import AdditionalDocs from './AdditionalDocs'
 import hotToast from '../../../../../util/alert/hot-toast'
 import { useDispatch, useSelector } from 'react-redux'
-import { addVisaDetail, updateVisaDetail } from '../../../../../Redux/Slice/VisaDetailsSlice'
+import { addVisaDetail, updateVisaDetail } from '../../../../../Redux/Slice/visaDetailsSlice'
 import getSweetAlert from '../../../../../util/alert/sweetAlert'
 import { useQueryClient } from "@tanstack/react-query";
 

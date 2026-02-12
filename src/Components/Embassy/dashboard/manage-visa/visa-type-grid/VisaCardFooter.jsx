@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Edit2, Lock, Trash2, Unlock } from 'lucide-react'
 import { useDispatch } from 'react-redux';
-import { deleteVisaDetail, updateVisaDetail } from '../../../../../Redux/Slice/VisaDetailsSlice';
+import { deleteVisaDetail, updateVisaDetail } from '../../../../../Redux/Slice/visaDetailsSlice';
 import hotToast from '../../../../../util/alert/hot-toast';
 import { useQueryClient } from "@tanstack/react-query";
 import getSweetAlert from '../../../../../util/alert/sweetAlert';

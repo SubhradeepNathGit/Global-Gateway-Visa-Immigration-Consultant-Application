@@ -62,7 +62,7 @@ const CourseCard = ({ course, onEdit, onDelete, onView, onShow }) => {
                 <div className="flex items-center gap-3 text-xs text-slate-400 mb-3 flex-wrap">
                     <span className="flex items-center gap-1">
                         <Video className="w-3 h-3" />
-                        {(course?.course_content?.[0]?.documents?.length + 1) ?? 0}
+                        {((course?.course_content?.[0]?.documents?.length ?? 0) + 1)}
                     </span>
                     <span className="flex items-center gap-1">
                         <Users className="w-3 h-3" />
