@@ -233,6 +233,7 @@ const EmbassyAuth = () => {
         {/* LEFT VIDEO SECTION */}
         <div className="hidden md:block w-1/2 relative bg-black/80">
           <video autoPlay loop muted playsInline
+            poster="/Slider1.jpg"
             className="absolute w-full h-full object-cover top-0 left-0"
           >
             <source src="/signup.mp4" type="video/mp4" />

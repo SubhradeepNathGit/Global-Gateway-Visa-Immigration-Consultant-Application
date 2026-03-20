@@ -242,6 +242,7 @@ const AuthForm = () => {
         <div className="w-full md:w-1/2 relative bg-black/80 h-[300px] md:h-full">
           <video autoPlay loop muted playsInline
             preload="auto"
+            poster="/Slider1.jpg"
             className="absolute top-0 left-0 w-full h-full object-cover"
           >
             <source src="/signup.mp4" type="video/mp4" />

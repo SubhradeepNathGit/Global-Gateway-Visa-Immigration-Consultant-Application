@@ -151,7 +151,7 @@ const CountrySetup = () => {
       >
         {/* LEFT VIDEO (TABLET + DESKTOP) */}
         <div className="hidden md:block md:w-1/2 relative bg-black/80">
-          <video autoPlay loop muted playsInline className="absolute w-full h-full object-cover">
+          <video autoPlay loop muted playsInline poster="/Slider1.jpg" className="absolute w-full h-full object-cover">
             <source src="/signup.mp4" type="video/mp4" />
           </video>
 

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button } from '@mui/material';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, EffectCoverflow } from 'swiper/modules';
+import { Autoplay, EffectFade, Pagination } from 'swiper/modules';
 import 'swiper/css';
-import 'swiper/css/effect-coverflow';
+import 'swiper/css/effect-fade';
+import 'swiper/css/pagination';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -38,30 +38,21 @@ const bannerData = [
 // ===== Animation Variants =====
 
 const titleVariants = {
-  hidden: { opacity: 0, y: -50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
-
-const subtitleVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.2 } },
-};
-
-const fromBottomVariants = {
-  hidden: { opacity: 0, y: 100 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.8 },
+  hidden: { opacity: 0, y: 30, filter: 'blur(10px)' },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    filter: 'blur(0px)',
+    transition: { duration: 0.8, ease: [0.33, 1, 0.68, 1] } 
   },
 };
 
-const slideFromLeftVariants = {
-  hidden: { opacity: 0, x: -100 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.8 },
+const subtitleVariants = {
+  hidden: { opacity: 0, letterSpacing: '0.4em' },
+  visible: { 
+    opacity: 1, 
+    letterSpacing: '0.25em', 
+    transition: { duration: 1, delay: 0.2, ease: "easeOut" } 
   },
 };
 
@@ -74,133 +65,110 @@ const Banner = () => {
   };
 
   return (
-    <Box sx={{ width: '100vw', overflowX: 'hidden' }}>
+    <div className="w-screen h-screen overflow-hidden relative">
       <Swiper
-        modules={[Autoplay, EffectCoverflow]}
-        effect="coverflow"
-        grabCursor={true}
-        centeredSlides={true}
-        slidesPerView="auto"
-        onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-        coverflowEffect={{
-          rotate: 30,
-          stretch: 0,
-          depth: 200,
-          modifier: 1,
-          slideShadows: true,
-        }}
-        autoplay={{ delay: 4000, disableOnInteraction: false }}
+        modules={[Autoplay, EffectFade, Pagination]}
+        effect="fade"
+        speed={1500}
         loop={true}
-        style={{ width: '100vw', height: '100vh' }}
+        onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+        autoplay={{ delay: 6000, disableOnInteraction: false }}
+        pagination={{
+            clickable: true,
+            bulletClass: 'swiper-pagination-bullet !bg-white/50 !w-2.5 !h-2.5 !transition-all',
+            bulletActiveClass: 'swiper-pagination-bullet-active !bg-white !w-8 !rounded-full'
+        }}
+        className="w-full h-full"
       >
         {bannerData.map((item, index) => (
-          <SwiperSlide key={index} style={{ width: '100vw' }}>
-            <Box
-              sx={{
-                height: '100vh',
-                width: '100vw',
-                backgroundImage: `url(${item.image})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexDirection: 'column',
-                color: '#fff',
-                textAlign: 'center',
-                px: 2,
-                position: 'relative',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: 'rgba(0,0,0,0.4)',
-                  zIndex: 0,
-                },
-              }}
-            >
-              {/* Title */}
+          <SwiperSlide key={index}>
+            <div className="h-screen w-screen flex flex-col justify-center items-center text-white text-center px-4 relative overflow-hidden">
+              
+              {/* Ken Burns Background Effect */}
               <motion.div
-                initial="hidden"
-                animate={activeIndex === index ? 'visible' : 'hidden'}
-                variants={
-                  index === 4
-                    ? slideFromLeftVariants // last slide
-                    : index === 3
-                    ? fromBottomVariants // 4th slide
-                    : titleVariants // default
-                }
-                style={{ zIndex: 1 }}
-              >
-                <Typography
-                  variant="h2"
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: { xs: '2.5rem', md: '4rem' },
-                    mb: 2,
-                  }}
-                >
-                  {item.title}
-                </Typography>
-              </motion.div>
-
-              {/* Subtitle */}
-              <motion.div
-                initial="hidden"
-                animate={activeIndex === index ? 'visible' : 'hidden'}
-                variants={
-                  index === 3 ? fromBottomVariants : subtitleVariants
-                }
-                style={{ zIndex: 1 }}
-              >
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 500,
-                    fontSize: { xs: '1.8rem', md: '3rem' },
-                    mb: 4,
-                  }}
-                >
-                  {item.subtitle}
-                </Typography>
-              </motion.div>
-
-              {/* Animated Button */}
-              <motion.div
-                whileHover={{
-                  scale: 1.1,
-                 
-                  transition: { type: 'spring', stiffness: 300 },
+                initial={{ scale: 1 }}
+                animate={activeIndex === index ? { scale: 1.15 } : { scale: 1 }}
+                transition={{ duration: 8, ease: "linear" }}
+                className="absolute inset-0 z-[-1]"
+                style={{
+                  backgroundImage: `url(${item.image})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
                 }}
-                whileTap={{ scale: 0.95 }}
-                style={{ zIndex: 1 }}
+              />
+
+              {/* Sophisticated Gradient Overlay */}
+              <div 
+                className="absolute inset-0 z-0"
+                style={{ background: 'radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)' }}
+              />
+
+              {/* Subtitle (Eyebrow Heading) */}
+              <motion.div
+                initial="hidden"
+                animate={activeIndex === index ? 'visible' : 'hidden'}
+                variants={subtitleVariants}
+                className="relative z-10"
               >
-                <Button
-                  variant="contained"
-                  sx={{
-                    backgroundColor: '#ff3c3c',
-                    color: '#fff',
-                    px: 4,
-                    py: 1.5,
-                    fontWeight: 'bold',
-                    fontSize: '16px',
-                    '&:hover': {
-                      backgroundColor: '#d83434',
-                    },
-                  }}
-                  onClick={handleDiscoverMore}
-                >
-                  Discover More
-                </Button>
+                <p className="font-bold text-[0.8rem] md:text-[1rem] mb-2 uppercase text-[#ff3c3c] font-['Inter']">
+                  {item.subtitle}
+                </p>
               </motion.div>
-            </Box>
+
+              {/* Main Title */}
+              <motion.div
+                initial="hidden"
+                animate={activeIndex === index ? 'visible' : 'hidden'}
+                variants={titleVariants}
+                className="relative z-10"
+              >
+                <h2 className="font-bold text-[2.2rem] md:text-[4rem] mb-10 font-['Outfit'] leading-tight [text-shadow:0_10px_30px_rgba(0,0,0,0.3)]">
+                  {item.title}
+                </h2>
+              </motion.div>
+
+              {/* Animated Premium Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={activeIndex === index ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                className="relative z-10"
+              >
+                <button
+                  onClick={handleDiscoverMore}
+                  className="bg-[#ff3c3c] text-white px-12 py-4 rounded-full font-bold text-[15px] tracking-widest transition-all duration-300 hover:bg-[#d83434] hover:-translate-y-0.5 active:scale-95"
+                >
+                  START JOURNEY
+                </button>
+              </motion.div>
+
+              {/* Visual Indicator of Premium 2026 feel */}
+              -
+            </div>
           </SwiperSlide>
         ))}
       </Swiper>
-    </Box>
+      
+      {/* Global Style for Swiper Pagination - Custom CSS in JS fallback */}
+      <style>
+        {`
+          .swiper-pagination-bullet {
+            background: rgba(255,255,255,0.4) !important;
+            width: 10px !important;
+            height: 10px !important;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+            opacity: 1 !important;
+          }
+          .swiper-pagination-bullet-active {
+            background: #ff3c3c !important;
+            width: 35px !important;
+            border-radius: 5px !important;
+          }
+        `}
+      </style>
+    </div>
   );
 };
 
