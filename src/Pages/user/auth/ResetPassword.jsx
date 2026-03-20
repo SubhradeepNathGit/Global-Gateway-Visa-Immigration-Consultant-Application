@@ -29,6 +29,10 @@ const ResetPassword = () => {
 
       setIsSuccess(true);
       hotToast('Password reset successfully', 'success');
+      
+      // Clear the recovery session so they land on login correctly
+      await supabase.auth.signOut();
+      
       setTimeout(() => {
         navigate('/authentication');
       }, 3000);

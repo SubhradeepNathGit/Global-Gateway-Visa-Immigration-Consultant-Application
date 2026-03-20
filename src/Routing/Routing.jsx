@@ -108,7 +108,7 @@ const Routing = () => {
 
         {/* ================= AUTH (NO LAYOUT) ================= */}
         <Route path="/authentication" element={<ProtectedRoute publicOnly={true}><AuthForm /></ProtectedRoute>} />
-        <Route path="/reset-password" element={<ProtectedRoute publicOnly={true}><ResetPassword /></ProtectedRoute>} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verification/:email/:user_type" element={<EmailVerification />} />
 
         {/* ================= ADMIN ================= */}
