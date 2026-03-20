@@ -6,8 +6,9 @@ import { useFullCountryDetails } from '../../../tanstack/query/getCountryDetails
 import { useAppointmentReasonByReasonId } from '../../../tanstack/query/getReasonForReasonId';
 import { formatDateTimeMeridianWithoutSecond } from '../../../util/dateFormat/dateFormatConvertion';
 import { parseJSONSafe } from '../../../util/jsonConvertion/ConvertStringToJson';
+import Skeleton from '../../Skeleton';
 
-const AppointmentsSection = ({ appointments = [], getStatusColor, getStatusIcon }) => {
+const AppointmentsSection = ({ appointments = [], getStatusColor, getStatusIcon, isLoading }) => {
 
   // console.log('All appointments', appointments);
 
@@ -30,6 +31,41 @@ const AppointmentsSection = ({ appointments = [], getStatusColor, getStatusIcon 
     setSelectedReasons(null);
     setSelectedCountryDetails(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {[...Array(2)].map((_, i) => (
+          <div key={i} className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 space-y-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-7 w-48" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <div className="pt-2 space-y-3">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                  <Skeleton className="h-4 w-56" />
+                  <div className="h-24 bg-gray-50 rounded-lg border border-gray-100 p-4 space-y-2">
+                    <Skeleton className="h-4 w-32 bg-gray-200" />
+                    <Skeleton className="h-4 w-full bg-gray-200" />
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 ml-4">
+                <Skeleton className="w-10 h-10 rounded-lg" />
+                <Skeleton className="w-10 h-10 rounded-lg" />
+                <Skeleton className="w-24 h-6 rounded-full" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   if (appointments.length === 0) {
     return (

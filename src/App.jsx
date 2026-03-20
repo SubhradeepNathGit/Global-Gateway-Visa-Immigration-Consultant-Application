@@ -6,17 +6,22 @@ import { ToastContainer } from 'react-toastify';
 import LoadingAnimation from './Components/Loading';
 import { useDispatch } from 'react-redux';
 import { stopLoading } from './Redux/Slice/loadingSlice';
+import { checkLoggedInUser, listenAuthChanges } from './Redux/Slice/auth/checkAuthSlice';
 
 function App() {
   const dispatch = useDispatch();
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
+    // Initialize Auth Session and Listeners
+    dispatch(checkLoggedInUser());
+    dispatch(listenAuthChanges());
+
     // Minimum display time for smooth UX
     const timer = setTimeout(() => {
       dispatch(stopLoading());
       setIsInitializing(false);
-    }, 2500); 
+    }, 800); 
 
     return () => clearTimeout(timer);
   }, [dispatch]);

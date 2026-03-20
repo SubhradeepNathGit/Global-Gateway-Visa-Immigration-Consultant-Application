@@ -9,6 +9,7 @@ import EmbassyDashboardLayout from "../layout/Embassy/EmbassyDashboard/EmbassyDa
 
 /* ---------- Utils ---------- */
 import ScrollToTop from "../Components/ScrollToTop";
+import ProtectedRoute from "../Components/Auth/ProtectedRoute";
 
 /* ---------- User Pages ---------- */
 const Home = lazy(() => import("../Pages/user/home/Home"));
@@ -29,6 +30,7 @@ const Cart = lazy(() => import("../Pages/user/cart/Cart"));
 
 /* ---------- Auth ---------- */
 const AuthForm = lazy(() => import("../Pages/user/auth/Authentication"));
+const ResetPassword = lazy(() => import("../Pages/user/auth/ResetPassword"));
 const EmailVerification = lazy(() => import("../Pages/verification/EmailVerificationPage"));
 
 /* ---------- Admin Pages ---------- */
@@ -81,11 +83,11 @@ const Routing = () => {
 
         {/* ================= AUTH (NO LAYOUT) ================= */}
         <Route path="/country/:country_id" element={<CountryDetails />} />
-        <Route path="/payment" element={<PaymentInterfaceCourse />} />
-        <Route path="/application-form/:country_id" element={<VisaApplicationForm />} />
-        <Route path="/payment-preview" element={<PaymentPreview />} />
-        <Route path="/payment-status" element={<PaymentStatus />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/payment" element={<ProtectedRoute allowedRoles={['user']}><PaymentInterfaceCourse /></ProtectedRoute>} />
+        <Route path="/application-form/:country_id" element={<ProtectedRoute allowedRoles={['user']}><VisaApplicationForm /></ProtectedRoute>} />
+        <Route path="/payment-preview" element={<ProtectedRoute allowedRoles={['user']}><PaymentPreview /></ProtectedRoute>} />
+        <Route path="/payment-status" element={<ProtectedRoute allowedRoles={['user']}><PaymentStatus /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['user']}><Dashboard /></ProtectedRoute>} />
 
         {/* Course */}
         <Route path="/course/:course_id" element={<CourseDetails />} />
@@ -105,12 +107,13 @@ const Routing = () => {
         </Route>
 
         {/* ================= AUTH (NO LAYOUT) ================= */}
-        <Route path="/authentication" element={<AuthForm />} />
+        <Route path="/authentication" element={<ProtectedRoute publicOnly={true}><AuthForm /></ProtectedRoute>} />
+        <Route path="/reset-password" element={<ProtectedRoute publicOnly={true}><ResetPassword /></ProtectedRoute>} />
         <Route path="/verification/:email/:user_type" element={<EmailVerification />} />
 
         {/* ================= ADMIN ================= */}
-        <Route path="/admin" element={<AdminLoginForm />} />
-        <Route path="/admin/dashboard" element={<AdminLayout />}>
+        <Route path="/admin" element={<ProtectedRoute publicOnly={true}><AdminLoginForm /></ProtectedRoute>} />
+        <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<Users />} />
           <Route path="payments" element={<Payments />} />
@@ -136,15 +139,15 @@ const Routing = () => {
         </Route>
 
         {/* ================= EMBASSY AUTH ================= */}
-        <Route path="/embassy/auth" element={<EmbassyAuth />} />
-        <Route path="/embassy/contact-setup/:embassyEmail/:redirectPath" element={<ContactSetup />} />
-        <Route path="/embassy/country-setup" element={<CountrySetup />} />
-        <Route path="/embassy/review" element={<Review />} />
-        <Route path="/embassy/reject" element={<Rejected />} />
-        <Route path="/embassy/approved" element={<Approved />} />
+        <Route path="/embassy/auth" element={<ProtectedRoute publicOnly={true}><EmbassyAuth /></ProtectedRoute>} />
+        <Route path="/embassy/contact-setup/:embassyEmail/:redirectPath" element={<ProtectedRoute allowedRoles={['embassy']}><ContactSetup /></ProtectedRoute>} />
+        <Route path="/embassy/country-setup" element={<ProtectedRoute allowedRoles={['embassy']}><CountrySetup /></ProtectedRoute>} />
+        <Route path="/embassy/review" element={<ProtectedRoute allowedRoles={['embassy']}><Review /></ProtectedRoute>} />
+        <Route path="/embassy/reject" element={<ProtectedRoute allowedRoles={['embassy']}><Rejected /></ProtectedRoute>} />
+        <Route path="/embassy/approved" element={<ProtectedRoute allowedRoles={['embassy']}><Approved /></ProtectedRoute>} />
 
         {/* ================= EMBASSY DASHBOARD ================= */}
-        <Route path="/embassy/dashboard" element={<EmbassyDashboardLayout />}>
+        <Route path="/embassy/dashboard" element={<ProtectedRoute allowedRoles={['embassy']}><EmbassyDashboardLayout /></ProtectedRoute>}>
           <Route index element={<EmbassyDashboard />} />
           <Route path="profile" element={<EmbassyProfile />} />
           <Route path="new-embassy" element={<AddEmbassy />} />

@@ -117,6 +117,43 @@ const CountryFormModal = ({ isOpen, onClose, country, embassyCountryData }) => {
         }
     };
 
+    const handleAutoFetch = async () => {
+        const countryName = watch("name");
+        if (!countryName || countryName.length < 3) {
+            hotToast("Please enter a valid country name first", "error");
+            return;
+        }
+
+        try {
+            setUploading(true);
+            const { fetchCountryDetails } = await import("../../../functions/fetchCountryDetails");
+            const details = await fetchCountryDetails(countryName);
+            
+            if (details) {
+                setValue("officialName", details.officialName || "");
+                setValue("capital", details.capital || "");
+                setValue("continent", details.continents || "");
+                setValue("population", details.population || "");
+                setValue("area", details.area || "");
+                setValue("latitude", details.latlng?.[0] || "");
+                setValue("longitude", details.latlng?.[1] || "");
+                setValue("flagImage", details.flag || "");
+                setValue("code", details.currency?.code || "");
+                setValue("currency", details.currency?.name || "");
+                setValue("currencySymbol", details.currency?.symbol || "");
+                setValue("currencyCode", details.currency?.code || "");
+                setValue("language", details.languages?.join(", ") || "");
+                
+                hotToast("Country details auto-detected!", "success");
+            }
+        } catch (error) {
+            console.error("Auto-fetch error:", error);
+            hotToast("Could not auto-detect details for this country", "error");
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const onSubmit = async (data) => {
 
         const countryData = {
@@ -187,7 +224,15 @@ const CountryFormModal = ({ isOpen, onClose, country, embassyCountryData }) => {
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                        <BasicFormSection SettingsSection={SettingsSection} FormField={FormField} register={register} errors={errors} country={country} />
+                        <BasicFormSection 
+                            SettingsSection={SettingsSection} 
+                            FormField={FormField} 
+                            register={register} 
+                            errors={errors} 
+                            country={country} 
+                            handleAutoFetch={handleAutoFetch}
+                            isDetecting={uploading}
+                        />
 
                         <ImageMediaSection SettingsSection={SettingsSection} FormField={FormField} country={country} uploading={uploading} setValue={setValue} setImageFile={setImageFile} imageFile={imageFile} register={register} watch={watch} errors={errors} embassyCountryData={embassyCountryData} />
 

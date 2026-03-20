@@ -2,14 +2,42 @@ import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import PurchaseCourseCard from './course/PurchaseCourseCard';
 import NoAvailableCourse from './course/NoAvailableCourse';
+import Skeleton from '../../Skeleton';
 
-const PurchasedCoursesSection = ({ purchasedCourses = [], onNavigate, userAuthData }) => {
+const PurchasedCoursesSection = ({ purchasedCourses = [], onNavigate, userAuthData, isLoading }) => {
 
   const handleBrowseCourses = () => {
     if (onNavigate) {
       onNavigate('/course');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between mb-6 animate-pulse">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-5 w-32" />
+        </div>
+        <div className="grid gap-6">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="border border-slate-200 rounded-lg p-6 animate-pulse">
+              <div className="flex gap-4">
+                <Skeleton className="w-24 h-24 rounded-lg" />
+                <div className="flex-1 space-y-3">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (purchasedCourses?.length === 0) {
     return (

@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import supabase from "../../../util/Supabase/supabase";
 import { fetchCountryByName } from "../countrySlice";
 import { fetchCountryDetails } from "../../../functions/fetchCountryDetails";
+import { verifyUser } from "./verification";
 
 // register slice 
 export const registerUser = createAsyncThunk("authSlice/registerUser",
@@ -130,6 +131,63 @@ export const registerUser = createAsyncThunk("authSlice/registerUser",
   }
 )
 
+// verify OTP slice
+export const verifyOtp = createAsyncThunk("authSlice/verifyOtp",
+  async ({ email, token, type, role }, { rejectWithValue, dispatch }) => {
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: type || 'signup'
+      });
+
+      if (error) return rejectWithValue(error.message);
+
+      // After successful OTP verification for signup, update our custom table
+      if (type === 'signup') {
+        const verifyRes = await dispatch(verifyUser({ email, user_type: role, status: 'success' })).unwrap();
+        return { user: verifyRes?.[0], session: data.session };
+      }
+
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+// forgot password slice
+export const forgotPassword = createAsyncThunk("authSlice/forgotPassword",
+  async ({ email, redirectTo }, { rejectWithValue }) => {
+    try {
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectTo
+      });
+
+      if (error) return rejectWithValue(error.message);
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+// resend OTP slice
+export const resendOtp = createAsyncThunk("authSlice/resendOtp",
+  async ({ email, type = 'signup' }, { rejectWithValue }) => {
+    try {
+      const { error } = await supabase.auth.resend({
+        type,
+        email,
+      });
+      if (error) return rejectWithValue(error.message);
+      return email;
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
 // login slice 
 export const loginUser = createAsyncThunk("authSlice/loginUser",
   async ({ email, password, role }, { rejectWithValue }) => {
@@ -159,12 +217,6 @@ export const loginUser = createAsyncThunk("authSlice/loginUser",
 
       if (!userData)
         return rejectWithValue("Invalid Login Credentials");
-
-      if (userData.is_verified === "pending")
-        return rejectWithValue("Please verify your email first");
-
-      if (userData.is_verified === "rejected")
-        return rejectWithValue("Email verification failed");
 
       if (role !== "embassy" && userData?.is_approved == 'pending')
         return rejectWithValue("Your application still processing");
@@ -239,6 +291,49 @@ export const authSlice = createSlice({
         state.userAuthData = action.payload;
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.isUserAuthLoading = false;
+        state.userAuthError = action.payload;
+      })
+
+    // VERIFY OTP
+    builder
+      .addCase(verifyOtp.pending, (state) => {
+        state.isUserAuthLoading = true;
+        state.userAuthError = null;
+      })
+      .addCase(verifyOtp.fulfilled, (state, action) => {
+        state.isUserAuthLoading = false;
+        state.userAuthData = action.payload;
+      })
+      .addCase(verifyOtp.rejected, (state, action) => {
+        state.isUserAuthLoading = false;
+        state.userAuthError = action.payload;
+      })
+
+    // FORGOT PASSWORD
+    builder
+      .addCase(forgotPassword.pending, (state) => {
+        state.isUserAuthLoading = true;
+        state.userAuthError = null;
+      })
+      .addCase(forgotPassword.fulfilled, (state) => {
+        state.isUserAuthLoading = false;
+      })
+      .addCase(forgotPassword.rejected, (state, action) => {
+        state.isUserAuthLoading = false;
+        state.userAuthError = action.payload;
+      });
+
+    // RESEND OTP
+    builder
+      .addCase(resendOtp.pending, (state) => {
+        state.isUserAuthLoading = true;
+        state.userAuthError = null;
+      })
+      .addCase(resendOtp.fulfilled, (state) => {
+        state.isUserAuthLoading = false;
+      })
+      .addCase(resendOtp.rejected, (state, action) => {
         state.isUserAuthLoading = false;
         state.userAuthError = action.payload;
       });

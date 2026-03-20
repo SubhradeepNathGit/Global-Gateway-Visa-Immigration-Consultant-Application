@@ -1,16 +1,29 @@
 import React from 'react'
 import { Globe } from "lucide-react";
 
-const BasicFormSection = ({ SettingsSection, FormField, register, errors, country }) => {
+const BasicFormSection = ({ SettingsSection, FormField, register, errors, country, handleAutoFetch, isDetecting }) => {
 
     return (
         <SettingsSection title="Basic Information" description="Essential country details" icon={Globe}>
 
-            <FormField label="Country Name *" id="name" placeholder="e.g., United Arab Emirates" register={
-                register("name",
-                    { required: "Country name is required" },
-                    { pattern: { value: /^[A-Za-z -]+$/, message: "Country is not valid" } }
-                )} error={errors.name} readOnly={Boolean(country)} />
+            <div className="flex gap-2 items-start">
+                <div className="flex-1">
+                    <FormField label="Country Name *" id="name" placeholder="e.g., India" register={
+                        register("name",
+                            { required: "Country name is required" }
+                        )} error={errors.name} readOnly={Boolean(country)} />
+                </div>
+                {!country && (
+                    <button
+                        type="button"
+                        onClick={handleAutoFetch}
+                        disabled={isDetecting}
+                        className="mt-8 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-all disabled:opacity-50 whitespace-nowrap"
+                    >
+                        {isDetecting ? "Detecting..." : "Detect Details"}
+                    </button>
+                )}
+            </div>
 
             <FormField label="Country Code" id="code" placeholder="e.g., AE" register={
                 register("code", {

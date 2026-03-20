@@ -1,7 +1,8 @@
 import React from 'react'
 import { Calendar, CreditCard, FileText, Info } from 'lucide-react';
+import Skeleton from '../../Skeleton';
 
-const StatsCard = ({ visaApplications, appointments, uniqueCourses }) => {
+const StatsCard = ({ visaApplications, appointments, uniqueCourses, isLoading }) => {
 
     const stats = [
         { label: 'Total Applications', value: visaApplications?.length ?? 0, icon: FileText, color: 'bg-red-600' },
@@ -13,19 +14,33 @@ const StatsCard = ({ visaApplications, appointments, uniqueCourses }) => {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                {stats.map((stat, index) => (
-                    <div key={index} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-slate-600 text-sm font-medium mb-1">{stat.label}</p>
-                                <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
-                            </div>
-                            <div className={`${stat.color} p-3 rounded-lg shadow-sm`}>
-                                <stat.icon className="w-6 h-6 text-white" />
+                {isLoading ? (
+                    [...Array(4)].map((_, index) => (
+                        <div key={index} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 animate-pulse">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-8 w-12" />
+                                </div>
+                                <Skeleton variant="circle" className="w-12 h-12" />
                             </div>
                         </div>
-                    </div>
-                ))}
+                    ))
+                ) : (
+                    stats.map((stat, index) => (
+                        <div key={index} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-slate-600 text-sm font-medium mb-1">{stat.label}</p>
+                                    <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
+                                </div>
+                                <div className={`${stat.color} p-3 rounded-lg shadow-sm`}>
+                                    <stat.icon className="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     )

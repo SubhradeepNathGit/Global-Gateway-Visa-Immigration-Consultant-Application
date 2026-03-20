@@ -372,7 +372,21 @@ export const countrySlice = createSlice({
             })
             .addCase(addOrUpdateCountry.fulfilled, (state, action) => {
                 state.isAllCountryListLoading = false;
-                state.getAllCountryList.push(action.payload);
+                
+                // Format the new country to match the structure from fetchAllCountryDetails
+                const { countryRow, countryDetailsRow } = action.payload;
+                const newCountry = {
+                    ...countryRow,
+                    country_details: countryDetailsRow || {}
+                };
+
+                // Check if it already exists in the list (if it was an update)
+                const index = state.getAllCountryList.findIndex(c => c.id === newCountry.id);
+                if (index !== -1) {
+                    state.getAllCountryList[index] = newCountry;
+                } else {
+                    state.getAllCountryList.push(newCountry);
+                }
             })
             .addCase(addOrUpdateCountry.rejected, (state, action) => {
                 state.isAllCountryListLoading = false;

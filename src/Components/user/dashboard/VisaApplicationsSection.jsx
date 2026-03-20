@@ -10,8 +10,9 @@ import ApproveLetter from './letter/ApproveLetter';
 import { handlePrintApproval } from '../../../util/printUtils';
 import { useDispatch } from 'react-redux';
 import { useFullApplicationDetailsById } from '../../../tanstack/query/getFullApplicationDetails';
+import Skeleton from '../../Skeleton';
 
-const VisaApplicationsSection = ({ visaApplications, getStatusColor, getStatusIcon }) => {
+const VisaApplicationsSection = ({ visaApplications, getStatusColor, getStatusIcon, isLoading }) => {
     const dispatch = useDispatch();
     const [selectedVisa, setSelectedVisa] = useState(null);
     const [modalType, setModalType] = useState(null);
@@ -47,6 +48,28 @@ const VisaApplicationsSection = ({ visaApplications, getStatusColor, getStatusIc
         setSelectedApplicationDetails(null);
         setSelectedVisaData(null);
     };
+
+    if (isLoading) {
+        return (
+            <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                    <div key={i} className="border border-slate-200 rounded-lg p-6 animate-pulse">
+                        <div className="flex items-start justify-between mb-3">
+                            <div className="space-y-2">
+                                <Skeleton className="h-6 w-48" />
+                                <Skeleton className="h-4 w-32" />
+                            </div>
+                            <Skeleton className="h-8 w-24 rounded-full" />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <Skeleton className="h-4 w-40" />
+                            <Skeleton className="h-4 w-40" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
 
     if (visaApplications.length === 0) {
         return (

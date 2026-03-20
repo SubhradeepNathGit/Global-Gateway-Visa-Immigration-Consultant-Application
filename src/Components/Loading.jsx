@@ -3,10 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FlightIcon from '@mui/icons-material/Flight';
 import { useSelector } from 'react-redux';
 
-const LoadingAnimation = () => {
-  const { isLoading, loadingMessage } = useSelector(
+const LoadingAnimation = ({ alwaysShow = false, message: propMessage }) => {
+  const { isLoading: globalLoading, loadingMessage: reduxMessage } = useSelector(
     (state) => state.loading || { isLoading: false, loadingMessage: '' }
   );
+
+  const isLoading = alwaysShow || globalLoading;
+  const message = propMessage || reduxMessage;
 
   const containerVariants = {
    
@@ -122,8 +125,8 @@ const LoadingAnimation = () => {
                 Global Gateway
               </h1>
 
-              <p className="text-white/50 tracking-[0.1em] text-md sm:text-base mt-1 mb-5">
-                Crafting Comfort Across Continents over a Decade
+              <p className={`tracking-[0.1em] text-md sm:text-base mt-1 mb-5 ${propMessage ? 'text-red-500 font-bold' : 'text-white/50'}`}>
+                {message || 'Crafting Comfort Across Continents over a Decade'}
               </p>
             </motion.div>
 

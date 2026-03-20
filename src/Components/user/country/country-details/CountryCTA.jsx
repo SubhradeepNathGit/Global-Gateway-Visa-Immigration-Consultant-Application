@@ -1,33 +1,50 @@
-import { ClipboardList, FileText } from 'lucide-react'
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { encodeBase64Url } from '../../../../util/encodeDecode/base64'
+import React from "react";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
-const CountryCTA = ({countryId,handleContinue}) => {
+const CountryCTA = ({ countryId, countryName, availableVisas, handleContinue }) => {
+    
+    const handleApplyVisa = () => {
+        if (!availableVisas || availableVisas.length === 0) {
+            toast.error(`No visa available for ${countryName || 'this country'} at this moment`, {
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                },
+            });
+            return;
+        }
+        // Proceed with normal visa application logic if available
+    };
+
     return (
-        <>
-            <div className="mb-8 lg:mb-12 text-center lg:text-left">
-                <h3 className="text-2xl sm:text-3xl font-light text-gray-900 mb-3">Ready to begin your journey?</h3>
-                <p className="text-gray-600 font-light text-base lg:text-lg">Apply for your visa or explore our coaching services to ensure a smooth transition.</p>
-            </div>
+        <div className="flex flex-col items-center text-center">
+            <h2 className="text-3xl lg:text-5xl font-bold text-[#2c3e50] leading-tight mb-8">
+                Ready to Start Your Journey?
+            </h2>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                <Link to={`/visaprocess/${encodeBase64Url(String(countryId))}`}
-                    className="flex-1 px-6 sm:px-8 py-4 sm:py-5 bg-red-500 text-white font-medium rounded hover:bg-red-600 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-100 flex items-center justify-center gap-3 group"
+            <div className="flex flex-wrap justify-center gap-6">
+                <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleApplyVisa}
+                    className="px-8 py-4 bg-[#e53935] text-white rounded-xl font-bold text-sm tracking-widest uppercase hover:bg-[#d32f2f] transition-all shadow-[0_8px_30px_rgba(229,57,53,0.3)]"
                 >
-                    <FileText className="w-5 h-5 group-hover:rotate-6 transition-transform" />
-                    <span className="text-sm tracking-wide uppercase">Apply for Visa</span>
-                </Link>
+                    Apply for Visa
+                </motion.button>
 
-                <Link to='/course/'
-                    className="flex-1 px-6 sm:px-8 py-4 sm:py-5 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded hover:border-gray-300 hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-100 flex items-center justify-center gap-3 cursor-pointer"
+                <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleContinue}
+                    className="px-8 py-4 bg-white text-[#2c3e50] border border-gray-100 rounded-xl font-bold text-sm tracking-widest uppercase hover:border-[#e53935] hover:text-[#e53935] transition-all shadow-sm"
                 >
-                    <ClipboardList className="w-5 h-5 group-hover:rotate-6 transition-transform" />
-                    <span className="text-sm tracking-wide uppercase">Check Visa Courses</span>
-                </Link>
+                    Explore Courses
+                </motion.button>
             </div>
-        </>
-    )
-}
+        </div>
+    );
+};
 
-export default CountryCTA
+export default CountryCTA;

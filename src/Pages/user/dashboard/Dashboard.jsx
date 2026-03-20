@@ -28,14 +28,7 @@ const Dashboard = () => {
   const { isOrderLoading, allOrders, hasOrderError } = useSelector(state => state.orders);
 
   useEffect(() => {
-    dispatch(checkLoggedInUser())
-      .then(res => {
-        // console.log('Response for fetching user profile', res);
-      })
-      .catch((err) => {
-        getSweetAlert('Oops...', 'Something went wrong!', 'error');
-        console.log("Error occurred", err);
-      });
+    // Redundant auth check removed (handled by App.jsx and ProtectedRoute)
   }, [dispatch]);
 
   useEffect(() => {
@@ -130,27 +123,20 @@ const Dashboard = () => {
     navigate(path);
   };
 
-  if (isuserLoading || isApplicationLoading || isOrderLoading ) {
-    return (
-      <div className='flex flex-col h-screen items-center justify-center bg-black'>
-        <div className="w-18 h-18 border-2 border-white border-t-transparent rounded-full animate-spin" />
-        <span className='mt-5 text-white'>Loading...</span>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header Banner with Image */}
-      <DashboardHeader />
+      <DashboardHeader isLoading={isuserLoading} />
 
       {/* Profile Card */}
-      <ProfileCard userAuthData={userAuthData} />
+      <ProfileCard userAuthData={userAuthData} isLoading={isuserLoading} />
 
       {/* Stats Cards */}
       <StatsCard
         visaApplications={Array.isArray(application) ? application : []}
-        appointments={appointment} uniqueCourses={uniqueCourses}
+        appointments={appointment} 
+        uniqueCourses={uniqueCourses}
+        isLoading={isuserLoading || isApplicationLoading || isOrderLoading}
       />
 
       {/* Tabs */}
@@ -185,6 +171,7 @@ const Dashboard = () => {
                 visaApplications={Array.isArray(application) ? application : []}
                 getStatusColor={getStatusColor}
                 getStatusIcon={getStatusIcon}
+                isLoading={isApplicationLoading}
               />
             )}
 
@@ -193,6 +180,7 @@ const Dashboard = () => {
                 appointments={appointment}
                 getStatusColor={getStatusColor}
                 getStatusIcon={getStatusIcon}
+                isLoading={isAppointmentLoading}
               />
             )}
 
@@ -201,6 +189,7 @@ const Dashboard = () => {
                 transactions={all}
                 getStatusColor={getStatusColor}
                 getStatusIcon={getStatusIcon}
+                isLoading={isTransactionLoading}
               />
             )}
 
@@ -211,6 +200,7 @@ const Dashboard = () => {
                 getStatusIcon={getStatusIcon}
                 onNavigate={handleNavigate}
                 userAuthData={userAuthData}
+                isLoading={isOrderLoading}
               />
             )}
           </div>

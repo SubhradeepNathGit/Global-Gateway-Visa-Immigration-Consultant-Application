@@ -1,10 +1,30 @@
-import React from 'react'
-import { useVisaDetailsByApplicationId } from '../../../tanstack/query/getApplicationVisaDetails';
-import { useCountryByApplicationId } from '../../../tanstack/query/getCountryByApplicationId';
-import { CreditCard } from 'lucide-react';
 import { formatTransactionDate } from '../../../util/dateFormat/dateFormatConvertion';
+import Skeleton from '../../Skeleton';
 
-const PaymentsSection = ({ transactions, getStatusColor, getStatusIcon }) => {
+const PaymentsSection = ({ transactions, getStatusColor, getStatusIcon, isLoading }) => {
+
+    if (isLoading) {
+        return (
+            <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                    <div key={i} className="border border-slate-200 rounded-lg p-6 animate-pulse">
+                        <div className="flex items-start justify-between mb-3">
+                            <div className="space-y-2">
+                                <Skeleton className="h-6 w-64" />
+                                <Skeleton className="h-8 w-24" />
+                            </div>
+                            <Skeleton className="h-8 w-24 rounded-full" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <Skeleton className="h-4 w-40" />
+                            <Skeleton className="h-4 w-40" />
+                            <Skeleton className="h-4 w-40" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
 
     if (transactions?.length == 0) {
         return (

@@ -67,6 +67,7 @@ export const listenAuthChanges = () => (dispatch) => {
 // Logout
 export const logoutUser = ({ user_type, showAlert = true }) => async (dispatch) => {
     try {
+        dispatch(setLoggingOut(true));
         const token = sessionStorage.getItem(user_type == 'admin' ? "admin_token" : user_type == 'user' ? "user_token" : "embassy_token");
         if (token) sessionStorage.removeItem(user_type == 'admin' ? "admin_token" : user_type == 'user' ? "user_token" : "embassy_token");
 
@@ -75,20 +76,24 @@ export const logoutUser = ({ user_type, showAlert = true }) => async (dispatch) 
         if (error) throw new Error(error.message);
 
         dispatch(clearUser());
+        dispatch(setLoggingOut(false));
 
         showAlert && toastifyAlert.success("Logged out successfully");
     }
     catch (err) {
         console.error("Logout error:", err);
+        dispatch(setLoggingOut(false));
         toastifyAlert.error("Logout failed");
     }
 }
 
 const initialState = {
     isuserAuth: false,
-    userAuthData: undefined,
-    session: undefined,
+    userAuthData: null,
+    session: null,
     isuserLoading: false,
+    isInitialized: false,
+    isLoggingOut: false,
     userError: null,
 }
 
@@ -100,13 +105,18 @@ export const checkUserAuthSlice = createSlice({
             state.isuserAuth = true;
             state.userAuthData = action.payload.user;
             state.session = action.payload.session;
+            state.isInitialized = true;
             state.userError = null;
         },
         clearUser: (state) => {
             state.isuserAuth = false;
-            state.userAuthData = undefined;
-            state.session = undefined;
+            state.userAuthData = null;
+            state.session = null;
+            state.isInitialized = true;
             state.userError = null;
+        },
+        setLoggingOut: (state, action) => {
+            state.isLoggingOut = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -117,13 +127,30 @@ export const checkUserAuthSlice = createSlice({
             .addCase(fetchLoggedUserDetails.fulfilled, (state, action) => {
                 state.isuserLoading = false;
                 state.userAuthData = action.payload;
+                state.isInitialized = true;
             })
             .addCase(fetchLoggedUserDetails.rejected, (state, action) => {
                 state.isuserLoading = false;
                 state.userError = action.payload || "Failed to fetch user details";
+                state.isInitialized = true;
+            })
+            // Handle actions from authSlice for immediate state sync
+            .addCase("authSlice/loginUser/fulfilled", (state, action) => {
+                state.isuserAuth = true;
+                state.userAuthData = action.payload.user;
+                state.isInitialized = true;
+                state.isuserLoading = false;
+            })
+            .addCase("authSlice/verifyOtp/fulfilled", (state, action) => {
+                if (action.payload?.session) {
+                    state.isuserAuth = true;
+                    state.userAuthData = action.payload.user;
+                    state.isInitialized = true;
+                    state.isuserLoading = false;
+                }
             });
     },
 })
 
-export const { setuser, clearUser } = checkUserAuthSlice.actions;
+export const { setuser, clearUser, setLoggingOut } = checkUserAuthSlice.actions;
 export default checkUserAuthSlice.reducer;
