@@ -1,10 +1,9 @@
 import React from 'react'
-import { FileText, CheckCircle, Clock, TrendingUp, Loader2 } from "lucide-react";
+import { FileText, CheckCircle, Clock, TrendingUp } from "lucide-react";
 import { useApplicationStats, useApplicationStatusStats, useApprovedApplicationsStats, usePendingApplicationsStats } from '../../../tanstack/query/getDashboardStats';
+import Skeleton from '../../Skeleton';
 
-function SmallCard({ title, value, Icon, trend }) {
-    const trendText = typeof trend === "string" ? trend : "";
-
+function SmallCard({ title, value, Icon, trend, isValueLoading, isTrendLoading }) {
     return (
         <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800/70 transition-all hover:shadow-lg hover:shadow-blue-500/5">
             <div className="flex items-start justify-between mb-2">
@@ -13,14 +12,18 @@ function SmallCard({ title, value, Icon, trend }) {
             </div>
 
             <div className="text-xl sm:text-2xl lg:text-3xl font-semibold text-white mb-1">
-                {value}
+                {isValueLoading ? <Skeleton isDark className="h-8 w-24" /> : value}
             </div>
 
-            {trendText !== "" && (
-                <div className={`text-xs sm:text-sm font-medium ${trendText.startsWith("+") ? "text-green-400" : "text-red-400"}`}>
-                    {trendText} from last month
-                </div>
-            )}
+            <div className="mt-2">
+                {isTrendLoading ? (
+                    <Skeleton isDark className="h-4 w-32" />
+                ) : trend && (
+                    <div className={`text-xs sm:text-sm font-medium ${String(trend).startsWith("+") ? "text-green-400" : "text-red-400"}`}>
+                        {trend} from last month
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
@@ -42,9 +45,11 @@ const DashboardStats = () => {
             {stats?.map(stat => (
                 <SmallCard key={stat?.id}
                     title={stat?.title}
-                    value={stat?.isValueLoading ? <Loader2 className="w-8 h-8 text-white animate-spin mb-4" /> : stat?.value}
+                    value={stat?.value}
                     Icon={stat?.icon}
-                    trend={stat?.isTrendLoading ? <Loader2 className="w-8 h-8 text-white animate-spin mb-4" /> : stat?.trend}
+                    trend={stat?.trend}
+                    isValueLoading={stat?.isValueLoading}
+                    isTrendLoading={stat?.isTrendLoading}
                 />
             ))}
         </div>

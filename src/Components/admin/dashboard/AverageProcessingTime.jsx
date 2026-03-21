@@ -1,14 +1,24 @@
 "use client";
 
 import { useAverageProcessingTimes } from "../../../tanstack/query/getAverageProcessingTimes";
+import Skeleton from "../../Skeleton";
 
 export default function AverageProcessingTime() {
     const { data, isLoading } = useAverageProcessingTimes();
 
     if (isLoading)
         return (
-            <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                <p className="text-slate-400">Loading...</p>
+            <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-slate-800/50 border border-slate-700/50 space-y-4">
+                <Skeleton isDark className="h-6 w-48 mb-4" />
+                {[...Array(4)].map((_, i) => (
+                    <div key={i} className="space-y-2">
+                        <div className="flex justify-between">
+                            <Skeleton isDark className="h-3 w-20" />
+                            <Skeleton isDark className="h-3 w-12" />
+                        </div>
+                        <Skeleton isDark className="h-2 w-full" />
+                    </div>
+                ))}
             </div>
         );
 

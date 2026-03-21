@@ -5,6 +5,7 @@ import { Clock, XCircle, Eye, Info, BadgeAlert } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLatestActivities } from "../../../Redux/Slice/activitySlice";
 import getSweetAlert from "../../../util/alert/sweetAlert";
+import Skeleton from "../../Skeleton";
 
 const getIconByStatus = (iconValue) => {
     const status = iconValue?.toLowerCase() || "pending";
@@ -42,8 +43,17 @@ const DashboardActivity = () => {
             })
     }, [dispatch]);
 
-    if (isActivityLoading) return <div className="p-4 text-slate-300">Loading activities...</div>;
-    if (activityErrorMessage) return <div className="p-4 text-red-500">Failed to load activities.</div>;
+    if (isActivityLoading) return (
+        <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-slate-800/50 border border-slate-700/50 space-y-4">
+            <Skeleton isDark className="h-6 w-32 mb-4" />
+            {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex gap-4">
+                    <Skeleton isDark variant="circle" className="w-6 h-6 flex-shrink-0" />
+                    <Skeleton isDark className="h-4 w-full" />
+                </div>
+            ))}
+        </div>
+    );
 
     return (
         <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-slate-800/50 border border-slate-700/50">
