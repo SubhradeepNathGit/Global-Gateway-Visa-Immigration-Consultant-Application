@@ -180,7 +180,7 @@ const AuthForm = () => {
     dispatch(verifyOtp({ email: registeredEmail, token: data.otp, role: 'user' }))
       .then(res => {
         if (res.meta.requestStatus === "fulfilled") {
-          toastifyAlert.success('Email Verified Successfully');
+          toastifyAlert.success('Email Verified Successfully. Please Sign In.');
           reset();
           setShowOtp(false);
           setIsLogin(true);

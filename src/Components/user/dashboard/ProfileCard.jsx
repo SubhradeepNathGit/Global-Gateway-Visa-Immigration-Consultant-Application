@@ -149,7 +149,7 @@ const ProfileCard = ({ userAuthData, isLoading }) => {
                         <div className="hidden md:flex items-center self-center ml-auto pr-4">
                             <button
                                 onClick={handleLogout}
-                                className="group flex items-center gap-2 px-6 py-2.5 rounded-full border-2 border-red-500 text-red-600 font-semibold hover:bg-red-600 hover:text-white transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
+                                className="group flex items-center text-red-600 font-semibold transition-all duration-300 cursor-pointer"
                             >
                                 <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                                 <span>Sign Out</span>

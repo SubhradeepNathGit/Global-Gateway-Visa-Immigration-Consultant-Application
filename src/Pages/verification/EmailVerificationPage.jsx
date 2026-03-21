@@ -42,8 +42,9 @@ export default function EmailVerificationPage() {
           setStatus('success');
 
           dispatch(verifyUser({ email: email, user_type: user_type, status: 'success', verification: 'success' }))
-            .then(res => {
-              // console.log('Verifying response', res);
+            .then(async res => {
+              // Sign out to prevent auto-login
+              await supabase.auth.signOut();
             })
             .catch(err => {
               console.log('Error occured', err);

@@ -145,8 +145,12 @@ export const verifyOtp = createAsyncThunk("authSlice/verifyOtp",
 
       // After successful OTP verification for signup, update our custom table
       if (type === 'signup') {
-        const verifyRes = await dispatch(verifyUser({ email, user_type: role, status: 'success' })).unwrap();
-        return { user: verifyRes?.[0], session: data.session };
+        await dispatch(verifyUser({ email, user_type: role, status: 'success' })).unwrap();
+        
+        // Immediately sign out to prevent auto-login
+        await supabase.auth.signOut();
+        
+        return { message: "Verification successful, please login." };
       }
 
       return data;
@@ -303,7 +307,10 @@ export const authSlice = createSlice({
       })
       .addCase(verifyOtp.fulfilled, (state, action) => {
         state.isUserAuthLoading = false;
-        state.userAuthData = action.payload;
+        // Only set userAuthData if it contains a session (e.g., login or other OTP types)
+        if (action.payload?.session) {
+          state.userAuthData = action.payload;
+        }
       })
       .addCase(verifyOtp.rejected, (state, action) => {
         state.isUserAuthLoading = false;
