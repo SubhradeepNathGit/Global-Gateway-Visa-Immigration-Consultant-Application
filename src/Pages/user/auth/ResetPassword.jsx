@@ -88,7 +88,7 @@ const ResetPassword = () => {
                         message: "Password must contain 8+ characters, uppercase, lowercase, number & special character"
                       }
                     })}
-                    className={`w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 rounded-full focus:outline-none transition-colors pr-12 text-white placeholder-white/50 ${errors.password ? 'border-red-500' : 'border-white/30 focus:border-white/70'}`}
+                    className={`w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm border-2 rounded-full focus:outline-none transition-colors pr-12 text-white placeholder-white/50 ${errors.password ? 'border-red-500' : 'border-white/30 focus:border-white/70'}`}
                   />
                   <button
                     type="button"
@@ -111,7 +111,7 @@ const ResetPassword = () => {
                       required: "Please confirm your password",
                       validate: (value) => value === passwordValue || "Passwords do not match",
                     })}
-                    className={`w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 rounded-full focus:outline-none transition-colors pr-12 text-white placeholder-white/50 ${errors.confirm_password ? 'border-red-500' : 'border-white/30 focus:border-white/70'}`}
+                    className={`w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm border-2 rounded-full focus:outline-none transition-colors pr-12 text-white placeholder-white/50 ${errors.confirm_password ? 'border-red-500' : 'border-white/30 focus:border-white/70'}`}
                   />
                 </div>
                 {errors.confirm_password && <span className="text-red-400 text-xs mt-1">{errors.confirm_password.message}</span>}
@@ -120,7 +120,7 @@ const ResetPassword = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3.5 rounded-full font-semibold flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 transition-all duration-300 text-base shadow-lg uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 rounded-full font-semibold flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 transition-all duration-300 text-base shadow-lg uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
                 Reset Password

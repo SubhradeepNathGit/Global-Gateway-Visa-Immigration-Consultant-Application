@@ -27,7 +27,7 @@ export const EmbassyAuthInputField = React.forwardRef(
             type={
               isPassword ? showPassword ? "text" : "password" : inputProps.type || "text"
             }
-            className={`w-full px-4 py-3 rounded-md bg-transparent text-white border ${disable ? 'cursor-not-allowed' : ''}
+            className={`w-full px-4 py-3.5 rounded-full bg-transparent text-white border ${disable ? 'cursor-not-allowed' : ''}
               ${error
                 ? "border-red-500"
                 : "border-white/50 focus:border-white"

@@ -4,7 +4,6 @@ import { Route, Routes } from "react-router-dom";
 /* ---------- Layouts ---------- */
 import UserLayout from "../layout/user";
 import AdminLayout from "../layout/admin/AdminLayout";
-import EmbassyLayout from "../layout/Embassy/EmbassyLayout";
 import EmbassyDashboardLayout from "../layout/Embassy/EmbassyDashboard/EmbassyDashboardLayout";
 
 /* ---------- Utils ---------- */
@@ -51,9 +50,6 @@ const ManageCharges = lazy(() => import("../Pages/admin/ManageCharges"));
 const AdminProfile = lazy(() => import("../Pages/admin/AdminProfile"));
 
 /* ---------- Embassy ---------- */
-const EmbassyHome = lazy(() => import("../Pages/embassy/Home"));
-const EmbassyAbout = lazy(() => import("../Pages/embassy/About"));
-const EmbassyContact = lazy(() => import("../Pages/embassy/Contact"));
 const EmbassyAuth = lazy(() => import("../Pages/embassy/auth/Auth"));
 const EmbassyDashboard = lazy(() => import("../Pages/embassy/Dashboard/EmbassyDashboard"));
 const EmbassyProfile = lazy(() => import("../Pages/embassy/Dashboard/Profile"));
@@ -131,15 +127,8 @@ const Routing = () => {
           <Route path="charges" element={<ManageCharges />} />
         </Route>
 
-        {/* ================= EMBASSY PUBLIC ================= */}
-        <Route path="/embassy" element={<EmbassyLayout />}>
-          <Route index element={<EmbassyHome />} />
-          <Route path="about" element={<EmbassyAbout />} />
-          <Route path="contact" element={<EmbassyContact />} />
-        </Route>
-
         {/* ================= EMBASSY AUTH ================= */}
-        <Route path="/embassy/auth" element={<ProtectedRoute publicOnly={true}><EmbassyAuth /></ProtectedRoute>} />
+        <Route path="/embassy" element={<ProtectedRoute publicOnly={true}><EmbassyAuth /></ProtectedRoute>} />
         <Route path="/embassy/contact-setup/:embassyEmail/:redirectPath" element={<ProtectedRoute allowedRoles={['embassy']}><ContactSetup /></ProtectedRoute>} />
         <Route path="/embassy/country-setup" element={<ProtectedRoute allowedRoles={['embassy']}><CountrySetup /></ProtectedRoute>} />
         <Route path="/embassy/review" element={<ProtectedRoute allowedRoles={['embassy']}><Review /></ProtectedRoute>} />

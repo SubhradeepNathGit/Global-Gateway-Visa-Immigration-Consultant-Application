@@ -13,7 +13,6 @@ import { updateLastSignInAt } from '../../../Redux/Slice/userSlice';
 const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [showOtp, setShowOtp] = useState(false);
@@ -240,12 +239,14 @@ const AuthForm = () => {
 
         {/* LEFT VIDEO SECTION */}
         <div className="w-full md:w-1/2 relative bg-black/80 h-[300px] md:h-full">
-          <video autoPlay loop muted playsInline
+          <video
+            key={isLogin ? 'login-video' : 'register-video'}
+            autoPlay loop muted playsInline
             preload="auto"
-            poster="/Slider1.jpg"
+            poster={isLogin ? "/signup-preview.png" : "/registration-preview.png"}
             className="absolute top-0 left-0 w-full h-full object-cover"
           >
-            <source src="/signup.mp4" type="video/mp4" />
+            <source src={isLogin ? "/signup.mp4" : "/registration.mp4"} type="video/mp4" />
           </video>
 
           {/* Gradient overlay */}
@@ -272,7 +273,7 @@ const AuthForm = () => {
 
               <button
                 onClick={handleToggle}
-                className="px-30 py-2.5 border-2 border-white/50 text-white rounded-full hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-bold text-sm tracking-widest uppercase backdrop-blur-sm"
+                className="px-30 py-3 border-2 border-white/50 text-white rounded-full hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-bold text-sm tracking-widest uppercase backdrop-blur-sm"
               >
                 {isLogin ? 'Sign Up' : 'Sign In'}
               </button>
@@ -286,14 +287,14 @@ const AuthForm = () => {
           <div className="h-full overflow-y-auto auth-scrollbar flex flex-col justify-center">
             <div className="w-full max-w-md mx-auto px-2 md:px-2 py-6">
 
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">
-                {showOtp ? 'Verify Email' : showForgotPassword ? 'Reset Password' : isLogin ? 'Sign In' : 'Create Account'}
+              <h2 className="text-2xl md:text-3xl font-bold text-white/70  mb-2 mt-8 md:mt-10 tracking-tight">
+                {showOtp ? "Verify OTP" : showForgotPassword ? "Reset Password" : isLogin ? "Sign in to Global Gateway" : "Create New Account "}
               </h2>
               <p className="text-white/40 text-xs mb-5">
                 {showOtp ? 'Enter the 6-digit code we sent you'
                   : showForgotPassword ? 'We\'ll send a reset link to your email'
-                    : isLogin ? 'Access your Global Gateway account'
-                      : 'Start your journey with Global Gateway'}
+                    : isLogin ? 'Enter credentials to access your Global Gateway account'
+                      : 'Start your journey with Global Gateway Today'}
               </p>
 
               {showOtp ? (
@@ -311,14 +312,14 @@ const AuthForm = () => {
                           message: "Enter a valid 6-digit OTP"
                         }
                       })}
-                      className={`w-full px-3 py-3 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.otp ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
+                      className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.otp ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
                     />
                     {errors.otp && <span className="text-red-400 text-xs mt-1">{errors.otp.message}</span>}
                   </div>
                   <button
                     type="submit"
                     disabled={isUserAuthLoading}
-                    className="w-full py-2.5 rounded-full text-sm font-semibold flex items-center justify-center gap-2 bg-transparent border border-white/30 hover:bg-black text-white uppercase tracking-wider transition-all"
+                    className="w-full py-3 rounded-full text-sm font-semibold flex items-center justify-center gap-2 bg-transparent border border-white/30 hover:bg-black text-white uppercase tracking-wider transition-all"
                   >
                     {isUserAuthLoading && <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
                     Verify OTP
@@ -352,14 +353,14 @@ const AuthForm = () => {
                               message: "Enter a valid email"
                             }
                           })}
-                          className={`w-full px-3 py-3 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.email ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
+                          className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.email ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
                         />
                         {errors.email && <span className="text-red-400 text-xs mt-0.5">{errors.email.message}</span>}
                       </div>
                       <button
                         type="submit"
                         disabled={isUserAuthLoading}
-                        className="w-full py-2.5 mt-3 rounded-full text-sm font-semibold flex items-center justify-center gap-2 bg-transparent border border-white/30 hover:bg-black text-white uppercase tracking-wider transition-all"
+                        className="w-full py-3 mt-3 rounded-full text-sm font-semibold flex items-center justify-center gap-2 bg-transparent border border-white/30 hover:bg-black text-white uppercase tracking-wider transition-all"
                       >
                         {isUserAuthLoading && <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
                         Send Reset Link
@@ -410,7 +411,7 @@ const AuthForm = () => {
                               type="text"
                               placeholder="Full name"
                               {...register("name", { required: "Name is required" })}
-                              className={`w-full px-3 py-3 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.name ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
+                              className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.name ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
                             />
                             {errors.name && <span className="text-red-400 text-xs mt-0.5">{errors.name.message}</span>}
                           </div>
@@ -420,7 +421,7 @@ const AuthForm = () => {
                               type="text"
                               placeholder="Country"
                               {...register("country", { required: "Country is required" })}
-                              className={`w-full px-3 py-3 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.country ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
+                              className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.country ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
                             />
                             {errors.country && <span className="text-red-400 text-xs mt-0.5">{errors.country.message}</span>}
                           </div>
@@ -505,7 +506,7 @@ const AuthForm = () => {
                             message: "Enter a valid email",
                           }
                         })}
-                        className={`w-full px-3 py-3 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.email ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
+                        className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.email ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
                       />
                       {errors.email && <span className="text-red-400 text-xs mt-0.5">{errors.email.message}</span>}
                     </div>
@@ -526,7 +527,7 @@ const AuthForm = () => {
                               }
                             })
                           })}
-                          className={`w-full px-3 py-3 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors pr-10 text-white placeholder-white/40 ${errors.password ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
+                          className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors pr-10 text-white placeholder-white/40 ${errors.password ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
                         />
                         <button
                           type="button"
@@ -560,7 +561,7 @@ const AuthForm = () => {
                               validate: (value) =>
                                 value === passwordValue || "Passwords do not match",
                             })}
-                            className={`w-full px-3 py-3 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors pr-10 text-white placeholder-white/40 ${errors.confirm_password ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
+                            className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors pr-10 text-white placeholder-white/40 ${errors.confirm_password ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
                           />
                         </div>
                         {errors.confirm_password && <span className="text-red-400 text-xs mt-0.5">{errors.confirm_password.message}</span>}
@@ -570,7 +571,7 @@ const AuthForm = () => {
                     <button
                       type="submit"
                       disabled={isUserAuthLoading}
-                      className={`w-full py-2.5 rounded-full text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300 uppercase tracking-wider mt-1 ${isUserAuthLoading
+                      className={`w-full py-3 rounded-full text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300 uppercase tracking-wider mt-1 ${isUserAuthLoading
                         ? 'bg-white/10 cursor-not-allowed text-white/40'
                         : 'bg-transparent border border-white/30 hover:bg-black text-white hover:border-transparent cursor-pointer'
                         }`}
@@ -579,17 +580,6 @@ const AuthForm = () => {
                       {isLogin ? "Sign In" : "Sign Up"}
                     </button>
                   </form>
-
-                  {isLogin && (
-                    <p
-                      onClick={() => {
-                        setShowForgotPassword(true);
-                        reset();
-                      }}
-                      className="text-xs mt-2 text-white/50 hover:text-white cursor-pointer transition-colors text-right">
-                      Forgot your password?
-                    </p>
-                  )}
                 </>
               )}
 

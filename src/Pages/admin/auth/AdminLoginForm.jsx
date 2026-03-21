@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../../../Redux/Slice/auth/authSlice';
@@ -9,65 +10,12 @@ import { useNavigate } from 'react-router-dom';
 import { updateLastSignInAt } from '../../../Redux/Slice/userSlice';
 
 // Utility component for input fields
-const InputField = ({ label, type = 'text', register, errors, name, setShowPassword, showPassword, ...rest }) => {
-    const isPassword = name === 'password';
-
-    const baseClasses = `w-full px-4 py-3 rounded-md bg-transparent text-white placeholder-white/70 border transition duration-300 focus:outline-none`;
-    const borderClasses = errors[name] ? 'border-red-500' : 'border-white/50 focus:border-white';
-
-    return (
-        <div className="relative">
-            <input
-                id={name}
-                type={isPassword ? (showPassword ? 'text' : 'password') : type}
-                placeholder=" "
-                className={`${baseClasses} ${borderClasses} peer`}
-                {...register(name, {
-                    required: `${label} is required`,
-                    ...(name === 'email' && {
-                        pattern: {
-                            value: /^[a-z0-9._-]+@[a-z0-9.-]+\.[a-zA-Z.]{2,}$/,
-                            message: "Enter a valid email",
-                        }
-                    }),
-                })}
-                {...rest}
-            />
-
-            <label
-                htmlFor={name}
-                className={`absolute left-3 transition-all duration-300 pointer-events-none 
-                            peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-white/70
-                            peer-focus:-top-2 peer-focus:left-3 peer-focus:text-xs peer-focus:bg-black/50 peer-focus:px-1 peer-focus:text-white
-                            peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-3 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-black/50 peer-[:not(:placeholder-shown)]:px-1
-                            ${errors[name] ? 'text-red-500 -top-2 left-3 text-xs bg-black/50 px-1' : ''}
-                            `}>
-                {label}
-            </label>
-
-            {isPassword && (
-                <button
-                    type="button"
-                    onClick={() => setShowPassword(prev => !prev)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition duration-200"
-                >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                </button>
-            )}
-
-            {errors[name] && (
-                <p className="text-red-500 text-xs mt-1 ml-2">{errors[name].message}</p>
-            )}
-        </div>
-    );
-};
+// Component removed as we are using synchronized manual inputs for full control over aesthetics
 
 const AdminLoginForm = () => {
     const [showPassword, setShowPassword] = useState(false);
-
     const dispatch = useDispatch();
     const { isUserAuthLoading } = useSelector(state => state.auth);
-
     const { register, handleSubmit, formState: { errors } } = useForm();
     const navigate = useNavigate();
 
@@ -80,20 +28,16 @@ const AdminLoginForm = () => {
 
         dispatch(loginUser(auth_obj)).unwrap()
             .then(res => {
-                // console.log('Response for login', res);
                 sessionStorage.setItem('admin_token', res.accessToken);
-
                 dispatch(updateLastSignInAt({ id: res?.user?.id, user_type: 'admin' }))
-                    .then(res => {
-                        // console.log('Response for  update login time', res);
-
+                    .then(() => {
                         toastifyAlert.success('Admin Login Successful');
                         navigate('/admin/dashboard');
                     })
                     .catch(err => {
-                        console.log('Error occured', err);
-                        getSweetAlert('Oops...', 'Something went wrong!', 'error');
-                    })
+                        console.error('Error updating login time', err);
+                        getSweetAlert('Oops...', 'Something went wrong during final verification!', 'error');
+                    });
             })
             .catch(err => {
                 getSweetAlert('Access Denied', err || 'Invalid admin credentials. Please try again.', 'error');
@@ -101,116 +45,128 @@ const AdminLoginForm = () => {
     };
 
     return (
-        <div
-            className="min-h-screen flex justify-center items-center px-4 py-8"
-            style={{
-                backgroundImage: `url(/Slider1.jpg)`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-            }}
+        <div 
+            className="min-h-screen bg-cover bg-center flex justify-center items-center overflow-hidden"
+            style={{ backgroundImage: 'url(/Slider1.jpg)' }}
         >
-            <div
-                className="w-full max-w-6xl h-[650px] flex shadow-2xl rounded-xl overflow-hidden"
-            >
+            <div className="w-full h-screen flex flex-col md:flex-row shadow-2xl overflow-hidden">
+                
                 {/* LEFT VIDEO SECTION */}
-                <div
-                    className="hidden md:block w-1/2 relative bg-black/80"
-                >
-                    <video autoPlay loop muted playsInline
-                        poster="/Slider1.jpg"
-                        className="absolute w-full h-full object-cover top-0 left-0"
+                <div className="w-full md:w-1/2 relative bg-black/80 h-[300px] md:h-full">
+                    <video 
+                        autoPlay loop muted playsInline
+                        preload="auto"
+                        poster="/admin1.png"
+                        className="absolute top-0 left-0 w-full h-full object-cover"
                     >
-                        <source src="/signup.mp4" type="video/mp4" />
+                        <source src="/admin-signin.mp4" type="video/mp4" />
                     </video>
 
-                    <div
-                        className="relative z-10 text-white h-full px-10 flex flex-col justify-center bg-black/50"
-                    >
-                        <h4 className="text-3xl font-bold mb-4">
-                            Admin Portal
-                        </h4>
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-black/75 via-black/50 to-transparent z-10" />
 
-                        <p className="text-base mb-6">
-                            Access the administrative dashboard with your credentials
-                        </p>
+                    {/* Brand name — top left of left panel */}
+                    <div className="absolute top-8 left-8 z-20 flex items-center gap-2">
+                        <FlightTakeoffIcon className="text-white text-[30px]" />
+                        <span className="text-white font-bold text-[22px] tracking-wide">Global Gateway</span>
+                    </div>
 
-                        <div className="flex items-center gap-2 text-sm text-white/70">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                            </svg>
-                            <span>Secure Admin Access Only</span>
+                    {/* Left content — centered */}
+                    <div className="relative z-10 h-full flex flex-col justify-center items-start px-8 md:px-16 py-12 md:py-0 text-left">
+                        <div className="max-w-md">
+                            <div className="flex flex-col mb-4">
+                                <span className="text-white/40 text-sm md:text-lg font-medium tracking-widest uppercase">Global Gateway</span>
+                                <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight uppercase opacity-90">
+                                    Administration
+                                </h2>
+                            </div>
+                            <p className="text-white/30 text-base md:text-md mb-8 leading-relaxed">
+                                Secure gateway for official platform management and oversight operations. High-level security protocols active.
+                            </p>
+                            
+                            <div className="flex items-center gap-3 rounded-4xl">
+                                <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
+                                    <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p className="text-white text-sm font-semibold">Endpoint Verification Active</p>
+                                    <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold">Secure Session | AES-256 Encryption</p>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+
+                    {/* Security Notice — full-width bottom of video panel */}
+                    <div className="absolute bottom-0 left-0 right-0 z-20 bg-black/40 backdrop-blur-xs p-6">
+                        <p className="text-[10px] text-white/50 md:text-left text-center leading-relaxed">
+                            <span className="text-[11px] font-bold text-white/80 uppercase block mb-1 md:inline-block md:mr-2 not-italic tracking-[0.1em]">Administrative Protocol</span>
+                            Access to this portal is restricted to authorized personnel. Any unauthorized attempt to breach this system is monitored and will be logged for security audit.
+                        </p>
                     </div>
                 </div>
 
                 {/* RIGHT FORM SECTION */}
-                <div
-                    className="w-full md:w-1/2 bg-black/20 backdrop-blur-md text-white px-12 py-8 flex flex-col justify-center"
-                >
-                    <h4 className="text-3xl font-bold text-white mb-2">
-                        Admin Sign In
-                    </h4>
+                <div className="w-full md:w-1/2 bg-black/45 backdrop-blur-sm overflow-hidden flex flex-col justify-center">
+                    <div className="w-full max-w-md mx-auto px-4 md:px-8 py-6">
+                        
+                        <h2 className="text-2xl md:text-3xl font-bold text-white mb-1 mt-8 md:mt-10 tracking-tight">System Admin Access</h2>
+                        <p className="text-white/40 text-xs mb-8">Enter credentials to access system admin through secure gateway</p>
 
-                    <p className="text-sm text-white/60 mb-8">
-                        Enter your credentials to access the admin panel
-                    </p>
+                        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                            
+                            {/* EMAIL */}
+                            <div className="flex flex-col">
+                                <label className="text-xs font-medium text-white/70 mb-1">Admin Email</label>
+                                <input
+                                    type="email"
+                                    placeholder="Enter your administrative email"
+                                    {...register("email", {
+                                        required: "Email is required",
+                                        pattern: {
+                                            value: /^[a-z0-9._-]+@[a-z0-9.-]+\.[a-zA-Z.]{2,}$/,
+                                            message: "Enter a valid email",
+                                        }
+                                    })}
+                                    className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.email ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
+                                />
+                                {errors.email && <span className="text-red-400 text-xs mt-1">{errors.email.message}</span>}
+                            </div>
 
-                    <form
-                        onSubmit={handleSubmit(onSubmit)}
-                        className="flex flex-col gap-6"
-                    >
-                        {/* EMAIL */}
-                        <InputField
-                            label="Admin Email"
-                            type="email"
-                            name="email"
-                            register={register}
-                            errors={errors}
-                        />
+                            {/* PASSWORD */}
+                            <div className="flex flex-col">
+                                <label className="text-xs font-medium text-white/70 mb-1">Password</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="Enter your password"
+                                        {...register("password", { required: "Password is required" })}
+                                        className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors pr-10 text-white placeholder-white/40 ${errors.password ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                                    >
+                                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                                    </button>
+                                </div>
+                                {errors.password && <span className="text-red-400 text-xs mt-1">{errors.password.message}</span>}
+                            </div>
 
-                        {/* PASSWORD */}
-                        <InputField
-                            label="Password"
-                            name="password"
-                            register={register}
-                            errors={errors}
-                            setShowPassword={setShowPassword}
-                            showPassword={showPassword}
-                        />
-
-                        <button
-                            type="submit"
-                            disabled={isUserAuthLoading}
-                            className={`
-                                py-3 mt-2 rounded-md font-semibold text-white transition duration-300 flex justify-center items-center gap-2
-                                ${isUserAuthLoading
-                                    ? 'bg-black/40 cursor-not-allowed'
-                                    : 'bg-black hover:bg-black/80'
-                                }
-                            `}
-                        >
-                            {isUserAuthLoading && (
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            )}
-                            SIGN IN
-                        </button>
-                    </form>
-
-                    {/* Forgot Password Link */}
-                    <p
-                        className="text-xs mt-4 text-white/70 cursor-pointer hover:text-white transition duration-200"
-                    >
-                        Forgot your password?
-                    </p>
-
-                    {/* Security Notice for Mobile */}
-                    <div className="md:hidden mt-8 pt-6 border-t border-white/20">
-                        <div className="flex items-center gap-2 text-xs text-white/70">
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                            </svg>
-                            <span>Secure Admin Access Only</span>
-                        </div>
+                            <button
+                                type="submit"
+                                disabled={isUserAuthLoading}
+                                className={`w-full py-3 mt-4 rounded-full text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300 uppercase tracking-wider ${isUserAuthLoading
+                                    ? 'bg-white/10 cursor-not-allowed text-white/40'
+                                    : 'bg-transparent border border-white/30 hover:bg-black text-white hover:border-transparent'
+                                }`}
+                            >
+                                {isUserAuthLoading && <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
+                                Sign In
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

@@ -143,9 +143,7 @@ const Banner = () => {
                   START JOURNEY
                 </button>
               </motion.div>
-
-              {/* Visual Indicator of Premium 2026 feel */}
-              -
+              
             </div>
           </SwiperSlide>
         ))}

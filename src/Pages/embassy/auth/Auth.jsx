@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import { useForm } from "react-hook-form";
-import { loginUser, registerUser, verifyOtp, forgotPassword } from "../../../Redux/Slice/auth/authSlice";
+import { loginUser, registerUser, verifyOtp, forgotPassword, resendOtp } from "../../../Redux/Slice/auth/authSlice";
 import getSweetAlert from "../../../util/alert/sweetAlert";
 import { updateLastSignInAt } from "../../../Redux/Slice/userSlice";
 import toastifyAlert from "../../../util/alert/toastify";
@@ -18,6 +19,8 @@ const EmbassyAuth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [showOtp, setShowOtp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [timer, setTimer] = useState(60);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
@@ -226,82 +229,124 @@ const EmbassyAuth = () => {
 
   return (
     <div
-      className="min-h-screen flex justify-center items-center overflow-hidden bg-cover bg-center"
-      style={{ backgroundImage: `url(/Slider1.jpg)` }}
+      className="min-h-screen bg-cover bg-center flex justify-center items-center overflow-hidden"
+      style={{ backgroundImage: 'url(/Slider1.jpg)' }}
     >
-      <div className="w-full h-screen flex shadow-2xl overflow-hidden">
+      <div className="w-full h-screen flex flex-col md:flex-row-reverse shadow-2xl overflow-hidden relative">
+        {/* Brand name — top left of entire container */}
+        <div className="absolute top-10 left-10 z-30 flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20">
+            <FlightTakeoffIcon className="text-white text-[24px]" />
+          </div>
+          <span className="text-white font-bold text-xl tracking-wide">Global Gateway</span>
+        </div>
+
         {/* LEFT VIDEO SECTION */}
-        <div className="hidden md:block w-1/2 relative bg-black/80">
-          <video autoPlay loop muted playsInline
-            poster="/Slider1.jpg"
-            className="absolute w-full h-full object-cover top-0 left-0"
+        <div className="w-full md:w-1/2 relative bg-black/80 h-[300px] md:h-full border-l border-white/10">
+          <video
+            key={isSignup ? 'embassy-signup' : 'embassy-login'}
+            autoPlay loop muted playsInline
+            preload="auto"
+            poster={isSignup ? "/embassy1.png" : "/embassy2.png"}
+            className="absolute top-0 left-0 w-full h-full object-cover"
           >
-            <source src="/signup.mp4" type="video/mp4" />
+            <source src={isSignup ? "/embassy-signin.mp4" : "/embassy-signup.mp4"} type="video/mp4" />
           </video>
 
-          <div className="relative z-10 text-white h-full px-10 flex flex-col justify-center bg-black/50">
-            <h4 className="text-3xl font-bold mb-4">Embassy Portal</h4>
-            <p className="text-base mb-6">
-              {showOtp ? 'Verify your identity to continue' : showForgotPassword ? 'Reset your access' : isSignup
-                ? "Register your embassy to begin visa operations"
-                : "Access your embassy dashboard securely"}
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-l from-black/75 via-black/50 to-transparent z-10" />
+
+          {/* Left content — centered */}
+          <div className="relative z-10 h-full flex flex-col justify-center items-center px-8 md:px-12 py-12 md:py-0 text-center">
+            <div className="max-w-md">
+              <h2 className="text-3xl md:text-4xl lg:text-4xl font-bold mb-4 tracking-tight text-white/50 leading-tight">
+                Embassy Access
+              </h2>
+
+              <p className="text-sm md:text-base mb-6 -mt-2 text-white/70 leading-relaxed font-medium">
+                {showOtp ? 'Verify your identity to continue' : showForgotPassword ? 'Reset your access' : isSignup
+                  ? "Register your embassy for official diplomatic visa processing"
+                  : "Secure portal for diplomatic visa operations"}
+              </p>
+
+              <button
+                onClick={handleToggle}
+                className="px-30 py-3 border-2 border-white/50 text-white rounded-full hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-bold text-sm tracking-widest uppercase backdrop-blur-sm"
+              >
+                {isSignup ? 'Sign In' : 'Register Embassy'}
+              </button>
+            </div>
+          </div>
+
+          {/* Regulatory Notice — full-width bottom of video panel */}
+          <div className="absolute bottom-0 left-0 right-0 z-20 bg-black/40 backdrop-blur-xs  p-6">
+            <p className="text-[10px] text-white/50 md:text-left text-center leading-relaxed">
+              <span className="text-[11px] font-bold text-white/80 uppercase block mb-1 md:inline-block md:mr-2 not-italic tracking-[0.1em]">Regulatory Notice</span>
+              Official registrations undergo a manual security audit. Documentation must be a valid, government-issued diplomatic credentials.
             </p>
           </div>
         </div>
 
-        {/* RIGHT FORM SECTION */}
-        <div className="w-full md:w-1/2 bg-black/40 backdrop-blur-xl border-l border-white/10 px-8 md:px-12 py-6 md:py-8 flex flex-col justify-center overflow-y-auto md:overflow-visible custom-scrollbar">
-          <h4 className=" font-bold mb-5 text-xl sm:text-2xl md:text-3xl text-center sm:text-left">
-            {showOtp ? "Verify OTP" : showForgotPassword ? "Reset Password" : isSignup ? "Embassy Sign Up" : "Embassy Sign In"}
-          </h4>
+        {/* RIGHT FORM SECTION (Rendered on Left due to flex-row-reverse) */}
+        <div className="w-full md:w-1/2 h-full bg-black/45 backdrop-blur-sm overflow-hidden">
+
+          <div className="h-full overflow-y-auto auth-scrollbar flex flex-col justify-center">
+            <div className="w-full max-w-md mx-auto px-4 md:px-8 py-6">
+
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-1 mt-8 md:mt-10 tracking-tight">
+                {showOtp ? "Verify OTP" : showForgotPassword ? "Reset Password" : isSignup ? "Register New Embassy " : "Sign in to Embassy "}
+              </h2>
+              <p className="text-white/40 text-xs mb-5">
+                {showOtp ? 'Enter the 6-digit code we sent you'
+                  : showForgotPassword ? 'We\'ll send a reset link to your email'
+                    : isSignup ? 'Official Diplomatic Registration Requested'
+                      : 'Secure Diplomatic Gateway'}
+              </p>
 
           {showOtp ? (
-            <form onSubmit={handleSubmit(onVerifyOtp)} className="flex flex-col gap-6">
-              <p className="text-white/80 text-sm mb-2 text-center sm:text-left">Please enter the 6-digit code sent to {registeredEmail}</p>
-              <EmbassyAuthInputField
-                label="OTP Code"
-                {...register("otp", {
-                  required: "OTP is required",
-                  pattern: {
-                    value: /^\d{6}$/,
-                    message: "Enter a valid 6-digit OTP"
-                  }
-                })}
-                error={!!errors.otp}
-                helperText={errors.otp?.message}
-              />
+            <form onSubmit={handleSubmit(onVerifyOtp)} className="flex flex-col gap-3">
+              <p className="text-white/70 text-xs mb-1">Please enter the 6-digit code sent to <span className="text-white font-medium">{registeredEmail}</span></p>
+              <div className="flex flex-col text-left">
+                <label className="text-xs font-medium text-white/70 mb-1">OTP Code</label>
+                <input
+                  type="text"
+                  placeholder="Enter 6-digit OTP"
+                  {...register("otp", {
+                    required: "OTP is required",
+                    pattern: {
+                      value: /^\d{6}$/,
+                      message: "Enter a valid 6-digit OTP"
+                    }
+                  })}
+                  className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.otp ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
+                />
+                {errors.otp && <span className="text-red-400 text-xs mt-1">{errors.otp.message}</span>}
+              </div>
               <button
                 type="submit"
                 disabled={isUserAuthLoading}
-                className={`py-3 rounded-md font-semibold hover:bg-black/80 transition ${isUserAuthLoading ? 'cursor-not-allowed bg-black/80' : 'cursor-pointer bg-black'}`}
+                className="w-full py-3 rounded-full text-sm font-semibold flex items-center justify-center gap-2 bg-transparent border border-white/30 hover:bg-black text-white uppercase tracking-wider transition-all"
               >
-                {isUserAuthLoading && (
-                  <div className="w-4 h-4 border-1 border-white border-t-transparent rounded-full animate-spin inline-block mr-2" />
-                )}
+                {isUserAuthLoading && <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
                 Verify OTP
               </button>
-              <div className="flex flex-col gap-2 items-center">
-                <p className="text-white/60 text-xs text-center">
+              <div className="flex flex-col gap-1 items-center">
+                <p className="text-white/50 text-xs">
                   Didn't receive the code?{' '}
                   {timer > 0 ? (
-                    <span className="text-white font-medium">Resend in {timer}s</span>
+                    <span className="text-white/80 font-medium">Resend in {timer}s</span>
                   ) : (
-                    <span
-                      onClick={handleResendOtp}
-                      className="text-white font-bold cursor-pointer hover:underline"
-                    >
-                      Resend Now
-                    </span>
+                    <span onClick={handleResendOtp} className="text-blue-400 font-semibold cursor-pointer hover:text-blue-300 transition-colors">Resend Code</span>
                   )}
                 </p>
-                <button type="button" onClick={() => setShowOtp(false)} className="text-white/70 hover:text-white text-xs text-center">Back to Sign Up</button>
+                <button type="button" onClick={() => setShowOtp(false)} className="text-white/50 hover:text-white text-xs text-center transition-colors">Back to Sign Up</button>
               </div>
             </form>
           ) : showForgotPassword ? (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-3">
               {!showForgotPasswordSuccess ? (
-                <form onSubmit={handleSubmit(onForgotPasswordSubmit)} className="flex flex-col gap-6">
-                  <p className="text-white/80 text-sm mb-2 text-center sm:text-left">Enter your email to receive a password reset link.</p>
+                <form onSubmit={handleSubmit(onForgotPasswordSubmit)} className="flex flex-col gap-3">
+                  <p className="text-white/70 text-xs mb-1 text-center sm:text-left">Enter your email to receive a password reset link.</p>
                   <EmbassyAuthInputField
                     label="Email"
                     type="email"
@@ -318,39 +363,49 @@ const EmbassyAuth = () => {
                   <button
                     type="submit"
                     disabled={isUserAuthLoading}
-                    className={`py-3 rounded-md font-semibold hover:bg-black/80 transition ${isUserAuthLoading ? 'cursor-not-allowed bg-black/80' : 'cursor-pointer bg-black'}`}
+                    className="w-full py-3 mt-3 rounded-full text-sm font-semibold flex items-center justify-center gap-2 bg-transparent border border-white/30 hover:bg-black text-white uppercase tracking-wider transition-all"
                   >
-                    {isUserAuthLoading && (
-                      <div className="w-4 h-4 border-1 border-white border-t-transparent rounded-full animate-spin inline-block mr-2" />
-                    )}
+                    {isUserAuthLoading && <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
                     Send Reset Link
                   </button>
                 </form>
               ) : (
-                <div className="text-center flex flex-col gap-4 py-4">
-                  <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-2 border border-blue-500/30">
-                    <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="text-center mt-5 flex flex-col gap-3 py-2">
+                  <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+                    <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-bold text-white">Check Your Email</h3>
-                  <p className="text-white/70 text-sm italic">Verification Link Sent to:</p>
-                  <p className="text-blue-400 font-medium text-sm -mt-2 truncate">{forgotPasswordEmail}</p>
-
-                  <div className="mt-4">
+                  <h3 className="text-base font-bold text-white">Check your email</h3>
+                  <p className="text-white/60 text-xs">Reset link sent to <span className="text-white font-medium">{forgotPasswordEmail}</span></p>
+                  <p className="text-white/50 text-xs">
+                    Didn't receive it?{' '}
                     {forgotPasswordTimer > 0 ? (
-                      <p className="text-white/50 text-xs text-center border-t border-white/10 pt-4">
-                        Resend available in <span className="text-white font-medium">{forgotPasswordTimer}s</span>
-                      </p>
+                      <span className="text-white/80 font-medium">Resend in {forgotPasswordTimer}s</span>
                     ) : (
-                      <button
-                        onClick={handleForgotPasswordResend}
-                        className="text-white font-bold text-xs hover:text-blue-400 transition-colors uppercase tracking-widest border-b border-white hover:border-blue-400 pb-1"
-                      >
-                        Resend Reset Link
-                      </button>
+                      <span onClick={handleForgotPasswordResend} className="text-blue-400 font-semibold cursor-pointer hover:text-blue-300 transition-colors">Resend Link</span>
                     )}
-                  </div>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setShowForgotPasswordSuccess(false);
+                    }}
+                    className="w-full py-3 mt-4 rounded-full text-sm font-semibold bg-white/10 border border-white/20 text-white hover:bg-black transition-all uppercase tracking-wider"
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setShowForgotPasswordSuccess(false);
+                    }}
+                    className="text-white/50 hover:text-white text-xs text-center transition-colors -mt-2"
+                  >
+                    Back to Login
+                  </button>
                 </div>
               )}
               <button
@@ -359,14 +414,14 @@ const EmbassyAuth = () => {
                   setShowForgotPassword(false);
                   setShowForgotPasswordSuccess(false);
                 }}
-                className="text-white/70 hover:text-white text-xs text-center"
+                className="text-white/50 hover:text-white text-xs text-center transition-colors"
               >
                 Back to Login
               </button>
             </div>
           ) : (
             <>
-              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
                 {isSignup && (
                   <>
                     <EmbassyAuthInputField
@@ -378,57 +433,63 @@ const EmbassyAuth = () => {
                       helperText={errors.country?.message} />
 
                     {/* DRAG & DROP PDF UPLOAD */}
-                    <div
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        setDragActive(true);
-                      }}
-                      onDragLeave={() => setDragActive(false)}
-                      onDrop={handleFileDrop}
-                      className={`border-2 border-dashed rounded-md p-6 text-center transition ${dragActive ? "border-white bg-white/10" : "border-white/30"}`}>
-                      <input
-                        type="file" accept="application/pdf" className="hidden" id="embassyDoc"
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            setValue("embassy_doc", file, { shouldValidate: true });
-                          }
-                        }} />
-
-                      <label
-                        htmlFor="embassyDoc"
-                        className="cursor-pointer text-sm text-white/80"
-                      >
-                        {uploadedFile
-                          ? `${uploadedFile.name}`
-                          : "Drag & Drop Embassy Proof (PDF) or click to upload"}
-                      </label>
-
-                      <input
-                        type="hidden"
-                        {...register("embassy_doc", {
-                          required: "Country image is required",
-                          validate: (file) => {
-                            if (!file) return "Country image is required";
-
-                            if (!file.type?.match(/application\/pdf/)) {
-                              return "Only PDF files are allowed";
+                    <div className="flex flex-col">
+                      <label className="text-xs font-medium text-white/70 mb-1">Embassy Proof</label>
+                        <div
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            setDragActive(true);
+                          }}
+                          onDragLeave={() => setDragActive(false)}
+                          onDrop={handleFileDrop}
+                          className={`relative border-2 border-dashed rounded-3xl p-4 transition-all h-[100px] flex items-center justify-center ${dragActive ? 'border-blue-500 bg-blue-500/10' : errors.embassy_doc ? 'border-red-500 bg-red-500/10' : 'border-white/10 bg-white/5 hover:border-white/20'}`}
+                        >
+                        <input
+                          type="file" accept="application/pdf" className="hidden" id="embassyDoc"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              setValue("embassy_doc", file, { shouldValidate: true });
                             }
+                          }} />
 
-                            if (file.size > 200 * 1024) {
-                              return "Maximum file size is 200 KB";
-                            }
+                        <div className="w-full text-center">
+                          <label
+                            htmlFor="embassyDoc"
+                            className="cursor-pointer text-xs text-white/60 font-medium"
+                          >
+                            {uploadedFile ? (
+                              <div className="flex items-center justify-center gap-2">
+                                <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
+                                </svg>
+                                <span className="text-white truncate max-w-[200px]">{uploadedFile.name}</span>
+                              </div>
+                            ) : (
+                              <>
+                                <svg className="mx-auto h-7 w-7 text-white/40 mb-1" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                                <p><span className="text-blue-400 hover:underline">Click to upload</span> or drag and drop PDF</p>
+                              </>
+                            )}
+                          </label>
+                        </div>
 
-                            return true;
-                          },
-                        })}
-                      />
-
-                      {errors.embassy_doc && (
-                        <p className="text-xs text-red-400 mt-2">
-                          {errors.embassy_doc.message}
-                        </p>
-                      )}
+                        <input
+                          type="hidden"
+                          {...register("embassy_doc", {
+                            required: "Embassy proof is required",
+                            validate: (file) => {
+                              if (!file) return "Embassy proof is required";
+                              if (!file.type?.match(/application\/pdf/)) return "Only PDF files are allowed";
+                              if (file.size > 200 * 1024) return "Maximum file size is 200 KB";
+                              return true;
+                            },
+                          })}
+                        />
+                      </div>
+                      {errors.embassy_doc && <span className="text-red-400 text-xs mt-0.5">{errors.embassy_doc.message}</span>}
                     </div>
                   </>
                 )}
@@ -439,8 +500,7 @@ const EmbassyAuth = () => {
                   {...register("email", {
                     required: "Email is required",
                     pattern: {
-                      value:
-                        /^[a-z0-9._-]+@[a-z0-9.-]+\.[a-zA-Z.]{2,}$/,
+                      value: /^[a-z0-9._-]+@[a-z0-9.-]+\.[a-zA-Z.]{2,}$/,
                       message: "Enter a valid email",
                     },
                   })}
@@ -455,10 +515,8 @@ const EmbassyAuth = () => {
                     {...register("password", {
                       required: "Password is required",
                       pattern: {
-                        value:
-                          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/,
-                        message:
-                          "Password must contain 8+ characters, uppercase, lowercase, number & special character",
+                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/,
+                        message: "Password must contain 8+ characters, uppercase, lowercase, number & special character",
                       },
                     })}
                     showPassword={showPassword}
@@ -472,37 +530,41 @@ const EmbassyAuth = () => {
                         setShowForgotPassword(true);
                         reset();
                       }}
-                      className="text-[10px] text-white/60 hover:text-white cursor-pointer transition-colors text-right"
+                      className="text-xs mt-2 text-white/50 hover:text-white cursor-pointer transition-colors text-right"
                     >
-                      Forgot Password?
+                      Forgot your password?
                     </p>
                   )}
                 </div>
 
                 <button
                   type="submit"
-                  className={`py-3 rounded-md font-semibold hover:bg-black/80 transition ${isUserAuthLoading ? 'cursor-not-allowed bg-black/80' : 'cursor-pointer bg-black'}`}
+                  disabled={isUserAuthLoading}
+                  className={`w-full py-3 rounded-full text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300 uppercase tracking-wider mt-1 ${isUserAuthLoading
+                    ? 'bg-white/10 cursor-not-allowed text-white/40'
+                    : 'bg-transparent border border-white/30 hover:bg-black text-white hover:border-transparent cursor-pointer'
+                    }`}
                 >
-                  {isUserAuthLoading && (
-                    <div className="w-4 h-4 border-1 border-white border-t-transparent rounded-full animate-spin inline-block mr-2" />
-                  )}
-                  {isSignup ? "SIGN UP" : "SIGN IN"}
+                  {isUserAuthLoading && <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
+                  {isSignup ? "Request Registration" : "Portal Login"}
                 </button>
               </form>
 
-              <p
-                className="text-xs mt-4 text-white/70 cursor-pointer hover:text-white"
-                onClick={handleToggle}
-              >
-                {isSignup
-                  ? "Already have an account? Sign In"
-                  : "New Embassy? Sign Up"}
-              </p>
+              {!showOtp && !showForgotPassword && (
+                <p className="text-[13px] text-white/50 mt-6 text-center font-medium">
+                  {isSignup ? "Already registered? " : "Official Embassy? "}
+                  <button onClick={handleToggle} className="font-semibold text-white/50 hover:text-blue-400 transition-colors">
+                    {isSignup ? 'Login to Embassy ' : 'Request Access'}
+                  </button>
+                </p>
+              )}
             </>
           )}
         </div>
       </div>
     </div>
+  </div>
+</div>
   );
 };
 
