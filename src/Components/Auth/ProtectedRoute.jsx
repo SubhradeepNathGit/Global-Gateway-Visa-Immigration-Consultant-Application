@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Navigate, useLocation } from 'react-router-dom';
 import { checkLoggedInUser } from '../../Redux/Slice/auth/checkAuthSlice';
 import LoadingAnimation from '../Loading';
+import DashboardSkeleton from '../DashboardSkeleton';
 
 /**
  * ProtectedRoute Component
@@ -24,6 +25,15 @@ const ProtectedRoute = ({ children, allowedRoles = [], publicOnly = false }) => 
 
     // Show loading while checking authentication OR logging out
     if (!isInitialized || isuserLoading || isLoggingOut) {
+        // Use structural skeletons for Admin and Embassy dashboards
+        if (location.pathname.startsWith('/admin')) {
+            return <DashboardSkeleton type="admin" />;
+        }
+        if (location.pathname.startsWith('/embassy')) {
+            return <DashboardSkeleton type="embassy" />;
+        }
+
+        // Fallback to cinematic loader for other routes
         return <LoadingAnimation alwaysShow={true} message={isLoggingOut ? "Logging out..." : "Loading..."} />;
     }
 

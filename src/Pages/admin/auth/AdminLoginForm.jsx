@@ -46,7 +46,7 @@ const AdminLoginForm = () => {
 
     return (
         <div 
-            className="min-h-screen bg-cover bg-center flex justify-center items-center overflow-hidden"
+            className="min-h-screen bg-black bg-cover bg-center flex justify-center items-center overflow-hidden"
             style={{ backgroundImage: 'url(/Slider1.jpg)' }}
         >
             <div className="w-full h-screen flex flex-col md:flex-row shadow-2xl overflow-hidden">

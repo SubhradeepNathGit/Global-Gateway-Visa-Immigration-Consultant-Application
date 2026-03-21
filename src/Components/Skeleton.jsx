@@ -1,7 +1,7 @@
 import React from 'react';
 
-const Skeleton = ({ className, variant = 'rect', width, height }) => {
-  const baseClasses = "animate-pulse bg-slate-200 rounded-lg";
+const Skeleton = ({ className, variant = 'rect', width, height, isDark = false }) => {
+  const baseClasses = `animate-pulse rounded-lg ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`;
   
   const variantClasses = {
     rect: "",
@@ -11,7 +11,7 @@ const Skeleton = ({ className, variant = 'rect', width, height }) => {
 
   return (
     <div 
-      className={`${baseClasses} ${variantClasses[variant]} ${className}`} 
+      className={`${baseClasses} ${variantClasses[variant]} ${className || ''}`} 
       style={{ width, height }}
     />
   );

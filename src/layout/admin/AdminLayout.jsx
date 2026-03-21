@@ -9,16 +9,6 @@ export default function AdminLayout() {
   const dispatch = useDispatch();
   const { isuserLoading, userAuthData, userError } = useSelector(state => state.checkAuth);
 
-  useEffect(() => {
-    dispatch(checkLoggedInUser())
-      .then(res => {
-        // console.log('Response for fetching user profile', res);
-      })
-      .catch((err) => {
-        getSweetAlert('Oops...', 'Something went wrong!', 'error');
-        console.log("Error occurred", err);
-      });
-  }, [dispatch]);
 
   return (
     <div className="min-h-screen flex bg-gray-900 text-white">

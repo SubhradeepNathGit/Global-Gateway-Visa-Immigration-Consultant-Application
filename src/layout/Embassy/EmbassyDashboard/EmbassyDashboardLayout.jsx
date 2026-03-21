@@ -12,9 +12,9 @@ import { useFullCountryDetails } from "../../../tanstack/query/getCountryDetails
 const EmbassyDashboardLayout = () => {
     const collapsed = useSidebarStore((s) => s.collapsed);
     const dispatch = useDispatch();
-    const { isuserLoading, userAuthData, userError } = useSelector(state => state.checkAuth);
-    const { isEmbassyLoading, embassyData, hasEmbassyerror } = useSelector(state => state.embassy);
-    const { data: countryDetails, isLoading: isCountryLoading, isError } = useFullCountryDetails(embassyData?.country_id);
+    const { userAuthData } = useSelector(state => state.checkAuth);
+    const { embassyData } = useSelector(state => state.embassy);
+    const { data: countryDetails } = useFullCountryDetails(embassyData?.country_id);
 
     useEffect(() => {
         dispatch(checkLoggedInUser())
@@ -45,14 +45,6 @@ const EmbassyDashboardLayout = () => {
     // console.log(isCountryLoading);
 
 
-    if (isuserLoading || isEmbassyLoading || (embassyData?.country_id && isCountryLoading)) {
-        return (
-            <div className='flex flex-col h-screen items-center justify-center bg-black'>
-                <div className="w-18 h-18 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span className='mt-5 text-white'>Loading...</span>
-            </div>
-        )
-    }
 
     return (
         <div className="min-h-screen bg-gray-50">
