@@ -1,4 +1,5 @@
-# 🌍 Global Gateway: Visa & Immigration Nexus
+# 🌍 Global Gateway: Visa & Immigration Consultant Application
+
 
 [![React 19](https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Supabase](https://img.shields.io/badge/Backend-Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
