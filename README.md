@@ -1,4 +1,4 @@
-# 🌍 Global Gateway: Visa & Immigration Consultant Application
+# 🌍 Global Gateway: Visa & Immigration Consultant Services
 
 
 [![React 19](https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=black)](https://react.dev/)
