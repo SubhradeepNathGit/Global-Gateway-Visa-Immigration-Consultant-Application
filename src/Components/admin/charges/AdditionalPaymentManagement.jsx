@@ -34,19 +34,15 @@ export default function AdditionalPaymentManagement({ SettingsSection }) {
 
   if (isChargesLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-        <div className="max-w-6xl mx-auto">
-          <SettingsSection
-            title="Additional Payment Management"
-            description="Configure additional visa service charges"
-            icon={DollarSign}
-          >
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
-            </div>
-          </SettingsSection>
+      <SettingsSection
+        title="Additional Payment Management For VISA"
+        description="Configure additional visa service charges"
+        icon={DollarSign}
+      >
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
         </div>
-      </div>
+      </SettingsSection>
     );
   }
 

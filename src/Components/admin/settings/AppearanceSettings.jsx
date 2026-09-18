@@ -51,7 +51,7 @@ const AppearanceSettings = ({ SettingsSection, userAuthData }) => {
                 if (res?.meta?.requestStatus == "fulfilled") {
 
                     setAlertModalOpen(false);
-                    dispatch({ user_type: 'admin', showAlert: true });
+                    dispatch(logoutUser({ user_type: 'admin', showAlert: true }));
                     navigate("/admin/");
                     // hotToast(`Your account ${setStatus} successfully`, "success");
                 }

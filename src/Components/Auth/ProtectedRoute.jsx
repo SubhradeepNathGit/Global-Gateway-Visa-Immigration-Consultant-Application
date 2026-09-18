@@ -23,7 +23,7 @@ const ProtectedRoute = ({ children, allowedRoles = [], publicOnly = false }) => 
     }, [dispatch, isInitialized, isuserLoading]);
 
     // Show loading while checking authentication OR logging out
-    if (!isInitialized || isuserLoading || isLoggingOut) {
+    if (!isInitialized || isLoggingOut) {
         // Use structural skeletons for Admin and Embassy dashboards
         if (location.pathname.startsWith('/admin')) {
             return <DashboardSkeleton type="admin" />;

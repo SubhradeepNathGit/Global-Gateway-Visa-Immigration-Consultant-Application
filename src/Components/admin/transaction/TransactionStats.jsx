@@ -35,36 +35,49 @@ const TransactionStats = () => {
     // console.log('Success stats Data', successMonthly);
     // console.log('Failed stats Data', failedMonthly);
 
+    const totalTx = monthlyTxData?.[0]?.total_transactions ?? 0;
+    const txChange = monthlyTxData?.[0]?.percentage_change == null ? '0%' : `${monthlyTxData[0]?.percentage_change}%`;
+
+    const rawRevenue = monthlyRevenueData?.[0]?.total_revenue;
+    const formattedRevenue = rawRevenue ? `₹${Number(rawRevenue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₹0';
+    const revChange = monthlyRevenueData?.[0]?.percentage_change == null ? '0%' : `${monthlyRevenueData[0]?.percentage_change}%`;
+
+    const successTx = successMonthly?.[0]?.total_transactions ?? 0;
+    const successChange = successMonthly?.[0]?.percentage_change == null ? '0%' : `${successMonthly[0]?.percentage_change}%`;
+
+    const failedTx = failedMonthly?.[0]?.total_transactions ?? 0;
+    const failedChange = failedMonthly?.[0]?.percentage_change == null ? '0%' : `${failedMonthly[0]?.percentage_change}%`;
+
     return (
         <>
             <StatCard
                 title="Total Transactions"
-                value={isMonthlyTxLoading ? <Loader2 className="w-8 h-8 text-white animate-spin mb-4" /> : monthlyTxData[0]?.total_transactions}
-                change={isMonthlyTxLoading ? <Loader2 className="w-3 h-3 text-white animate-spin mb-4" /> : monthlyTxData[0]?.percentage_change == null ? '0%' : `${monthlyTxData[0]?.percentage_change}%`}
+                value={isMonthlyTxLoading ? <Loader2 className="w-8 h-8 text-white animate-spin mb-4" /> : totalTx}
+                change={isMonthlyTxLoading ? <Loader2 className="w-3 h-3 text-white animate-spin mb-4" /> : txChange}
                 Icon={Clock}
                 iconColor="bg-yellow-500/20 text-yellow-400"
                 isPositive={true}
             />
             <StatCard
                 title="Total Revenue"
-                value={isMonthlyRevenueLoading ? <Loader2 className="w-8 h-8 text-white animate-spin mb-4" /> : `₹${monthlyRevenueData[0]?.total_revenue?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                change={isMonthlyRevenueLoading ? <Loader2 className="w-3 h-3 text-white animate-spin mb-4" /> : monthlyRevenueData[0]?.percentage_change == null ? '0%' : `${monthlyRevenueData[0]?.percentage_change}%`}
+                value={isMonthlyRevenueLoading ? <Loader2 className="w-8 h-8 text-white animate-spin mb-4" /> : formattedRevenue}
+                change={isMonthlyRevenueLoading ? <Loader2 className="w-3 h-3 text-white animate-spin mb-4" /> : revChange}
                 Icon={DollarSign}
                 iconColor="bg-green-500/20 text-green-400"
                 isPositive={true}
             />
             <StatCard
                 title="Completed Transactions"
-                value={isSuccessMonthlyLoading ? <Loader2 className="w-8 h-8 text-white animate-spin mb-4" /> : successMonthly[0]?.total_transactions}
-                change={isSuccessMonthlyLoading ? <Loader2 className="w-3 h-3 text-white animate-spin mb-4" /> : successMonthly[0]?.percentage_change == null ? '0%' : `${successMonthly[0]?.percentage_change}%`}
+                value={isSuccessMonthlyLoading ? <Loader2 className="w-8 h-8 text-white animate-spin mb-4" /> : successTx}
+                change={isSuccessMonthlyLoading ? <Loader2 className="w-3 h-3 text-white animate-spin mb-4" /> : successChange}
                 Icon={CheckCircle}
                 iconColor="bg-blue-500/20 text-blue-400"
                 isPositive={true}
             />
             <StatCard
                 title="Failed Transactions"
-                value={isFailedMonthlyLoading ? <Loader2 className="w-8 h-8 text-white animate-spin mb-4" /> : failedMonthly[0]?.total_transactions}
-                change={isFailedMonthlyLoading ? <Loader2 className="w-3 h-3 text-white animate-spin mb-4" /> : failedMonthly[0]?.percentage_change == null ? '0%' : `${failedMonthly[0]?.percentage_change}%`}
+                value={isFailedMonthlyLoading ? <Loader2 className="w-8 h-8 text-white animate-spin mb-4" /> : failedTx}
+                change={isFailedMonthlyLoading ? <Loader2 className="w-3 h-3 text-white animate-spin mb-4" /> : failedChange}
                 Icon={XCircle}
                 iconColor="bg-red-500/20 text-red-400"
                 isPositive={false}

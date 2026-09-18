@@ -34,10 +34,12 @@ export default function Settings() {
   const { userAuthData, isUserLoading } = useSelector(state => state.checkAuth);
 
   useEffect(() => {
-    dispatch(checkLoggedInUser()).catch(() => {
-      getSweetAlert('Oops...', 'Something went wrong!', 'error');
-    });
-  }, [dispatch]);
+    if (!userAuthData) {
+      dispatch(checkLoggedInUser()).catch(() => {
+        getSweetAlert('Oops...', 'Something went wrong!', 'error');
+      });
+    }
+  }, [dispatch, userAuthData]);
 
   return (
     <div className="w-full space-y-6 ">
