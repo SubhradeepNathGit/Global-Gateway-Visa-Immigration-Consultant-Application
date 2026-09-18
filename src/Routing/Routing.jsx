@@ -77,7 +77,7 @@ const Routing = () => {
     return (
         <>
             <ScrollToTop />
-
+            <Suspense fallback={null}>
 
             <Routes>
 
@@ -174,6 +174,7 @@ const Routing = () => {
                 <Route path="*" element={<Error_404 />} />
 
             </Routes>
+            </Suspense>
 
         </>
     );

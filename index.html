@@ -9,8 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <title>Global Gateway</title>
+    <script>
+      // Prevent flash: match body bg to what React will render before paint
+      document.addEventListener('DOMContentLoaded', function(){}, false);
+      (function(){
+        var isHome = window.location.pathname === '/' || window.location.pathname === '';
+        document.documentElement.style.backgroundColor = isHome ? '#000' : '#fff';
+      })();
+    </script>
   </head>
-  <body style="background-color: #ffffff; margin: 0;">
+  <body style="margin: 0;">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

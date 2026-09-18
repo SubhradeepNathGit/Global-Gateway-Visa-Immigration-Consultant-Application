@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import './App.css';
 import Routing from './Routing/Routing';
 import { Toaster } from 'react-hot-toast';
@@ -11,35 +12,40 @@ import { checkLoggedInUser, listenAuthChanges } from './Redux/Slice/auth/checkAu
 function App() {
   const dispatch = useDispatch();
 
-  // Only show the cinematic loader on the very first website load per session
+  // Show the cinematic loader ONLY when refreshing on the home banner section (/)
   const [showInitialLoader, setShowInitialLoader] = useState(() => {
-    return !sessionStorage.getItem('gg_initial_loaded');
+    const pathname = window.location.pathname;
+    return pathname === '/' || pathname === '';
   });
 
   useEffect(() => {
+    // Set root background to white now that React has mounted (prevents white flash)
+    document.getElementById('root').style.backgroundColor = '#ffffff';
+
     // Initialize Auth Session and Listeners
     dispatch(checkLoggedInUser());
     dispatch(listenAuthChanges());
 
     if (showInitialLoader) {
-      // First load: show cinematic loader, then dismiss permanently
+      // Home page refresh: show cinematic loader, then dismiss
       const timer = setTimeout(() => {
         dispatch(stopLoading());
         setShowInitialLoader(false);
-        sessionStorage.setItem('gg_initial_loaded', 'true');
-      }, 1100);
+      }, 2200);
 
       return () => clearTimeout(timer);
     } else {
-      // Already loaded once — kill loading state immediately
+      // Not on home — kill loading state immediately
       dispatch(stopLoading());
     }
   }, [dispatch, showInitialLoader]);
 
   return (
     <>
-      {/* GLOBAL CINEMATIC LOADER — only on first website load */}
-      {showInitialLoader && <LoadingAnimation />}
+      {/* CINEMATIC LOADER — only on home banner refresh */}
+      <AnimatePresence mode="wait">
+        {showInitialLoader && <LoadingAnimation alwaysShow={true} />}
+      </AnimatePresence>
 
       {/* APP UI rendered beneath for instant, zero-flicker transition */}
       <ToastContainer />
