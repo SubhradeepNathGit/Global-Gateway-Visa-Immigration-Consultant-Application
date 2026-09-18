@@ -23,7 +23,10 @@ const ProtectedRoute = ({ children, allowedRoles = [], publicOnly = false }) => 
     }, [dispatch, isInitialized, isuserLoading]);
 
     // Show loading while checking authentication OR logging out
-    if (!isInitialized || isLoggingOut) {
+    // Guard: if we're already authenticated and initialized, never tear down
+    // the route tree just because a transient auth event fired (e.g. tab switch).
+    const alreadyReady = isInitialized && isuserAuth;
+    if ((!isInitialized || isLoggingOut) && !alreadyReady) {
         // Use structural skeletons for Admin and Embassy dashboards
         if (location.pathname.startsWith('/admin')) {
             return <DashboardSkeleton type="admin" />;
@@ -58,8 +61,11 @@ const ProtectedRoute = ({ children, allowedRoles = [], publicOnly = false }) => 
         return <Navigate to={redirectPath} state={{ from: location }} replace />;
     }
 
-    // If role-based protection is requested
-    if (allowedRoles.length > 0 && userAuthData) {
+    // If role-based protection is requested.
+    // Guard: only enforce role redirect if userAuthData has a .role already
+    // populated from the DB. During a tab-return re-fetch it can briefly be the
+    // raw Supabase session user (no .role), which would wrongly redirect admins.
+    if (allowedRoles.length > 0 && userAuthData?.role) {
         const userRole = userAuthData.role;
         if (!allowedRoles.includes(userRole)) {
             // Unauthorized - redirect to their native dashboard or home

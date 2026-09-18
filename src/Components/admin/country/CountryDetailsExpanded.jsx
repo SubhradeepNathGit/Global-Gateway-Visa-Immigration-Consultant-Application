@@ -6,6 +6,7 @@ import CountryDetailsHero from './countryDetails/CountryDetailsHero'
 import { useCountryWiseVisaDetails } from '../../../tanstack/query/getCountryWiseVisaDetails'
 import { useAvailableEmbassyCount } from '../../../tanstack/query/getCountryWiseEmbassyCount'
 import { useCountryWiseTotalVisaCount } from '../../../tanstack/query/getCountryWiseTotalAvailableVisa'
+import { formatContinents } from '../../../util/format/formatContinents'
 
 const CountryDetailsExpanded = ({ country }) => {
 
@@ -66,7 +67,7 @@ const CountryDetailsExpanded = ({ country }) => {
             icon: Globe,
             color: 'blue',
             items: [
-                { label: 'Continent', value: country?.country_details?.continents || 'N/A', icon: Globe },
+                { label: 'Continent', value: formatContinents(country?.country_details?.continents || country?.continents), icon: Globe },
                 { label: 'Location', value: country?.country_details?.latlng && Array.isArray(country.country_details.latlng) && country.country_details.latlng.length > 0 ? formatLatLng(country.country_details.latlng) : null, icon: MapPin },
                 { label: 'Capital', value: country?.country_details?.capital || 'N/A', icon: Building2 },
                 { label: 'Area', value: country?.country_details?.area ? `${fmt(country?.country_details?.area)} km²` : null, icon: Map }

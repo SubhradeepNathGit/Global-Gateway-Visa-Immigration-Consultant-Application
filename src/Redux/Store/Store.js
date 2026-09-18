@@ -24,6 +24,7 @@ import promocodeSliceReducer from '../Slice/promocodeSlice';
 import ordersSliceReducer from '../Slice/orderSlice';
 import courseRatingsSliceReducer from '../Slice/courseRatingsSlice';
 import certificateSliceReducer from '../Slice/certificateSlice';
+import uiReducer from '../Slice/uiSlice';
 
 export const store = configureStore({
   reducer: {
@@ -50,7 +51,8 @@ export const store = configureStore({
     promocode: promocodeSliceReducer,
     orders: ordersSliceReducer,
     ratings: courseRatingsSliceReducer,
-    certificate: certificateSliceReducer
+    certificate: certificateSliceReducer,
+    ui: uiReducer
   }
 });
 

@@ -46,8 +46,31 @@ export const checkLoggedInUser = () => async (dispatch) => {
 }
 
 // Listen for Supabase Auth login/logout
-export const listenAuthChanges = () => (dispatch) => {
-    supabase.auth.onAuthStateChange((_event, session) => {
+export const listenAuthChanges = () => (dispatch, getState) => {
+    supabase.auth.onAuthStateChange((event, session) => {
+        // INITIAL_SESSION is already handled by checkLoggedInUser() on app boot.
+        // Skip it to avoid a double-init on startup.
+        if (event === 'INITIAL_SESSION') return;
+
+        const authState = getState().checkAuth;
+
+        // If the same user is already authenticated, skip ALL silent background
+        // events (TOKEN_REFRESHED, SIGNED_IN, USER_UPDATED, etc.) that Supabase
+        // fires when you switch/return to a browser tab.
+        // Re-dispatching setuser() on these events causes fetchLoggedUserDetails
+        // to run again, which briefly makes userAuthData lose its .role field,
+        // which triggers ProtectedRoute's role-check redirect → back to dashboard.
+        if (
+            session?.user &&
+            authState.isuserAuth &&
+            authState.userAuthData?.id === session.user.id &&
+            (event === 'TOKEN_REFRESHED' ||
+             event === 'SIGNED_IN' ||
+             event === 'USER_UPDATED')
+        ) {
+            return;
+        }
+
         if (session?.user) {
             dispatch(
                 setuser({
@@ -56,9 +79,10 @@ export const listenAuthChanges = () => (dispatch) => {
                 })
             );
 
-            // Fetch user profile from users
+            // Fetch user profile from the database
             dispatch(fetchLoggedUserDetails(session.user.id));
         } else {
+            // Only SIGNED_OUT should clear the user
             dispatch(clearUser());
         }
     })

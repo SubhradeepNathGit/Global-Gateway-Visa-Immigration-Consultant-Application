@@ -138,7 +138,7 @@ const CountryFormModal = ({ isOpen, onClose, country, embassyCountryData }) => {
                 setValue("latitude", details.latlng?.[0] || "");
                 setValue("longitude", details.latlng?.[1] || "");
                 setValue("flagImage", details.flag || "");
-                setValue("code", details.currency?.code || "");
+                setValue("code", details.code || details.currency?.code || "");
                 setValue("currency", details.currency?.name || "");
                 setValue("currencySymbol", details.currency?.symbol || "");
                 setValue("currencyCode", details.currency?.code || "");

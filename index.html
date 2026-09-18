@@ -13,8 +13,9 @@
       // Prevent flash: match body bg to what React will render before paint
       document.addEventListener('DOMContentLoaded', function(){}, false);
       (function(){
-        var isHome = window.location.pathname === '/' || window.location.pathname === '';
-        document.documentElement.style.backgroundColor = isHome ? '#000' : '#fff';
+        var p = window.location.pathname;
+        var isDark = p === '/' || p === '' || p.startsWith('/admin') || p.startsWith('/embassy');
+        document.documentElement.style.backgroundColor = isDark ? '#0b1020' : '#fff';
       })();
     </script>
   </head>

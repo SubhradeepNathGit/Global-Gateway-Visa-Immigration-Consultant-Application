@@ -122,7 +122,7 @@ const CountryTable = ({ searchQuery, isLoading, filteredCountry, countries, filt
                         <thead className="sticky top-0 bg-slate-800/90 backdrop-blur-sm z-10">
                             <tr className="border-b border-slate-700/50">
                                 <th className="w-12 p-4"></th>
-                                {["Country", "Code", "Continent", "Capital", "Currency", "Language", "Status", "Actions"].map((h) => (
+                                {["Country", "Continent", "Capital", "Country Code", "Currency", "Language", "Status", "Actions"].map((h) => (
                                     <th
                                         key={h}
                                         className="text-left p-4 text-sm font-semibold text-slate-300"

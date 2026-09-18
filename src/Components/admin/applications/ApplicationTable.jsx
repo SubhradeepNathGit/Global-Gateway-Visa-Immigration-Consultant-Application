@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import ApplicationRow from './ApplicationRow';
 
-const ApplicationTable = ({ isApplicationLoading, filteredApplications, currentPage }) => {
+const ApplicationTable = ({ isApplicationLoading, filteredApplications, currentPage, setCurrentPage }) => {
 
     const [itemsPerPage] = useState(10);
 

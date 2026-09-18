@@ -224,9 +224,8 @@ export default function CourseManagement() {
 
   return (
     <>
-      <div className="min-h-screen">
-        <div className="max-w-7xl mx-auto">
-          <CoursesHeader />
+      <div className="space-y-6">
+        <CoursesHeader />
 
           {/* Search and Add */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -295,7 +294,6 @@ export default function CourseManagement() {
             course={viewCourse}
           />
         </div>
-      </div>
 
       {alertModalOpen && createPortal(
         <ConfirmBlockUnblockAlert

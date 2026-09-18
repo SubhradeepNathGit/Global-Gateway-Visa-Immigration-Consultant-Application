@@ -10,6 +10,8 @@ export default function AdminLayout() {
 
   // Prevent back navigation from leaving the admin portal
   useEffect(() => {
+    document.documentElement.style.backgroundColor = '#0b1020';
+    document.body.style.backgroundColor = '#0b1020';
     window.history.pushState(null, document.title, window.location.href);
     const handlePopState = () => {
       if (window.location.pathname === '/admin/dashboard') {

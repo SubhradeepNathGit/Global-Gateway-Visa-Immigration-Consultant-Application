@@ -6,6 +6,7 @@ import CountryTable from "../../Components/admin/country/CountryTable";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllCountryDetails } from "../../Redux/Slice/countrySlice";
 import getSweetAlert from "../../util/alert/sweetAlert";
+import { getContinentList } from "../../util/format/formatContinents";
 
 export default function CountryAdminPanel() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,14 +35,12 @@ export default function CountryAdminPanel() {
     const matchesSearch =
       !searchQuery ||
       c?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c?.country_details?.code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c?.country_details?.capital?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const countryContinent = c?.country_details?.continents || c?.continents;
+    const countryContinents = getContinentList(c?.country_details?.continents || c?.continents);
     const matchesContinent =
       !filterContinent ||
-      (typeof countryContinent === "string" && countryContinent.toLowerCase() === filterContinent.toLowerCase()) ||
-      (Array.isArray(countryContinent) && countryContinent.some(cont => cont.toLowerCase() === filterContinent.toLowerCase()));
+      countryContinents.some(cont => cont.toLowerCase() === filterContinent.toLowerCase());
 
     return matchesSearch && matchesContinent;
   });

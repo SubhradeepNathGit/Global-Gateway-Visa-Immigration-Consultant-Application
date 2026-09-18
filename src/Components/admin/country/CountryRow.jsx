@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronDown, ChevronRight, Edit, Ban, Globe, CircleCheck } from 'lucide-react';
 import CountryDetailsExpanded from './CountryDetailsExpanded';
+import { formatContinents } from '../../../util/format/formatContinents';
 
 const CountryRow = ({ country, setSelectedCountry, setIsModalOpen, setCountries, countries, expandedCountryId, setExpandedCountryId, handleBlock }) => {
     const isExpanded = expandedCountryId === country.id;
@@ -56,18 +57,18 @@ const CountryRow = ({ country, setSelectedCountry, setIsModalOpen, setCountries,
                     </div>
                 </td>
 
-                {/* CODE */}
-                <td className="p-4">
-                    <span className="text-sm text-slate-300 font-mono">
-                        {country?.country_details?.code ? country?.country_details?.code : 'N/A'}
-                    </span>
-                </td>
-
                 {/* CONTINENT */}
-                <td className="p-4 text-sm text-slate-300">{country?.country_details?.continents ? country?.country_details?.continents : 'N/A'}</td>
+                <td className="p-4 text-sm text-slate-300">{formatContinents(country?.country_details?.continents || country?.continents)}</td>
 
                 {/* CAPITAL */}
                 <td className="p-4 text-sm text-slate-300">{country?.country_details?.capital ? country?.country_details?.capital?.length > 10 ? country?.country_details?.capital?.slice(0, 11) + '...' : country?.country_details?.capital : 'N/A'}</td>
+
+                {/* COUNTRY CODE */}
+                <td className="p-4 text-sm text-slate-300">
+                    {country?.country_details?.code
+                        ? <span className="px-2 py-0.5 rounded bg-slate-700/60 border border-slate-600/50 font-mono text-xs tracking-widest text-slate-200">{country.country_details.code.toUpperCase()}</span>
+                        : <span className="text-slate-500">—</span>}
+                </td>
 
                 {/* CURRENCY */}
                 <td className="p-4 text-sm text-slate-300">{country?.country_details?.currency &&

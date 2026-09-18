@@ -134,7 +134,7 @@ export default function Sidebar({ adminData }) {
     { to: "/admin/dashboard/charges", label: "Manage Charges", icon: HandCoins },
 
     {
-      to: "/admin/dashboard/payments", label: "Notifications", icon: BellRing,
+      to: "/admin/dashboard/adminNotification", label: "Notifications", icon: BellRing,
       badge: isNotificationLoading ? (<Loader2 className="w-4 h-4 text-white animate-spin" />) : (notificationList?.length)
     },
     { to: "/admin/dashboard/analytics", label: "Analytics", icon: BarChart2 },

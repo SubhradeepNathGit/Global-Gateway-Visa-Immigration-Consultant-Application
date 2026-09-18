@@ -10,6 +10,8 @@ const getSweetAlert = (alertTitle, alertText, alertIcon) => {
     color: "#fff",
     showConfirmButton: true,
     confirmButtonColor: "red",
+    scrollbarPadding: false,
+    heightAuto: false,
     customClass: {
       popup: [
         "backdrop-blur-2xl",

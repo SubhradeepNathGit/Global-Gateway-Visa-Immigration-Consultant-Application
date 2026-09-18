@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, ChevronDown, Loader2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllApplications } from '../../Redux/Slice/applicationSlice';
+import { setPage, resetPage, selectPage } from '../../Redux/Slice/uiSlice';
 import getSweetAlert from '../../util/alert/sweetAlert';
 import ApplicationStats from '../../Components/admin/applications/ApplicationStats';
 import ApplicationTable from '../../Components/admin/applications/ApplicationTable';
@@ -14,7 +15,11 @@ const ViewApplicationsAdmin = () => {
   const [filteredApplications, setFilteredApplications] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
+
+  // Persist page across tab switches via Redux
+  const PAGE_KEY = 'viewApplications';
+  const currentPage = useSelector(selectPage(PAGE_KEY));
+  const setCurrentPage = (page) => dispatch(setPage({ key: PAGE_KEY, page }));
 
   const { isApplicationLoading, allApplications } = useSelector(state => state.application);
 
@@ -56,8 +61,7 @@ const ViewApplicationsAdmin = () => {
   // console.log('Application details', resolvedApplications);
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto">
+    <div className="space-y-6">
 
         {/* Header */}
         <div className="mb-6 md:mb-8">
@@ -98,7 +102,7 @@ const ViewApplicationsAdmin = () => {
         </div>
 
         {/* Applications Table */}
-        <ApplicationTable isApplicationLoading={isApplicationLoading} filteredApplications={filteredApplications} currentPage={currentPage} />
+        <ApplicationTable isApplicationLoading={isApplicationLoading} filteredApplications={filteredApplications} currentPage={currentPage} setCurrentPage={setCurrentPage} />
 
         {/* Resolver Components */}
         {allApplications.map(app => (
@@ -112,7 +116,6 @@ const ViewApplicationsAdmin = () => {
           />
         ))}
 
-      </div>
     </div>
   );
 };

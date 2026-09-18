@@ -191,7 +191,10 @@ export const addOrUpdateCountry = createAsyncThunk("countrySlice/addOrUpdateCoun
                 try {
                     apiData = await fetchCountryDetails(countryData.name);
                 } catch (err) {
-                    return rejectWithValue(`Invalid country name: ${countryData.name}`);
+                    if (!countryData.id) {
+                        return rejectWithValue(`Invalid country name: ${countryData.name}`);
+                    }
+                    console.warn(`Could not fetch details for existing country ${countryData.name}:`, err);
                 }
             }
 
@@ -205,7 +208,7 @@ export const addOrUpdateCountry = createAsyncThunk("countrySlice/addOrUpdateCoun
                 imageFile: countryData.image || null,
                 is_blocked: countryData.is_blocked ?? true,
                 is_approved: countryData.is_approved ?? "pending",
-                code: countryData?.code || apiData?.currency?.code || "",
+                code: countryData?.code || apiData?.code || apiData?.currency?.code || "",
                 official_name: countryData?.official_name || apiData?.officialName,
                 capital: countryData?.capital || apiData?.capital,
                 continents: countryData?.continents || apiData?.continents,
