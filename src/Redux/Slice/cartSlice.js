@@ -4,7 +4,7 @@ import supabase from "../../util/Supabase/supabase";
 // user wise cart 
 export const getOrCreateCart = createAsyncThunk("cartSlice/getOrCreateCart",
     async (userId, { rejectWithValue }) => {
-        // console.log('User wise cart details check', userId);
+        if (!userId) return null;
 
         try {
             // Check if cart exists
@@ -14,7 +14,6 @@ export const getOrCreateCart = createAsyncThunk("cartSlice/getOrCreateCart",
 
             // Create new cart
             const res = await supabase.from("carts").insert({ user_id: userId }).select().single();
-            // console.log('Response for creating new cart', res);
 
             if (res?.error) throw res?.error;
 
@@ -28,12 +27,11 @@ export const getOrCreateCart = createAsyncThunk("cartSlice/getOrCreateCart",
 // view cart 
 export const fetchCartItems = createAsyncThunk("cartSlice/fetchCartItems",
     async (cartId, { rejectWithValue }) => {
-        // console.log('Fetching details for cart id', cartId);
+        if (!cartId) return [];
 
         try {
             const res = await supabase.from("cart_items").select(`
           id,course_id, courses (*,course_content (*))`).eq("cart_id", cartId);
-            // console.log('Response for cart details', res);
 
             if (res?.error) throw res?.error;
 

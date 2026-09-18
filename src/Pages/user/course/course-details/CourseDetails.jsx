@@ -50,24 +50,18 @@ const CourseDetails = () => {
   }, [id]);
 
   useEffect(() => {
-    dispatch(getOrCreateCart(userAuthData?.id))
-      .then(res => {
-        // console.log('Response for getting cart details for specific user', res);
+    if (!userAuthData?.id) return;
 
-        dispatch(fetchCartItems(res?.payload?.id))
-          .then(res => {
-            // console.log('Response for fetching cart items', res);
-          })
-          .catch(err => {
-            console.log(err);
-            getSweetAlert('Oops...', 'Something went wrong!', 'error');
-          })
+    dispatch(getOrCreateCart(userAuthData.id))
+      .then(res => {
+        if (res?.payload?.id) {
+          dispatch(fetchCartItems(res.payload.id));
+        }
       })
       .catch(err => {
-        console.log(err);
-        getSweetAlert('Oops...', 'Something went wrong!', 'error');
-      })
-  }, [userAuthData]);
+        console.error('Error fetching cart details', err);
+      });
+  }, [userAuthData?.id, dispatch]);
 
   useEffect(() => {
     dispatch(checkLoggedInUser())
