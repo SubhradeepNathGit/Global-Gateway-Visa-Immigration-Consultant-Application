@@ -32,6 +32,7 @@ const HolidayRow = ({ holiday, monthNames, uniqueCountryIds }) => {
     }
 
     const formatHolidayDate = (dateStr) => {
+        if (!dateStr || typeof dateStr !== 'string') return 'Invalid date';
         const [, month, day] = dateStr.match(/month:(\d+),day:(\d+)/) || [];
         if (!month || !day) return 'Invalid date';
 

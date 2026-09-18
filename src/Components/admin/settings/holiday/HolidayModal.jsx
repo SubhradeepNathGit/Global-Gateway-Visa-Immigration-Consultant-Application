@@ -27,9 +27,11 @@ const HolidayModal = ({ showModal, setShowModal, holidays, currentMonth, setCurr
     const holidaySet = useMemo(() => {
         const set = new Set()
         holidays?.forEach(h => {
-            const [, month, day] = h.date.match(/month:(\d+),day:(\d+)/) || []
-            if (month && day) {
-                set.add(`${pad2(month)}-${pad2(day)}`)
+            if (typeof h?.date === 'string') {
+                const [, month, day] = h.date.match(/month:(\d+),day:(\d+)/) || []
+                if (month && day) {
+                    set.add(`${pad2(month)}-${pad2(day)}`)
+                }
             }
         })
         return set

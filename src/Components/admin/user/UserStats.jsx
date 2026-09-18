@@ -24,7 +24,7 @@ const UserStats = ({ totalUsers, activeUsers, totalRevenue }) => {
                         <FileText className="w-5 h-5 text-cyan-400" />
                         <span className="text-sm text-slate-400">Total Revenue</span>
                     </div>
-                    <div className="text-2xl font-bold text-white">₹{totalRevenue?.toLocaleString('en-IN')}</div>
+                    <div className="text-2xl font-bold text-white">₹{Number(totalRevenue || 0).toLocaleString('en-IN')}</div>
                 </div>
             </div>
         </>

@@ -32,20 +32,6 @@ export default function AdditionalPaymentManagement({ SettingsSection }) {
 
   // console.log('All available charges for visa', allCharges?.visa);
 
-  if (isChargesLoading) {
-    return (
-      <SettingsSection
-        title="Additional Payment Management For VISA"
-        description="Configure additional visa service charges"
-        icon={DollarSign}
-      >
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
-        </div>
-      </SettingsSection>
-    );
-  }
-
   return (
     <>
       <SettingsSection

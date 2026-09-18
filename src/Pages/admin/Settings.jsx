@@ -1,12 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import GeneralSettings from "../../Components/admin/settings/GeneralSettings";
 import AppearanceSettings from "../../Components/admin/settings/AppearanceSettings";
 import HolidayManagement from "../../Components/admin/settings/HolidayManagement";
 
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import SettingsHeader from "../../Components/admin/settings/SettingsHeader";
-import { checkLoggedInUser } from "../../Redux/Slice/auth/checkAuthSlice";
-import getSweetAlert from "../../util/alert/sweetAlert";
 import SettingsChargeBox from "../../Components/admin/common/settings-charge/SettingsChargeBox";
 import AppointmentTopicManagement from "../../Components/admin/settings/AppointmentTopicManagement";
 import SettingsChargeModal from "../../Components/admin/common/settings-charge/SettingsChargeModal";
@@ -30,16 +28,7 @@ function FormField({ label, id, type = "text", placeholder, value, onChange, hel
 }
 
 export default function Settings() {
-  const dispatch = useDispatch();
-  const { userAuthData, isUserLoading } = useSelector(state => state.checkAuth);
-
-  useEffect(() => {
-    if (!userAuthData) {
-      dispatch(checkLoggedInUser()).catch(() => {
-        getSweetAlert('Oops...', 'Something went wrong!', 'error');
-      });
-    }
-  }, [dispatch, userAuthData]);
+  const { userAuthData } = useSelector(state => state.checkAuth);
 
   return (
     <div className="w-full space-y-6 ">

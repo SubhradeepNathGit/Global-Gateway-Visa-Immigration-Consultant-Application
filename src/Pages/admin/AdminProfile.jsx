@@ -35,14 +35,6 @@ export default function AdminProfile() {
   }
 
   useEffect(() => {
-    if (!userAuthData) {
-      dispatch(checkLoggedInUser()).catch(() => {
-        getSweetAlert('Oops...', 'Something went wrong!', 'error');
-      });
-    }
-  }, [dispatch, userAuthData]);
-
-  useEffect(() => {
     if (userAuthData) {
       reset({
         name: userAuthData.name,
