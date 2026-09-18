@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import { useForm } from "react-hook-form";
 import { loginUser, registerUser, verifyOtp, forgotPassword, resendOtp } from "../../../Redux/Slice/auth/authSlice";
 import getSweetAlert from "../../../util/alert/sweetAlert";
 import { updateLastSignInAt } from "../../../Redux/Slice/userSlice";
+import { setIsVerifying } from "../../../Redux/Slice/auth/checkAuthSlice";
 import toastifyAlert from "../../../util/alert/toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { EmbassyAuthInputField } from "../../../Components/Embassy/auth/EmbassyAuthInputField";
@@ -26,6 +28,16 @@ const EmbassyAuth = () => {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [forgotPasswordTimer, setForgotPasswordTimer] = useState(0);
   const [showForgotPasswordSuccess, setShowForgotPasswordSuccess] = useState(false);
+
+  // Prevent back navigation from leaving the embassy login page
+  useEffect(() => {
+    window.history.pushState(null, document.title, window.location.href);
+    const handlePopState = () => {
+      window.history.pushState(null, document.title, window.location.href);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm({
     mode: "onTouched",
@@ -104,15 +116,15 @@ const EmbassyAuth = () => {
               res?.payload?.user?.is_approved === "rejected" ? 'reject' : 'approved';
 
             if (res?.payload?.user?.address == null || res?.payload?.user?.ending_hours == null || res?.payload?.user?.starting_hours == null) {
-              navigate(`/embassy/contact-setup/${encodeBase64Url(String(res?.payload?.user?.email))}/${encodeBase64Url(redirectPath)}`);
+              navigate(`/embassy/contact-setup/${encodeBase64Url(String(res?.payload?.user?.email))}/${encodeBase64Url(redirectPath)}`, { replace: true });
             } else if (!res?.payload?.user?.is_country_available) {
-              navigate("/embassy/country-setup");
+              navigate("/embassy/country-setup", { replace: true });
             } else if (res?.payload?.user?.is_approved === "pending") {
-              navigate("/embassy/review");
+              navigate("/embassy/review", { replace: true });
             } else if (res?.payload?.user?.is_approved === "rejected") {
-              navigate("/embassy/reject");
+              navigate("/embassy/reject", { replace: true });
             } else if (res?.payload?.user?.last_sign_in_at == null) {
-              navigate("/embassy/approved");
+              navigate("/embassy/approved", { replace: true });
             } else {
               dispatch(updateLastSignInAt({
                 id: res?.payload?.user?.id,
@@ -120,7 +132,7 @@ const EmbassyAuth = () => {
               })).then((res) => {
                 if (res.meta.requestStatus === "fulfilled") {
                   toastifyAlert.success('Logged in Successfully');
-                  navigate("/embassy/dashboard");
+                  navigate("/embassy/dashboard", { replace: true });
                 }
                 else {
                   getSweetAlert("Oops...", res.payload, "info");
@@ -199,6 +211,7 @@ const EmbassyAuth = () => {
   };
 
   const onVerifyOtp = (data) => {
+    dispatch(setIsVerifying(true));
     dispatch(verifyOtp({ email: registeredEmail, token: data.otp, role: 'embassy' }))
       .then(res => {
         if (res.meta.requestStatus === "fulfilled") {
@@ -207,8 +220,13 @@ const EmbassyAuth = () => {
           setShowOtp(false);
           setIsSignup(false);
         } else {
+          dispatch(setIsVerifying(false));
           getSweetAlert('Oops...', res.payload, 'info');
         }
+      })
+      .catch(err => {
+        dispatch(setIsVerifying(false));
+        console.error(err);
       });
   };
 
@@ -291,7 +309,15 @@ const EmbassyAuth = () => {
         <div className="w-full md:w-1/2 h-full bg-black/45 backdrop-blur-sm overflow-hidden">
 
           <div className="h-full overflow-y-auto auth-scrollbar flex flex-col justify-center">
-            <div className="w-full max-w-md mx-auto px-4 md:px-8 py-6">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={showOtp ? 'otp' : showForgotPassword ? 'forgot' : isSignup ? 'signup' : 'login'}
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
+                className="w-full max-w-md mx-auto px-4 md:px-8 py-6"
+              >
 
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-1 mt-8 md:mt-10 tracking-tight">
                 {showOtp ? "Verify OTP" : showForgotPassword ? "Reset Password" : isSignup ? "Register New Embassy " : "Sign in to Embassy "}
@@ -560,11 +586,12 @@ const EmbassyAuth = () => {
               )}
             </>
           )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
   );
 };
 

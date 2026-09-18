@@ -13,80 +13,77 @@ const LoadingAnimation = ({ alwaysShow = false, message: propMessage }) => {
 
   const containerVariants = {
     initial: { opacity: 0 },
-    animate: { opacity: 1 },
+    animate: { 
+      opacity: 1, 
+      transition: { duration: 0.3 } 
+    },
     exit: { 
       opacity: 0, 
-      scale: 0.95, 
-      transition: { duration: 0.5, ease: 'easeInOut' } 
+      scale: 1.04, 
+      filter: 'blur(16px)',
+      transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] } 
     },
   };
 
   const planeVariants = {
-    initial: { x: -100, opacity: 0, rotate: -10 },
+    initial: { x: -60, opacity: 0, scale: 0.9 },
     animate: {
       x: 0,
       opacity: 1,
-      rotate: 0,
-      transition: { duration: 1.2, ease: 'easeOut' },
+      scale: 1,
+      transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1] },
     },
     float: {
-      y: [-5, 5, -5],
-      transition: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
-    },
-    takeoff: {
-      y: -500,
-      x: 100,
-      rotate: -15,
-      scale: 0.5,
-      opacity: 0,
-      transition: { duration: 1.5, ease: 'easeInOut' },
+      y: [-6, 6, -6],
+      transition: { duration: 3.5, repeat: Infinity, ease: 'easeInOut' },
     },
   };
 
   const textVariants = {
-    initial: { y: 30, opacity: 0 },
+    initial: { y: 20, opacity: 0, filter: 'blur(8px)' },
     animate: {
       y: 0,
       opacity: 1,
-      transition: { delay: 0.8, duration: 0.6, ease: 'easeOut' },
+      filter: 'blur(0px)',
+      transition: { delay: 0.3, duration: 0.8, ease: [0.16, 1, 0.3, 1] },
     },
   };
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       {isLoading && (
         <motion.div
           variants={containerVariants}
           initial="initial"
           animate="animate"
           exit="exit"
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-cover bg-center"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-cover bg-center select-none"
           style={{ backgroundImage: 'url("/Slider1.jpg")' }}
         >
           {/* Dark Blur Overlay */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-[20px]" />
+          <div className="absolute inset-0 bg-black/65 backdrop-blur-[24px]" />
 
-          {/* Floating circles */}
-          {[...Array(6)].map((_, i) => (
+          {/* Floating subtle ambient orbs */}
+          {[...Array(5)].map((_, i) => (
             <motion.div
               key={i}
               animate={{
-                x: [0, 100, 0],
-                y: [0, -100, 0],
-                opacity: [0.05, 0.15, 0.05],
+                x: [0, 80, 0],
+                y: [0, -80, 0],
+                opacity: [0.04, 0.12, 0.04],
               }}
               transition={{
-                duration: 8 + i * 2,
+                duration: 9 + i * 2,
                 repeat: Infinity,
                 ease: 'easeInOut',
-                delay: i * 0.5,
+                delay: i * 0.6,
               }}
-              className="absolute rounded-full bg-white/5"
+              className="absolute rounded-full bg-white/5 pointer-events-none"
               style={{
-                width: 80 + i * 20,
-                height: 80 + i * 20,
-                left: `${10 + i * 15}%`,
-                top: `${10 + i * 10}%`,
+                width: 90 + i * 25,
+                height: 90 + i * 25,
+                left: `${12 + i * 18}%`,
+                top: `${12 + i * 14}%`,
               }}
             />
           ))}
@@ -98,60 +95,60 @@ const LoadingAnimation = ({ alwaysShow = false, message: propMessage }) => {
               <motion.div
                 variants={planeVariants}
                 initial="initial"
-                animate={!isLoading ? ['takeoff'] : ['animate', 'float']}
+                animate={['animate', 'float']}
               >
-                <div className="w-[140px] h-[140px] rounded-full bg-white/10 border border-white/10 flex items-center justify-center shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
+                <div className="w-[130px] h-[130px] rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_30px_rgba(255,82,82,0.25)]">
                   <FlightIcon
                     style={{
-                      fontSize: 80,
-                      color: 'gray',
-                      filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
+                      fontSize: 66,
+                      color: '#ffffff',
+                      filter: 'drop-shadow(0 4px 14px rgba(255,82,82,0.6))',
                     }}
                   />
                 </div>
               </motion.div>
 
-              {/* Rotating ring */}
+              {/* Rotating accent ring */}
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-                className="absolute -top-[18px] -left-[18px] w-[180px] h-[180px] rounded-full border-t-4 border-r-4 border-white/30"
+                transition={{ duration: 7, repeat: Infinity, ease: 'linear' }}
+                className="absolute -top-[14px] -left-[14px] w-[158px] h-[158px] rounded-full border-2 border-transparent border-t-[#FF5252] border-r-[#FF5252]/60 shadow-[0_0_15px_rgba(255,82,82,0.4)]"
               />
             </div>
 
             {/* Title & subtitle */}
             <motion.div variants={textVariants} initial="initial" animate="animate">
-              <h1 className="mt-5 text-[1.5rem] sm:text-[2rem] md:text-[4.5rem] font-bold text-white/20 drop-shadow">
+              <h1 className="mt-6 text-[2rem] sm:text-[2.8rem] md:text-[4rem] font-bold text-transparent bg-clip-text bg-gradient-to-b from-white via-white/95 to-white/70 tracking-tight font-['Outfit'] drop-shadow-[0_4px_25px_rgba(0,0,0,0.8)]">
                 Global Gateway
               </h1>
 
-              <p className={`tracking-[0.1em] text-md sm:text-base mt-1 mb-5 ${propMessage ? 'text-red-500 font-bold' : 'text-white/50'}`}>
+              <p className={`tracking-[0.22em] text-xs sm:text-sm mt-2 mb-6 font-medium uppercase font-['Inter'] ${propMessage ? 'text-[#FF5252] font-bold' : 'text-white/75'}`}>
                 {message || 'Crafting Comfort Across Continents over a Decade'}
               </p>
             </motion.div>
 
             {/* Progress bar */}
-            <div className="w-[430px] max-w-[100vw] h-[6px] rounded-full bg-white/10 overflow-hidden">
+            <div className="w-[430px] max-w-[100vw] h-[6px] rounded-full bg-white/15 overflow-hidden">
               <motion.div
-                className="h-full w-full bg-gradient-to-r from-red-500 via-red-600 to-red-700 shadow-[0_2px_10px_rgba(239,68,68,0.4)]"
+                className="h-full w-full bg-gradient-to-r from-transparent via-[#FF5252] to-white shadow-[0_0_12px_#FF5252]"
                 animate={{ x: ['-100%', '100%'] }}
-                transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
               />
             </div>
 
             {/* Dots */}
-            <div className="flex gap-[15px] mt-5">
+            <div className="flex gap-3 mt-4">
               {[0, 1, 2].map((i) => (
                 <motion.div
                   key={i}
-                  animate={{ scale: [1, 1.4, 1], opacity: [0.3, 0.8, 0.3] }}
+                  animate={{ scale: [1, 1.35, 1], opacity: [0.35, 0.9, 0.35] }}
                   transition={{
-                    duration: 1.5,
+                    duration: 1.4,
                     repeat: Infinity,
-                    delay: i * 0.3,
+                    delay: i * 0.25,
                     ease: 'easeInOut',
                   }}
-                  className="w-[16px] h-[16px] rounded-full bg-white/60 shadow-[0_2px_8px_rgba(255,255,255,0.2)]"
+                  className="w-2 h-2 rounded-full bg-white/80 shadow-[0_0_8px_rgba(255,255,255,0.4)]"
                 />
               ))}
             </div>

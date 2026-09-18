@@ -8,9 +8,9 @@ const Rejected = () => {
     navigate = useNavigate();
 
   const reApplyAgain = async () => {
-    await dispatch(logoutUser({ user_type: 'embassy', showAlert: false }))
-    navigate('/embassy/auth/');
-  }
+    await dispatch(logoutUser({ user_type: 'embassy', showAlert: false }));
+    navigate('/embassy', { replace: true });
+  };
 
   return (
     <div

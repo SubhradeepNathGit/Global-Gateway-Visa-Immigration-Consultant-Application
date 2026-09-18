@@ -47,11 +47,11 @@ const services = [
 
 const VisaServicesSection = () => {
   return (
-    <Box sx={{ py: 8, px: 2, textAlign: 'center' }}>
-      <Typography variant="subtitle2" sx={{ color: 'red', mb: 1, fontWeight: 'bold' }}>
+    <Box sx={{ py: 8, px: 2, textAlign: 'center', bgcolor: '#ffffff' }}>
+      <Typography variant="subtitle2" sx={{ color: '#dc2626', mb: 1, fontWeight: 'bold', letterSpacing: '0.05em' }}>
         / WHAT DO WE OFFER
       </Typography>
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 6 }}>
+      <Typography variant="h4" sx={{ fontWeight: 700, mb: 6, color: '#111827' }}>
         Outstanding Immigration <br /> Visa Services
       </Typography>
 

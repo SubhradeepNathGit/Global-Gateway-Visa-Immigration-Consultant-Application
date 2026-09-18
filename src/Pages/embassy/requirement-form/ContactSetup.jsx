@@ -88,7 +88,7 @@ const ContactSetup = () => {
 
               if (res.meta.requestStatus === "fulfilled") {
                 if (path == 'login') {
-                  navigate("/embassy/auth");
+                  navigate("/embassy", { replace: true });
                 } else if (path == 'countrySetup') {
                   navigate("/embassy/country-setup");
                 } else if (path == 'review') {

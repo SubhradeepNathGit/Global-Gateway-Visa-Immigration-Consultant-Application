@@ -94,6 +94,7 @@ const initialState = {
     isuserLoading: false,
     isInitialized: false,
     isLoggingOut: false,
+    isVerifying: false,
     userError: null,
 }
 
@@ -114,9 +115,13 @@ export const checkUserAuthSlice = createSlice({
             state.session = null;
             state.isInitialized = true;
             state.userError = null;
+            state.isVerifying = false;
         },
         setLoggingOut: (state, action) => {
             state.isLoggingOut = action.payload;
+        },
+        setIsVerifying: (state, action) => {
+            state.isVerifying = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -152,5 +157,5 @@ export const checkUserAuthSlice = createSlice({
     },
 })
 
-export const { setuser, clearUser, setLoggingOut } = checkUserAuthSlice.actions;
+export const { setuser, clearUser, setLoggingOut, setIsVerifying } = checkUserAuthSlice.actions;
 export default checkUserAuthSlice.reducer;

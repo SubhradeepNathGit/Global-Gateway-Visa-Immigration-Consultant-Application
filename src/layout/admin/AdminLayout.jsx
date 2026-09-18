@@ -9,6 +9,18 @@ export default function AdminLayout() {
   const dispatch = useDispatch();
   const { isuserLoading, userAuthData, userError } = useSelector(state => state.checkAuth);
 
+  // Prevent back navigation from leaving the admin portal
+  useEffect(() => {
+    window.history.pushState(null, document.title, window.location.href);
+    const handlePopState = () => {
+      if (window.location.pathname === '/admin/dashboard') {
+        window.history.pushState(null, document.title, window.location.href);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
 
   return (
     <div className="min-h-screen flex bg-gray-900 text-white">

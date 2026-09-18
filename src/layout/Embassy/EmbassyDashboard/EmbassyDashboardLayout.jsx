@@ -40,6 +40,18 @@ const EmbassyDashboardLayout = () => {
         }
     }, [dispatch, userAuthData?.id]);
 
+    // Prevent back navigation from leaving the embassy portal
+    useEffect(() => {
+        window.history.pushState(null, document.title, window.location.href);
+        const handlePopState = () => {
+            if (window.location.pathname === '/embassy/dashboard') {
+                window.history.pushState(null, document.title, window.location.href);
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
     // console.log(isuserLoading);
     // console.log(isEmbassyLoading);
     // console.log(isCountryLoading);

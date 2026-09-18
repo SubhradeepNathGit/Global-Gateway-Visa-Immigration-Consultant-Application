@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import { useForm } from 'react-hook-form';
@@ -19,6 +20,16 @@ const AdminLoginForm = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const navigate = useNavigate();
 
+    // Prevent back navigation from leaving the admin login page
+    useEffect(() => {
+        window.history.pushState(null, document.title, window.location.href);
+        const handlePopState = () => {
+            window.history.pushState(null, document.title, window.location.href);
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
     const onSubmit = (data) => {
         const auth_obj = {
             email: data.email,
@@ -32,7 +43,7 @@ const AdminLoginForm = () => {
                 dispatch(updateLastSignInAt({ id: res?.user?.id, user_type: 'admin' }))
                     .then(() => {
                         toastifyAlert.success('Admin Login Successful');
-                        navigate('/admin/dashboard');
+                        navigate('/admin/dashboard', { replace: true });
                     })
                     .catch(err => {
                         console.error('Error updating login time', err);
@@ -109,65 +120,73 @@ const AdminLoginForm = () => {
 
                 {/* RIGHT FORM SECTION */}
                 <div className="w-full md:w-1/2 bg-black/45 backdrop-blur-sm overflow-hidden flex flex-col justify-center">
-                    <div className="w-full max-w-md mx-auto px-4 md:px-8 py-6">
-                        
-                        <h2 className="text-2xl md:text-3xl font-bold text-white mb-1 mt-8 md:mt-10 tracking-tight">System Admin Access</h2>
-                        <p className="text-white/40 text-xs mb-8">Enter credentials to access system admin through secure gateway</p>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key="admin-login"
+                            initial={{ opacity: 0, x: 50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -30 }}
+                            transition={{ duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
+                            className="w-full max-w-md mx-auto px-4 md:px-8 py-6"
+                        >
+                            <h2 className="text-2xl md:text-3xl font-bold text-white mb-1 mt-8 md:mt-10 tracking-tight">System Admin Access</h2>
+                            <p className="text-white/40 text-xs mb-8">Enter credentials to access system admin through secure gateway</p>
 
-                        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-                            
-                            {/* EMAIL */}
-                            <div className="flex flex-col">
-                                <label className="text-xs font-medium text-white/70 mb-1">Admin Email</label>
-                                <input
-                                    type="email"
-                                    placeholder="Enter your administrative email"
-                                    {...register("email", {
-                                        required: "Email is required",
-                                        pattern: {
-                                            value: /^[a-z0-9._-]+@[a-z0-9.-]+\.[a-zA-Z.]{2,}$/,
-                                            message: "Enter a valid email",
-                                        }
-                                    })}
-                                    className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.email ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
-                                />
-                                {errors.email && <span className="text-red-400 text-xs mt-1">{errors.email.message}</span>}
-                            </div>
-
-                            {/* PASSWORD */}
-                            <div className="flex flex-col">
-                                <label className="text-xs font-medium text-white/70 mb-1">Password</label>
-                                <div className="relative">
+                            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                                
+                                {/* EMAIL */}
+                                <div className="flex flex-col">
+                                    <label className="text-xs font-medium text-white/70 mb-1">Admin Email</label>
                                     <input
-                                        type={showPassword ? "text" : "password"}
-                                        placeholder="Enter your password"
-                                        {...register("password", { required: "Password is required" })}
-                                        className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors pr-10 text-white placeholder-white/40 ${errors.password ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
+                                        type="email"
+                                        placeholder="Enter your administrative email"
+                                        {...register("email", {
+                                            required: "Email is required",
+                                            pattern: {
+                                                value: /^[a-z0-9._-]+@[a-z0-9.-]+\.[a-zA-Z.]{2,}$/,
+                                                message: "Enter a valid email",
+                                            }
+                                        })}
+                                        className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors text-white placeholder-white/40 ${errors.email ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
-                                    >
-                                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                                    </button>
+                                    {errors.email && <span className="text-red-400 text-xs mt-1">{errors.email.message}</span>}
                                 </div>
-                                {errors.password && <span className="text-red-400 text-xs mt-1">{errors.password.message}</span>}
-                            </div>
 
-                            <button
-                                type="submit"
-                                disabled={isUserAuthLoading}
-                                className={`w-full py-3 mt-4 rounded-full text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300 uppercase tracking-wider ${isUserAuthLoading
-                                    ? 'bg-white/10 cursor-not-allowed text-white/40'
-                                    : 'bg-transparent border border-white/30 hover:bg-black text-white hover:border-transparent'
-                                }`}
-                            >
-                                {isUserAuthLoading && <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
-                                Sign In
-                            </button>
-                        </form>
-                    </div>
+                                {/* PASSWORD */}
+                                <div className="flex flex-col">
+                                    <label className="text-xs font-medium text-white/70 mb-1">Password</label>
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="Enter your password"
+                                            {...register("password", { required: "Password is required" })}
+                                            className={`w-full px-3 py-3.5 text-sm bg-white/10 backdrop-blur-sm border rounded-full focus:outline-none transition-colors pr-10 text-white placeholder-white/40 ${errors.password ? 'border-red-500' : 'border-white/20 focus:border-white/60'}`}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                                        >
+                                            {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                                        </button>
+                                    </div>
+                                    {errors.password && <span className="text-red-400 text-xs mt-1">{errors.password.message}</span>}
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={isUserAuthLoading}
+                                    className={`w-full py-3 mt-4 rounded-full text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300 uppercase tracking-wider ${isUserAuthLoading
+                                        ? 'bg-white/10 cursor-not-allowed text-white/40'
+                                        : 'bg-transparent border border-white/30 hover:bg-black text-white hover:border-transparent'
+                                    }`}
+                                >
+                                    {isUserAuthLoading && <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
+                                    Sign In
+                                </button>
+                            </form>
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
             </div>
         </div>

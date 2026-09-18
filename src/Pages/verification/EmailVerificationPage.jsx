@@ -6,7 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import supabase from "../../util/Supabase/supabase";
 import { verifyUser } from "../../Redux/Slice/auth/verification";
-import { useGetIdByEmail } from "../../tanstack/query/getIdByEmail";
+import { setIsVerifying } from "../../Redux/Slice/auth/checkAuthSlice";
 import { CircularProgress } from "@mui/material";
 import { encodeBase64Url } from "../../util/encodeDecode/base64";
 
@@ -24,6 +24,7 @@ export default function EmailVerificationPage() {
   useEffect(() => {
     const verifyMagicLink = async () => {
       try {
+        dispatch(setIsVerifying(true));
         const { data: sessionData, error } = await supabase.auth.getSession();
         // console.log('Data', sessionData.session);
 
@@ -50,9 +51,10 @@ export default function EmailVerificationPage() {
               console.log('Error occured', err);
             })
 
-          setTimeout(() => navigate(user_type === 'user' ? '/authentication' : user_type === 'admin' ? '/admin/' : user_type === 'embassy' ? `/embassy/contact-setup/${encodeBase64Url(String(email))}/${encodeBase64Url('login')}` : '/'), 2000);
+          setTimeout(() => navigate(user_type === 'user' ? '/authentication' : user_type === 'admin' ? '/admin/' : user_type === 'embassy' ? '/embassy' : '/'), 2000);
         }
       } catch (err) {
+        dispatch(setIsVerifying(false));
         console.error(err);
         setStatus('error');
       }

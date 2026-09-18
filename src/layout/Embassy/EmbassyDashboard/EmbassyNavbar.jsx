@@ -69,7 +69,7 @@ export default function EmbassyNavbar({ embassyData, countryDetails }) {
 
     const handleLogout = async () => {
         await dispatch(logoutUser({ user_type: 'embassy', showAlert: true }));
-        navigate('/embassy/');
+        navigate('/embassy', { replace: true });
     };
 
     const toggleTheme = useCallback(() => {

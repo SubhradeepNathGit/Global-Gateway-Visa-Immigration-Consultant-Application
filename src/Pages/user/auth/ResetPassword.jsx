@@ -5,20 +5,28 @@ import { Lock, Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react';
 import supabase from '../../../util/Supabase/supabase';
 import getSweetAlert from '../../../util/alert/sweetAlert';
 import hotToast from '../../../util/alert/hot-toast';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { setIsVerifying } from '../../../Redux/Slice/auth/checkAuthSlice';
 
 const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
   const passwordValue = watch("password");
 
   const onSubmit = async (data) => {
     setIsLoading(true);
+    dispatch(setIsVerifying(true));
     try {
+      // Get user data to determine role before signing out
+      const { data: { user } } = await supabase.auth.getUser();
+      const role = user?.user_metadata?.role || user?.app_metadata?.role || 'user';
+
       const { error } = await supabase.auth.updateUser({
         password: data.password
       });
@@ -34,9 +42,14 @@ const ResetPassword = () => {
       await supabase.auth.signOut();
       
       setTimeout(() => {
-        navigate('/authentication');
+        if (role === 'embassy') {
+          navigate('/embassy');
+        } else {
+          navigate('/authentication');
+        }
       }, 3000);
     } catch (err) {
+      dispatch(setIsVerifying(false));
       console.error('Reset password error:', err);
       getSweetAlert('Oops...', err.message || 'Failed to reset password', 'error');
     } finally {

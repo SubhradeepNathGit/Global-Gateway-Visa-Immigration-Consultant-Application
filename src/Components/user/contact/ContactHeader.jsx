@@ -1,12 +1,12 @@
-import React from 'react'
-import { Box, Breadcrumbs, Typography } from '@mui/material'
-import { Link } from 'react-router-dom'
+import React from 'react';
+import { Box, Typography, Breadcrumbs } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 const ContactHeader = () => {
     return (
         <Box
             sx={{
-                height: { xs: '250px', md: '300px' },
+                height: '300px',
                 backgroundImage: 'url(/PageBanner.jpg)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
@@ -31,44 +31,21 @@ const ContactHeader = () => {
                     position: 'relative',
                     zIndex: 1,
                     width: '100%',
-                    px: { xs: 2, sm: 4, md: 6, lg: 10 },
-                    maxWidth: '1400px',
-                    mx: 'auto',
+                    px: { xs: 2, md: 10 },
                 }}
             >
-                <Typography
-                    variant="h3"
-                    fontWeight="bold"
-                    sx={{
-                        fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem', lg: '3rem' }
-                    }}
-                >
-                    Contact Us
+                <Typography variant="h3" fontWeight="bold">
+                    Get in Touch
                 </Typography>
-                <Breadcrumbs sx={{ color: '#FF5252', mt: 1 }} separator="›">
-                    <Link
-                        underline="hover"
-                        to="/"
-                        sx={{
-                            color: '#FF5252',
-                            '&:hover': { color: '#fff' },
-                            fontSize: { xs: '0.9rem', md: '1rem' }
-                        }}
-                    >
+                <Breadcrumbs sx={{ color: 'red', mt: 1 }} separator="›">
+                    <Link underline="hover" to="/" sx={{ color: 'red' }} className='cursor-pointer'>
                         Home
                     </Link>
-                    <Typography
-                        sx={{
-                            color: '#FF5252',
-                            fontSize: { xs: '0.9rem', md: '1rem' }
-                        }}
-                    >
-                        Contact
-                    </Typography>
+                    <Typography sx={{ color: 'red' }}>Get in Touch</Typography>
                 </Breadcrumbs>
             </Box>
         </Box>
-    )
-}
+    );
+};
 
-export default ContactHeader
+export default ContactHeader;

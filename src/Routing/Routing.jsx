@@ -1,5 +1,10 @@
 import React, { lazy, Suspense } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
+
+/* ---------- Eagerly loaded pages (instant navigation, no white flash) ---------- */
+import AuthForm from "../Pages/user/auth/Authentication";
+import AdminLoginForm from "../Pages/admin/auth/AdminLoginForm";
+import EmbassyAuth from "../Pages/embassy/auth/Auth";
 
 /* ---------- Layouts ---------- */
 import UserLayout from "../layout/user";
@@ -9,7 +14,6 @@ import EmbassyDashboardLayout from "../layout/Embassy/EmbassyDashboard/EmbassyDa
 /* ---------- Utils ---------- */
 import ScrollToTop from "../Components/ScrollToTop";
 import ProtectedRoute from "../Components/Auth/ProtectedRoute";
-import LoadingAnimation from "../Components/Loading";
 import DashboardSkeleton from "../Components/DashboardSkeleton";
 
 /* ---------- User Pages ---------- */
@@ -30,12 +34,11 @@ const PaymentInterfaceCourse = lazy(() => import("../Pages/user/cart/payment/Pay
 const Cart = lazy(() => import("../Pages/user/cart/Cart"));
 
 /* ---------- Auth ---------- */
-const AuthForm = lazy(() => import("../Pages/user/auth/Authentication"));
+// AuthForm is eagerly imported above for instant load on "Get Started" click
 const ResetPassword = lazy(() => import("../Pages/user/auth/ResetPassword"));
 const EmailVerification = lazy(() => import("../Pages/verification/EmailVerificationPage"));
 
 /* ---------- Admin Pages ---------- */
-const AdminLoginForm = lazy(() => import("../Pages/admin/auth/AdminLoginForm"));
 const AdminDashboard = lazy(() => import("../Pages/admin/AdminDashboard"));
 const Users = lazy(() => import("../Pages/admin/Users"));
 const Payments = lazy(() => import("../Pages/admin/Payments"));
@@ -52,7 +55,6 @@ const ManageCharges = lazy(() => import("../Pages/admin/ManageCharges"));
 const AdminProfile = lazy(() => import("../Pages/admin/AdminProfile"));
 
 /* ---------- Embassy ---------- */
-const EmbassyAuth = lazy(() => import("../Pages/embassy/auth/Auth"));
 const EmbassyDashboard = lazy(() => import("../Pages/embassy/Dashboard/EmbassyDashboard"));
 const EmbassyProfile = lazy(() => import("../Pages/embassy/Dashboard/Profile"));
 const AddEmbassy = lazy(() => import("../Pages/embassy/Dashboard/AddEmbassy"));
@@ -105,9 +107,9 @@ const Routing = () => {
                 </Route>
 
                 {/* ================= AUTH (NO LAYOUT) ================= */}
-                <Route path="/authentication" element={<ProtectedRoute publicOnly={true}><Suspense fallback={<LoadingAnimation alwaysShow={true} />}><AuthForm /></Suspense></ProtectedRoute>} />
-                <Route path="/reset-password" element={<Suspense fallback={<LoadingAnimation alwaysShow={true} />}><ResetPassword /></Suspense>} />
-                <Route path="/verification/:email/:user_type" element={<Suspense fallback={<LoadingAnimation alwaysShow={true} />}><EmailVerification /></Suspense>} />
+                <Route path="/authentication" element={<ProtectedRoute publicOnly={true}><AuthForm /></ProtectedRoute>} />
+                <Route path="/reset-password" element={<Suspense fallback={null}><ResetPassword /></Suspense>} />
+                <Route path="/verification/:email/:user_type" element={<Suspense fallback={null}><EmailVerification /></Suspense>} />
 
                 {/* ================= ADMIN ================= */}
                 <Route path="/admin" element={<ProtectedRoute publicOnly={true}><AdminLoginForm /></ProtectedRoute>} />
@@ -140,6 +142,7 @@ const Routing = () => {
 
                 {/* ================= EMBASSY AUTH ================= */}
                 <Route path="/embassy" element={<ProtectedRoute publicOnly={true}><EmbassyAuth /></ProtectedRoute>} />
+                <Route path="/embassy/auth" element={<Navigate to="/embassy" replace />} />
                 <Route path="/embassy/contact-setup/:embassyEmail/:redirectPath" element={<ProtectedRoute allowedRoles={['embassy']}><ContactSetup /></ProtectedRoute>} />
                 <Route path="/embassy/country-setup" element={<ProtectedRoute allowedRoles={['embassy']}><CountrySetup /></ProtectedRoute>} />
                 <Route path="/embassy/review" element={<ProtectedRoute allowedRoles={['embassy']}><Review /></ProtectedRoute>} />

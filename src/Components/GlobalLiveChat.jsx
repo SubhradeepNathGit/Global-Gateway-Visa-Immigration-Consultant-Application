@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
+import {
   X, MessageCircle, ArrowLeft, ArrowRight, Headphones
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -54,7 +54,7 @@ const GlobalLiveChat = () => {
 
   const generateAutoResponse = (message) => {
     const msg = message.toLowerCase();
-    
+
     if (msg.includes('visa') || msg.includes('study')) {
       return "I'd be happy to help with visa applications! We offer comprehensive study visa consultation including document preparation, interview guidance, and application tracking. Would you like more details about our services?";
     } else if (msg.includes('price') || msg.includes('cost') || msg.includes('fee')) {
@@ -113,7 +113,19 @@ const GlobalLiveChat = () => {
             initial={{ opacity: 0, y: 100, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.8 }}
-            className="fixed bottom-6 right-6 w-full max-w-md bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-slate-200"
+            className="fixed bottom-6 right-6 w-[400px] max-w-[calc(100vw-32px)] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] z-50 overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.52) 100%)',
+              backdropFilter: 'blur(20px) saturate(180%) contrast(95%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%) contrast(95%)',
+              isolation: 'isolate',
+              WebkitTransform: 'translate3d(0, 0, 0)',
+              transform: 'translate3d(0, 0, 0)',
+              WebkitBackfaceVisibility: 'hidden',
+              backfaceVisibility: 'hidden',
+              border: 'none',
+              outline: 'none',
+            }}
           >
             {/* Chat Header */}
             <div className="bg-gradient-to-r from-[#FF5252] to-[#E63946] p-4 flex items-center justify-between">
@@ -152,23 +164,38 @@ const GlobalLiveChat = () => {
             {!chatMinimized && (
               <>
                 {/* Chat Messages */}
-                <div className="h-96 overflow-y-auto p-4 bg-slate-50 space-y-4 glass-scrollbar">
+                <div 
+                  className="h-96 overflow-y-auto p-4 space-y-4 glass-scrollbar min-h-0"
+                  style={{
+                    background: 'rgba(248, 250, 252, 0.35)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                  }}
+                >
                   {messages.map((message) => (
                     <div
                       key={message.id}
                       className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-[80%] rounded-2xl p-3 ${
-                          message.sender === 'user'
+                        className={`max-w-[80%] rounded-2xl p-3 ${message.sender === 'user'
                             ? 'bg-gradient-to-r from-[#FF5252] to-[#E63946] text-white'
-                            : 'bg-white text-slate-900 border border-slate-200'
-                        }`}
+                            : 'text-slate-900 shadow-sm'
+                          }`}
+                        style={
+                          message.sender !== 'user'
+                            ? {
+                                background: 'rgba(255, 255, 255, 0.82)',
+                                backdropFilter: 'blur(8px)',
+                                WebkitBackdropFilter: 'blur(8px)',
+                                border: 'none',
+                              }
+                            : {}
+                        }
                       >
                         <p className="text-sm leading-relaxed">{message.text}</p>
-                        <p className={`text-xs mt-1 ${
-                          message.sender === 'user' ? 'text-white/70' : 'text-slate-500'
-                        }`}>
+                        <p className={`text-xs mt-1 ${message.sender === 'user' ? 'text-white/70' : 'text-slate-500'
+                          }`}>
                           {new Date(message.timestamp).toLocaleTimeString('en-US', {
                             hour: '2-digit',
                             minute: '2-digit'
@@ -180,7 +207,15 @@ const GlobalLiveChat = () => {
 
                   {isTyping && (
                     <div className="flex justify-start">
-                      <div className="bg-white text-slate-900 border border-slate-200 rounded-2xl p-3">
+                      <div 
+                        className="text-slate-900 rounded-2xl p-3 shadow-sm"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.82)',
+                          backdropFilter: 'blur(8px)',
+                          WebkitBackdropFilter: 'blur(8px)',
+                          border: 'none',
+                        }}
+                      >
                         <div className="flex gap-1">
                           <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
                           <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
@@ -189,20 +224,27 @@ const GlobalLiveChat = () => {
                       </div>
                     </div>
                   )}
-                  
+
                   <div ref={messagesEndRef} />
                 </div>
 
                 {/* Quick Replies */}
                 {messages.length === 1 && (
-                  <div className="px-4 py-3 bg-white border-t border-slate-200">
+                  <div 
+                    className="px-4 py-3 border-t border-slate-200/50"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.50)',
+                      backdropFilter: 'blur(16px)',
+                      WebkitBackdropFilter: 'blur(16px)',
+                    }}
+                  >
                     <p className="text-xs text-slate-600 mb-2">Quick questions:</p>
                     <div className="flex flex-wrap gap-2">
                       {quickReplies.map((reply, idx) => (
                         <button
                           key={idx}
                           onClick={() => handleQuickReply(reply)}
-                          className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition-colors border border-slate-300"
+                          className="text-xs bg-white/70 hover:bg-white text-slate-700 px-3 py-1.5 rounded-full transition-colors border border-slate-200/80 shadow-xs cursor-pointer"
                         >
                           {reply}
                         </button>
@@ -212,7 +254,14 @@ const GlobalLiveChat = () => {
                 )}
 
                 {/* Chat Input */}
-                <div className="p-4 bg-white border-t border-slate-200">
+                <div 
+                  className="p-4 border-t border-slate-200/50"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.60)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                  }}
+                >
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -220,16 +269,19 @@ const GlobalLiveChat = () => {
                       onChange={(e) => setInputMessage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                       placeholder="Type your message..."
-                      className="flex-1 px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5252] focus:border-transparent text-sm"
+                      className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5252] focus:border-transparent text-sm"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.85)',
+                        WebkitAppearance: 'none',
+                      }}
                     />
                     <button
                       onClick={handleSendMessage}
                       disabled={!inputMessage.trim()}
-                      className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                        inputMessage.trim()
-                          ? 'bg-gradient-to-r from-[#FF5252] to-[#E63946] text-white hover:shadow-lg'
+                      className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${inputMessage.trim()
+                          ? 'bg-gradient-to-r from-[#FF5252] to-[#E63946] text-white hover:shadow-lg cursor-pointer'
                           : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                      }`}
+                        }`}
                     >
                       Send
                     </button>

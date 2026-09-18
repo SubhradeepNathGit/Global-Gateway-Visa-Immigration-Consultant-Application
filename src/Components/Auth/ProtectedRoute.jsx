@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Navigate, useLocation } from 'react-router-dom';
 import { checkLoggedInUser } from '../../Redux/Slice/auth/checkAuthSlice';
-import LoadingAnimation from '../Loading';
 import DashboardSkeleton from '../DashboardSkeleton';
 
 /**
@@ -14,7 +13,7 @@ import DashboardSkeleton from '../DashboardSkeleton';
 const ProtectedRoute = ({ children, allowedRoles = [], publicOnly = false }) => {
     const dispatch = useDispatch();
     const location = useLocation();
-    const { isuserAuth, userAuthData, isuserLoading, isInitialized, isLoggingOut } = useSelector((state) => state.checkAuth);
+    const { isuserAuth, userAuthData, isuserLoading, isInitialized, isLoggingOut, isVerifying } = useSelector((state) => state.checkAuth);
 
     useEffect(() => {
         // Double check auth if not already initialized
@@ -33,12 +32,16 @@ const ProtectedRoute = ({ children, allowedRoles = [], publicOnly = false }) => 
             return <DashboardSkeleton type="embassy" />;
         }
 
-        // Fallback to cinematic loader for other routes
-        return <LoadingAnimation alwaysShow={true} message={isLoggingOut ? "Logging out..." : "Loading..."} />;
+        // Lightweight spinner for user routes — no cinematic loader on navigation
+        return (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90">
+                <div className="w-10 h-10 border-[3px] border-white/20 border-t-[#FF5252] rounded-full animate-spin" />
+            </div>
+        );
     }
 
     // Special case for public only routes (Login/Register/Reset Password)
-    if (publicOnly && isuserAuth) {
+    if (publicOnly && isuserAuth && !isVerifying) {
         // Redirect to their respective dashboard
         const role = userAuthData?.role;
         if (role === 'admin') return <Navigate to="/admin/dashboard" replace />;
@@ -50,7 +53,7 @@ const ProtectedRoute = ({ children, allowedRoles = [], publicOnly = false }) => 
     if (!publicOnly && !isuserAuth) {
         // Redirect to authentication with the current location saved in state
         const redirectPath = location.pathname.startsWith('/admin') ? '/admin' : 
-                           location.pathname.startsWith('/embassy') ? '/embassy/auth' : 
+                           location.pathname.startsWith('/embassy') ? '/embassy' : 
                            '/authentication';
         return <Navigate to={redirectPath} state={{ from: location }} replace />;
     }

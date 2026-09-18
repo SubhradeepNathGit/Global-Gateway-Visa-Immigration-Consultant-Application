@@ -113,7 +113,7 @@ export default function Sidebar({ adminData }) {
 
   const handleLogout = async () => {
     await dispatch(logoutUser({ user_type: 'admin', showAlert: true }));
-    navigate("/admin/");
+    navigate("/admin", { replace: true });
   };
 
   const navItems = [

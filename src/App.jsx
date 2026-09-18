@@ -10,35 +10,41 @@ import { checkLoggedInUser, listenAuthChanges } from './Redux/Slice/auth/checkAu
 
 function App() {
   const dispatch = useDispatch();
-  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Only show the cinematic loader on the very first website load per session
+  const [showInitialLoader, setShowInitialLoader] = useState(() => {
+    return !sessionStorage.getItem('gg_initial_loaded');
+  });
 
   useEffect(() => {
     // Initialize Auth Session and Listeners
     dispatch(checkLoggedInUser());
     dispatch(listenAuthChanges());
 
-    // Minimum display time for smooth UX
-    const timer = setTimeout(() => {
-      dispatch(stopLoading());
-      setIsInitializing(false);
-    }, 800); 
+    if (showInitialLoader) {
+      // First load: show cinematic loader, then dismiss permanently
+      const timer = setTimeout(() => {
+        dispatch(stopLoading());
+        setShowInitialLoader(false);
+        sessionStorage.setItem('gg_initial_loaded', 'true');
+      }, 1100);
 
-    return () => clearTimeout(timer);
-  }, [dispatch]);
+      return () => clearTimeout(timer);
+    } else {
+      // Already loaded once — kill loading state immediately
+      dispatch(stopLoading());
+    }
+  }, [dispatch, showInitialLoader]);
 
   return (
     <>
-      {/* GLOBAL LOADER */}
-      <LoadingAnimation />
+      {/* GLOBAL CINEMATIC LOADER — only on first website load */}
+      {showInitialLoader && <LoadingAnimation />}
 
-      {/* APP UI - Only render after initial delay */}
-      {!isInitializing && (
-        <>
-          <ToastContainer />
-          <Toaster />
-          <Routing />
-        </>
-      )}
+      {/* APP UI rendered beneath for instant, zero-flicker transition */}
+      <ToastContainer />
+      <Toaster />
+      <Routing />
     </>
   );
 }

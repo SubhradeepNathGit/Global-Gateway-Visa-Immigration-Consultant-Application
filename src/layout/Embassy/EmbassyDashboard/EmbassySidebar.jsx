@@ -88,8 +88,7 @@ export default function EmbassySidebar({ embassyData }) {
     setIsLoggingOut(true);
     try {
       await dispatch(logoutUser({ user_type: 'embassy', showAlert: true }));
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      navigate("/embassy/");
+      navigate("/embassy", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {

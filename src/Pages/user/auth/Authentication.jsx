@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { Trash2 } from 'lucide-react';
@@ -9,6 +10,7 @@ import hotToast from '../../../util/alert/hot-toast';
 import toastifyAlert from '../../../util/alert/toastify';
 import { useNavigate } from 'react-router-dom';
 import { updateLastSignInAt } from '../../../Redux/Slice/userSlice';
+import { setIsVerifying } from '../../../Redux/Slice/auth/checkAuthSlice';
 
 const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -177,6 +179,7 @@ const AuthForm = () => {
   }, [showForgotPasswordSuccess, forgotPasswordTimer]);
 
   const onVerifyOtp = (data) => {
+    dispatch(setIsVerifying(true));
     dispatch(verifyOtp({ email: registeredEmail, token: data.otp, role: 'user' }))
       .then(res => {
         if (res.meta.requestStatus === "fulfilled") {
@@ -184,9 +187,15 @@ const AuthForm = () => {
           reset();
           setShowOtp(false);
           setIsLogin(true);
+          // Note: isVerifying will be reset by clearUser when signOut completes
         } else {
+          dispatch(setIsVerifying(false));
           getSweetAlert('Oops...', res.payload, 'info');
         }
+      })
+      .catch(err => {
+        dispatch(setIsVerifying(false));
+        console.error(err);
       });
   };
 
@@ -232,7 +241,7 @@ const AuthForm = () => {
 
   return (
     <div
-      className="min-h-screen bg-cover bg-center flex justify-center items-center overflow-hidden"
+      className="min-h-screen bg-cover bg-center flex justify-center items-center overflow-hidden bg-black"
       style={{ backgroundImage: 'url(/Slider1.jpg)' }}
     >
       <div className="w-full h-screen flex flex-col md:flex-row shadow-2xl overflow-hidden">
@@ -285,7 +294,15 @@ const AuthForm = () => {
         <div className="w-full md:w-1/2 h-[300px] md:h-full bg-black/45 backdrop-blur-md border-l border-white/10 overflow-hidden">
 
           <div className="h-full overflow-y-auto auth-scrollbar flex flex-col justify-center">
-            <div className="w-full max-w-md mx-auto px-2 md:px-2 py-6">
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={showOtp ? 'otp' : showForgotPassword ? 'forgot' : isLogin ? 'login' : 'register'}
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
+                className="w-full max-w-md mx-auto px-2 md:px-2 py-6"
+              >
 
               <h2 className="text-2xl md:text-3xl font-bold text-white/70  mb-2 mt-8 md:mt-10 tracking-tight">
                 {showOtp ? "Verify OTP" : showForgotPassword ? "Reset Password" : isLogin ? "Sign in to Global Gateway" : "Create New Account "}
@@ -591,7 +608,8 @@ const AuthForm = () => {
                   </button>
                 </p>
               )}
-            </div>
+            </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>

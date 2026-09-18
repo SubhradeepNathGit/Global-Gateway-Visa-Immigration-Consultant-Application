@@ -9,9 +9,9 @@ import { motion } from 'framer-motion';
 
 const bannerData = [
   {
-    image: '/Slider5.jpg',
+    image: '/Slider7.jpg',
     title: 'APPLY FOR VISA',
-    subtitle: 'IMMIGRATION',
+    subtitle: 'GO BEYOND BORDERS',
   },
   {
     image: '/Slider2.jpg',
@@ -24,10 +24,15 @@ const bannerData = [
     subtitle: 'WITH US',
   },
   {
-    image: '/Slider8.jpg',
+    image: '/Slider6.jpg',
     title: 'YOUR DREAM JOURNEY',
     subtitle: 'OUR RESPONSIBILITY',
   },
+  {
+  image: '/Slider9.jpg',
+  title: 'VISA PROCESSING',
+  subtitle: 'SIMPLE. CLEAR. RELIABLE.',
+},
   {
     image: '/Slider4.jpg',
     title: 'IMMIGRATION PROCESS',
@@ -35,24 +40,53 @@ const bannerData = [
   },
 ];
 
-// ===== Animation Variants =====
+// ===== Clean Animation Variants (No Blur, No White Haze) =====
 
-const titleVariants = {
-  hidden: { opacity: 0, y: 30, filter: 'blur(10px)' },
+const subtitleVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 15, 
+  },
   visible: { 
     opacity: 1, 
     y: 0, 
-    filter: 'blur(0px)',
-    transition: { duration: 0.8, ease: [0.33, 1, 0.68, 1] } 
+    transition: { 
+      duration: 0.7, 
+      delay: 0.1, 
+      ease: [0.25, 1, 0.5, 1] 
+    } 
   },
 };
 
-const subtitleVariants = {
-  hidden: { opacity: 0, letterSpacing: '0.4em' },
+const titleVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 25, 
+  },
   visible: { 
     opacity: 1, 
-    letterSpacing: '0.25em', 
-    transition: { duration: 1, delay: 0.2, ease: "easeOut" } 
+    y: 0, 
+    transition: { 
+      duration: 0.8, 
+      delay: 0.2, 
+      ease: [0.25, 1, 0.5, 1] 
+    } 
+  },
+};
+
+const buttonVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 15, 
+  },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      duration: 0.7, 
+      delay: 0.35, 
+      ease: [0.25, 1, 0.5, 1] 
+    } 
   },
 };
 
@@ -65,18 +99,27 @@ const Banner = () => {
   };
 
   return (
-    <div className="w-screen h-screen overflow-hidden relative">
+    <div className="w-screen h-screen overflow-hidden relative select-none">
+      {/* Top Scrim for Ultimate Navbar Legibility & Luxury Feel */}
+      <div 
+        className="absolute top-0 left-0 right-0 h-44 md:h-56 z-20 pointer-events-none"
+        style={{
+          background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.45) 45%, rgba(0, 0, 0, 0.15) 75%, rgba(0, 0, 0, 0) 100%)',
+        }}
+      />
+
       <Swiper
         modules={[Autoplay, EffectFade, Pagination]}
         effect="fade"
-        speed={1500}
+        fadeEffect={{ crossFade: true }}
+        speed={1000}
         loop={true}
         onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
         autoplay={{ delay: 6000, disableOnInteraction: false }}
         pagination={{
             clickable: true,
-            bulletClass: 'swiper-pagination-bullet !bg-white/50 !w-2.5 !h-2.5 !transition-all',
-            bulletActiveClass: 'swiper-pagination-bullet-active !bg-white !w-8 !rounded-full'
+            bulletClass: 'swiper-pagination-bullet !bg-white/40 !w-2.5 !h-2.5 !transition-all !duration-500',
+            bulletActiveClass: 'swiper-pagination-bullet-active !bg-[#ff3c3c] !w-9 !rounded-full !shadow-[0_0_12px_rgba(255,60,60,0.6)]'
         }}
         className="w-full h-full"
       >
@@ -84,23 +127,19 @@ const Banner = () => {
           <SwiperSlide key={index}>
             <div className="h-screen w-screen flex flex-col justify-center items-center text-white text-center px-4 relative overflow-hidden">
               
-              {/* Ken Burns Background Effect */}
+              {/* Original Photo Background - Clean & Vibrant */}
               <motion.div
                 initial={{ scale: 1 }}
-                animate={activeIndex === index ? { scale: 1.15 } : { scale: 1 }}
-                transition={{ duration: 8, ease: "linear" }}
+                animate={activeIndex === index ? { scale: 1.05 } : { scale: 1 }}
+                transition={{ duration: 7, ease: "easeOut" }}
                 className="absolute inset-0 z-[-1]"
                 style={{
                   backgroundImage: `url(${item.image})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
+                  willChange: 'transform',
+                  transform: 'translateZ(0)',
                 }}
-              />
-
-              {/* Sophisticated Gradient Overlay */}
-              <div 
-                className="absolute inset-0 z-0"
-                style={{ background: 'radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)' }}
               />
 
               {/* Subtitle (Eyebrow Heading) */}
@@ -110,7 +149,7 @@ const Banner = () => {
                 variants={subtitleVariants}
                 className="relative z-10"
               >
-                <p className="font-bold text-[0.8rem] md:text-[1rem] mb-2 uppercase text-[#ff3c3c] font-['Inter']">
+                <p className="font-bold text-[0.85rem] md:text-[1rem] mb-3 uppercase text-[#ff3c3c] font-['Inter'] tracking-[0.25em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                   {item.subtitle}
                 </p>
               </motion.div>
@@ -120,49 +159,43 @@ const Banner = () => {
                 initial="hidden"
                 animate={activeIndex === index ? 'visible' : 'hidden'}
                 variants={titleVariants}
-                className="relative z-10"
+                className="relative z-10 max-w-5xl"
               >
-                <h2 className="font-bold text-[2.2rem] md:text-[4rem] mb-10 font-['Outfit'] leading-tight [text-shadow:0_10px_30px_rgba(0,0,0,0.3)]">
+                <h2 className="font-bold text-[2.2rem] sm:text-[3.2rem] md:text-[4.2rem] mb-10 font-['Outfit'] leading-tight tracking-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)]">
                   {item.title}
                 </h2>
               </motion.div>
 
               {/* Animated Premium Button */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={activeIndex === index ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                className="relative z-10"
-              >
+             
                 <button
                   onClick={handleDiscoverMore}
-                  className="bg-[#ff3c3c] text-white px-12 py-4 rounded-full font-bold text-[15px] tracking-widest transition-all duration-300 hover:bg-[#d83434] hover:-translate-y-0.5 active:scale-95"
+                  className="group relative overflow-hidden bg-[#ff3c3c] text-white px-10 py-3.5 rounded-sm font-bold text-[14px] tracking-[0.2em] transition-all duration-300 hover:bg-[#e03131] hover:shadow-[0_8px_25px_rgba(255,60,60,0.45)] hover:-translate-y-0.5 active:translate-y-0 border border-white/20 cursor-pointer shadow-lg"
                 >
-                  START JOURNEY
+                  <span className="relative z-10">START JOURNEY</span>
                 </button>
-              </motion.div>
+            
               
             </div>
           </SwiperSlide>
         ))}
       </Swiper>
       
-      {/* Global Style for Swiper Pagination - Custom CSS in JS fallback */}
+      {/* Global Style for Swiper Pagination */}
       <style>
         {`
           .swiper-pagination-bullet {
             background: rgba(255,255,255,0.4) !important;
             width: 10px !important;
             height: 10px !important;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
             opacity: 1 !important;
           }
           .swiper-pagination-bullet-active {
             background: #ff3c3c !important;
-            width: 35px !important;
+            width: 36px !important;
             border-radius: 5px !important;
+            box-shadow: 0 0 12px rgba(255, 60, 60, 0.6) !important;
           }
         `}
       </style>
