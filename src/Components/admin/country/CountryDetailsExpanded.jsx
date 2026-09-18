@@ -55,7 +55,7 @@ const CountryDetailsExpanded = ({ country }) => {
         { icon: Map, label: 'Area', value: country?.country_details?.area ? `${fmt(country?.country_details?.area)} km²` : 'N/A', color: 'blue' },
         // { icon: DollarSign, label: 'Currency', value: Object.keys(country?.country_details?.currency)?.length > 0 ? ` ${country?.country_details?.currency?.name} (${country?.country_details?.currency?.symbol})` : "N/A", color: 'green' }
         {
-            icon: DollarSign, label: 'Currency', value: Object.keys(country?.country_details?.currency)?.length > 0 ? (<>
+            icon: DollarSign, label: 'Currency', value: country?.country_details?.currency && typeof country.country_details.currency === 'object' && Object.keys(country.country_details.currency).length > 0 ? (<>
                 {country?.country_details?.currency?.name}{country.country_details.currency.symbol ? ` (${country.country_details.currency.symbol})` : ""}</>) : "N/A", color: 'green'
         }
     ]
@@ -66,9 +66,9 @@ const CountryDetailsExpanded = ({ country }) => {
             icon: Globe,
             color: 'blue',
             items: [
-                { label: 'Continent', value: country?.country_details?.continents, icon: Globe },
-                { label: 'Location', value: Object.keys(country?.country_details?.latlng).length > 0 ? formatLatLng(country?.country_details?.latlng) : null, icon: MapPin },
-                { label: 'Capital', value: country?.country_details?.capital, icon: Building2 },
+                { label: 'Continent', value: country?.country_details?.continents || 'N/A', icon: Globe },
+                { label: 'Location', value: country?.country_details?.latlng && Array.isArray(country.country_details.latlng) && country.country_details.latlng.length > 0 ? formatLatLng(country.country_details.latlng) : null, icon: MapPin },
+                { label: 'Capital', value: country?.country_details?.capital || 'N/A', icon: Building2 },
                 { label: 'Area', value: country?.country_details?.area ? `${fmt(country?.country_details?.area)} km²` : null, icon: Map }
             ]
         },
@@ -78,9 +78,9 @@ const CountryDetailsExpanded = ({ country }) => {
             color: 'amber',
             items: [
                 { label: 'Population', value: fmt(country?.country_details?.population), icon: Users },
-                { label: 'Language', value: country?.country_details?.languages.join(','), icon: Languages },
-                { label: 'Currency', value: Object.keys(country?.country_details?.currency)?.length > 0 ? ` ${country?.country_details?.currency?.name}` : null, icon: DollarSign },
-                { label: 'Code', value: country?.country_details?.code, icon: FileText, mono: true }
+                { label: 'Language', value: Array.isArray(country?.country_details?.languages) ? country.country_details.languages.join(', ') : country?.country_details?.languages || 'N/A', icon: Languages },
+                { label: 'Currency', value: country?.country_details?.currency && typeof country.country_details.currency === 'object' && Object.keys(country.country_details.currency).length > 0 ? ` ${country?.country_details?.currency?.name || country?.country_details?.currency?.code || ''}` : null, icon: DollarSign },
+                { label: 'Code', value: country?.country_details?.code || 'N/A', icon: FileText, mono: true }
             ]
         },
         {

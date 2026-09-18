@@ -28,13 +28,23 @@ export default function CountryAdminPanel() {
 
   // console.log('All available country details', getAllCountryList);
 
-  const filteredCountry = getAllCountryList.filter(country => country.is_approved == "fulfilled").filter(
-    (c) =>
-      (c?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c?.country_details?.code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c?.country_details?.capital?.toLowerCase().includes(searchQuery.toLowerCase())) &&
-      (!filterContinent || c?.country_details?.continents?.toLowerCase() === filterContinent?.toLowerCase())
-  );
+  const allCountries = (getAllCountryList || []).filter(country => !country.is_approved || country.is_approved !== "rejected");
+
+  const filteredCountry = allCountries.filter((c) => {
+    const matchesSearch =
+      !searchQuery ||
+      c?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c?.country_details?.code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c?.country_details?.capital?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const countryContinent = c?.country_details?.continents || c?.continents;
+    const matchesContinent =
+      !filterContinent ||
+      (typeof countryContinent === "string" && countryContinent.toLowerCase() === filterContinent.toLowerCase()) ||
+      (Array.isArray(countryContinent) && countryContinent.some(cont => cont.toLowerCase() === filterContinent.toLowerCase()));
+
+    return matchesSearch && matchesContinent;
+  });
 
   const continents = ["Africa", "Antarctica", "Asia", "Europe", "North America", "South America", "Oceania"];
 
@@ -70,7 +80,7 @@ export default function CountryAdminPanel() {
         </div>
 
         {/* TABLE */}
-        <CountryTable searchQuery={searchQuery} isLoading={isAllCountryListLoading} filteredCountry={filteredCountry} countries={getAllCountryList.filter(country => country.is_approved == "fulfilled")} filterContinent={filterContinent} setCountries={setSelectedCountry} />
+        <CountryTable searchQuery={searchQuery} isLoading={isAllCountryListLoading} filteredCountry={filteredCountry} countries={allCountries} filterContinent={filterContinent} setCountries={setSelectedCountry} />
 
         <CountryFormModal
           isOpen={isModalOpen}

@@ -77,16 +77,16 @@ export const fetchAllCountryDetails = createAsyncThunk("countrySlice/fetchAllCou
             const resCountry = await supabase.from("countries").select("*").order("created_at", { ascending: false });
             // console.log('Response for getting all country', resCountry);
 
-            if (resCountry?.err) throw resCountry?.err;
+            if (resCountry?.error) throw new Error(resCountry.error.message);
 
             const resCountryDetails = await supabase.from("country_details").select("*");
             // console.log('Response for getting country details', resCountryDetails);
 
-            if (resCountryDetails?.err) throw resCountryDetails?.err;
+            if (resCountryDetails?.error) throw new Error(resCountryDetails.error.message);
 
-            const merged = resCountry?.data.map((c) => ({
+            const merged = (resCountry?.data || []).map((c) => ({
                 ...c,
-                country_details: resCountryDetails?.data.find((d) => d.country_id === c.id) || {},
+                country_details: resCountryDetails?.data?.find((d) => d.country_id === c.id) || {},
             }));
 
             return merged;
