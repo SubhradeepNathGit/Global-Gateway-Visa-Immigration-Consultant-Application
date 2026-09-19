@@ -1,7 +1,7 @@
 import supabase from "../util/Supabase/supabase";
 
 export async function fetchVisaDetailsViaId(visaId) {
-    // console.log('Fetching details for visa Id',visaId);
+    if (!visaId || visaId === "0") return null;
     
     const res = await supabase.from("visa").select("*").eq("id", visaId).maybeSingle();
     // console.log('Response for fetching visa details', res);

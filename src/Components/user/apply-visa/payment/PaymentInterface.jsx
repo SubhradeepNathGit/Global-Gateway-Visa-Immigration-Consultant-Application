@@ -19,11 +19,11 @@ export default function Payment({ onBack, countryWiseVisaDetails, application_id
   const { data: visaData, isLoading: isVisaDataLoading, error: isVisaDataError } = useVisaDetailsByApplicationId(application_id);
   const { data: passportData, isLoading: isPassportDataLoading, error: isPassportDataError } = usePassportByApplicationId(application_id);
 
-  const application_fees = Number(countryWiseVisaDetails?.find(visa => visa?.id == visaData?.visaId)?.visa_fees);
+  const application_fees = Number(countryWiseVisaDetails?.find(visa => visa?.visa?.visa_type == visaData?.visa_type)?.visa_fees);
   const totalCharge = Number(allCharges?.visa?.reduce((sum, charge) => sum + Number(charge.amount), 0).toFixed(2));
   const total_amount = (application_fees + totalCharge).toFixed(2);
 
-  const visaTypeSpecification = countryWiseVisaDetails?.find(visa => visa?.id == visaData?.visaId);
+  const visaTypeSpecification = countryWiseVisaDetails?.find(visa => visa?.visa?.visa_type == visaData?.visa_type);
 
   // console.log('Visa data retrive', visaData);
   // console.log('All visa details', countryWiseVisaDetails);

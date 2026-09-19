@@ -8,7 +8,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import ConfirmAlert from '../../../common/alerts/ConfirmAlert';
 import { createPortal } from 'react-dom';
 
-const VisaCardConfigBtn = ({ handleEditVisa, visaType, visaData, country_id }) => {
+const VisaCardConfigBtn = ({ handleEditVisa, visaType, visaId: propVisaId, visaData, country_id }) => {
+
+    const effectiveVisaId = propVisaId && propVisaId !== "0" 
+        ? propVisaId 
+        : (typeof visaType === 'object' && !Array.isArray(visaType) && Object.keys(visaType)[0] !== "0" ? Object.keys(visaType)[0] : null);
 
     const [visaId, setVisaId] = useState(null);
     const [alertModalOpen, setAlertModalOpen] = useState(false);
@@ -23,7 +27,7 @@ const VisaCardConfigBtn = ({ handleEditVisa, visaType, visaData, country_id }) =
     const handleDeleteVisaType = async () => {
 
         try {
-            dispatch(deleteVisaTypeFromCountry({ visaId, countryVisaRowId: visaData?.id }))
+            dispatch(deleteVisaTypeFromCountry({ visaId: visaId || effectiveVisaId, countryVisaRowId: visaData?.id }))
                 .then(res => {
                     // console.log('Response for deleting visa type', res);
 
@@ -57,14 +61,14 @@ const VisaCardConfigBtn = ({ handleEditVisa, visaType, visaData, country_id }) =
         <>
             <div className="space-y-2">
                 <button
-                    onClick={() => handleEditVisa(Object.keys(visaType)[0])}
+                    onClick={() => handleEditVisa(effectiveVisaId)}
                     className="w-full py-3 px-4 bg-gray-50 hover:bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                     <Plus className="w-4 h-4" />
                     Configure Policy
                 </button>
                 <button
-                    onClick={() => { handleVisaTypeData(Object.keys(visaType)[0]); setAlertModalOpen(true); }}
+                    onClick={() => { handleVisaTypeData(effectiveVisaId); setAlertModalOpen(true); }}
                     className="w-full py-3 px-4 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                     <Trash2 className="w-4 h-4" />

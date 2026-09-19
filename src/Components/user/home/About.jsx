@@ -14,7 +14,7 @@ const About = () => {
       <Grid container spacing={{ xs: 4, md: 6 }} alignItems="center" justifyContent="center">
 
         {/* LEFT SIDE – IMAGE */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <motion.div
             initial={{ opacity: 0, y: 100 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -112,7 +112,7 @@ const About = () => {
         </Grid>
 
         {/* RIGHT SIDE – TEXT */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Box sx={{ pl: { md: 3 } }}>
             {/* Subtitle – No Animation */}
             <Typography

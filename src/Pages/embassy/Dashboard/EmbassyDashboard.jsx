@@ -37,14 +37,16 @@ export default function EmbassyDashboard() {
   const { data: appointmentStats = [], isLoading } = useApplicationsWithAppointment(embassyData?.country_id, "processing", true, true);
 
   useEffect(() => {
-    dispatch(fetchApplicationsByCountry({ countryId: embassyData?.country_id, statusFilter: 'all' }))
-      .then(res => {
-        // console.log('Response for fetching all applications', res);
-      })
-      .catch(err => {
-        console.log('Error occures', err);
-        getSweetAlert('Oops...', 'Something went wrong!', 'error');
-      })
+    if (embassyData?.country_id) {
+      dispatch(fetchApplicationsByCountry({ countryId: embassyData?.country_id, statusFilter: 'all' }))
+        .then(res => {
+          // console.log('Response for fetching all applications', res);
+        })
+        .catch(err => {
+          console.log('Error occures', err);
+          getSweetAlert('Oops...', 'Something went wrong!', 'error');
+        });
+    }
   }, [embassyData?.country_id]);
 
   const totalChange = getMonthlyChange(allStats);
@@ -104,14 +106,14 @@ export default function EmbassyDashboard() {
     {
       icon: FileText,
       label: "Review Applications",
-      count: processingTypeApplications?.length ?? 0 + " pending",
+      count: `${processingTypeApplications?.length ?? 0} pending`,
       path: "/embassy/dashboard/applications",
       color: "bg-blue-500 hover:bg-blue-600"
     },
     {
       icon: Calendar,
       label: "Schedule Interview",
-      count: appointmentStats.length ?? 0 + " upcoming",
+      count: `${appointmentStats?.length ?? 0} upcoming`,
       path: "/embassy/dashboard/applications",
       color: "bg-purple-500 hover:bg-purple-600"
     },

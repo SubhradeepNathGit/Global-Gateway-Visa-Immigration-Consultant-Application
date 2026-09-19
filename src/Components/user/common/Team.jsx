@@ -80,7 +80,6 @@ const TeamSection = () => {
         <Grid container justifyContent="center" spacing={5}>
           {teamMembers.map((member, index) => (
             <Grid
-              item
               key={index}
               component={motion.div}
               initial={{ opacity: 0, y: 40 }}

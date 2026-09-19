@@ -99,33 +99,16 @@ const AppointmentModal = ({ application, visaDetails, setShowAppointmentModal, c
 
     // Calendar functions
     const handleSetAppointment = () => {
-        if (selectedDate && selectedTime && selectedReasons.length > 0 && selectedLocation || fetchApplication?.[0]?.appointment_date) {
-            const details = {
-                date: selectedDate.toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                }),
-                time: selectedTime,
-                reasons: selectedReasons,
-                location: selectedLocation,
-                timestamp: new Date()
-            };
-            setAppointmentDetails(details);
-            setAppointmentSet(true);
-            setSelectedDate(null);
-            setSelectedTime("");
-            setSelectedReasons([]);
-            setSelectedLocation(null);
+        const hasExisting = Boolean(fetchApplication?.[0]?.appointment_date);
 
-            // console.log(selectedDate, selectedTime, selectedReasons, selectedLocation);
-
-            const appointmentLocatioin = {
-                name: selectedLocation?.name || selectedLocation?.country_name + " " + selectedLocation?.role?.charAt(0)?.toUpperCase() + selectedLocation?.role?.slice(1),
-                address: selectedLocation?.address,
-                contact_no: selectedLocation?.phone || selectedLocation?.contact_no,
-                website_url: selectedLocation?.website || selectedLocation?.website_url
+        if ((selectedDate && selectedTime && selectedReasons.length > 0 && selectedLocation) || hasExisting) {
+            if (!selectedDate) {
+                hotToast('Please select a date', 'error');
+                return;
+            }
+            if (!selectedTime) {
+                hotToast('Please select a time', 'error');
+                return;
             }
 
             const existingAppointmentDate = fetchApplication?.[0]?.appointment_date;
@@ -135,52 +118,65 @@ const AppointmentModal = ({ application, visaDetails, setShowAppointmentModal, c
                 hotToast('Appointment date & time is already the same', 'info', <Info className='text-blue-800' />);
                 return;
             }
-            else {
-                dispatch(updateApplicationStatus({
-                    applicationId: application?.id,
-                    status: 'processing',
-                    appointment_date: combineDateAndTime(selectedDate, selectedTime),
-                    previous_appointment_date: fetchApplication?.[0]?.appointment_date,
-                    appointment_reason: fetchApplication?.[0]?.appointment_date ? fetchApplication?.[0]?.appointment_reason : selectedReasons,
-                    embassy_location: fetchApplication?.[0]?.appointment_date ? fetchApplication?.[0]?.embassy_location : appointmentLocatioin,
-                }))
-                    .then(res => {
-                        // console.log('Response for updating application', res);
 
-                        if (res.meta.requestStatus === "fulfilled") {
+            const appointmentLocatioin = selectedLocation ? {
+                name: selectedLocation?.name || selectedLocation?.country_name + " " + selectedLocation?.role?.charAt(0)?.toUpperCase() + selectedLocation?.role?.slice(1),
+                address: selectedLocation?.address,
+                contact_no: selectedLocation?.phone || selectedLocation?.contact_no,
+                website_url: selectedLocation?.website || selectedLocation?.website_url
+            } : fetchApplication?.[0]?.embassy_location;
 
-                            dispatch(addNotification({ ...user_notification_obj, title: `Visa appointment for ${application?.destinationCountry} has ${existingAppointmentDate ? 're-' : ''}scheduled` }))
-                                .then(res => {
-                                    // console.log('Response after adding notification', res);
+            const finalReasons = (selectedReasons && selectedReasons.length > 0)
+                ? selectedReasons
+                : fetchApplication?.[0]?.appointment_reason;
 
-                                    if (res.meta.requestStatus === "fulfilled") {
+            dispatch(updateApplicationStatus({
+                applicationId: application?.id,
+                status: 'processing',
+                appointment_date: combineDateAndTime(selectedDate, selectedTime),
+                previous_appointment_date: fetchApplication?.[0]?.appointment_date,
+                appointment_reason: finalReasons,
+                embassy_location: appointmentLocatioin,
+            }))
+                .then(res => {
+                    if (res.meta.requestStatus === "fulfilled") {
+                        queryClient.invalidateQueries(["application", application?.id]);
+                        queryClient.invalidateQueries(["fullApplicationDetails", application?.id]);
+                        dispatch(fetchSpecificationApplicationsById(application?.id));
 
-                                        queryClient.invalidateQueries(["application", application?.id]);
-                                        setShowAppointmentModal(false);
-                                        hotToast(`Appointment has ${existingAppointmentDate ? 're-' : ''}scheduled successfully!`, "success");
-                                    }
-                                    else {
-                                        getSweetAlert('Oops...', 'Something went wrong!', 'error');
-                                    }
-                                })
-                                .catch(err => {
-                                    console.log('Error occured', err);
-                                    getSweetAlert('Oops...', 'Something went wrong!', 'error');
-                                })
-                        }
-                        else {
-                            getSweetAlert('Oops...', 'Something went wrong!', 'error');
-                        }
-                    })
-                    .catch(err => {
-                        console.log('Error occured', err);
-                        getSweetAlert('Oops...', 'Something went wrong!', 'error');
-                    })
-            }
-        } else if (selectedReasons.length === 0) {
-            hotToast('Please select at least one reason for appointment', 'error');
+                        setAppointmentSet(true);
+                        setSelectedDate(null);
+                        setSelectedTime("");
+                        setSelectedReasons([]);
+                        setSelectedLocation(null);
+                        setShowAppointmentModal(false);
+
+                        hotToast(`Appointment has ${existingAppointmentDate ? 're-' : ''}scheduled successfully!`, "success");
+
+                        // Dispatch notification asynchronously without blocking
+                        dispatch(addNotification({
+                            ...user_notification_obj,
+                            application_id: application?.id,
+                            title: `Visa appointment for ${application?.destinationCountry || 'your visa application'} has been ${existingAppointmentDate ? 're-' : ''}scheduled`
+                        })).catch(err => {
+                            console.warn('Notification error (non-fatal):', err);
+                        });
+                    } else {
+                        getSweetAlert('Oops...', res.payload || 'Failed to update appointment!', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error updating appointment:', err);
+                    getSweetAlert('Oops...', err?.message || 'Something went wrong!', 'error');
+                });
+        } else if (!selectedDate) {
+            hotToast('Please select a date', 'error');
+        } else if (!selectedTime) {
+            hotToast('Please select a time', 'error');
         } else if (!selectedLocation) {
             hotToast('Please select an office location', 'error');
+        } else if (selectedReasons.length === 0) {
+            hotToast('Please select at least one reason for appointment', 'error');
         }
     }
 

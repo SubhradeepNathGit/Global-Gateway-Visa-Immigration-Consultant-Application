@@ -45,42 +45,49 @@ const PolicySidebar = ({ visaPolicyCategories, selectedCategory, setSelectedCate
             </div>
 
             {/* Policy Updates Notice */}
-            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 shadow-md">
-                <div className="flex items-start gap-2 mb-2">
-                    <FileText className="w-5 h-5 text-amber-700 flex-shrink-0" />
-                    <h3 className="font-bold text-amber-900">Policy Updates</h3>
+            <div className="bg-[#FAFAFA] border border-gray-200 rounded-2xl p-5">
+                <div className="flex items-start gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-xl bg-white border border-gray-100 flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-4 h-4 text-[#e53935]" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-[#2c3e50] text-sm">Policy Updates</h3>
+                        <p className="text-xs text-[#6c757d] mt-0.5 leading-relaxed">
+                            Our visa policies are regularly updated to reflect current regulations.
+                            {selectedCategory !== 'General Policies' && (
+                                <span className="block mt-0.5">
+                                    Last updated:{' '}
+                                    {visaPolicyCategories?.find(p => p?.id === selectedCategory)?.visa_details?.[0]?.updated_at
+                                        ? new Date(visaPolicyCategories.find(p => p?.id === selectedCategory).visa_details[0].updated_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                                        : 'Not available'}
+                                </span>
+                            )}
+                        </p>
+                    </div>
                 </div>
-                <p className="text-sm text-amber-800 mb-3">
-                    <span className='block'>Our visa policies are regularly updated to reflect current regulations.</span>
-                    {selectedCategory === "General Policies" ? "" : `Last updated : 
-                    ${visaPolicyCategories?.find(policy => policy?.id === selectedCategory)
-                            ?.visa_details?.[0]?.updated_at
-                            ? new Date(
-                                visaPolicyCategories.find(policy => policy?.id === selectedCategory)
-                                    .visa_details[0].updated_at
-                            ).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-                            : 'Not available'}`}
-                </p>
-
                 <button
                     onClick={handleDownloadPolicyGuide}
-                    className="text-sm font-medium text-amber-900 border border-amber-900 px-3 py-1.5 rounded hover:bg-amber-100 transition-colors flex items-center gap-2 cursor-pointer">
-                    <FileText className="w-4 h-4" />
+                    className="flex items-center gap-2 text-xs font-bold text-[#2c3e50] border border-gray-200 bg-white px-3 py-2 rounded-xl hover:border-[#e53935] hover:text-[#e53935] transition-colors cursor-pointer">
+                    <FileText className="w-3.5 h-3.5" />
                     Download Policy Guide
                 </button>
             </div>
 
             {/* Emergency Contacts */}
-            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 shadow-md">
-                <div className="flex items-start gap-2 mb-2">
-                    <Shield className="w-5 h-5 text-green-700 flex-shrink-0" />
-                    <h3 className="font-bold text-green-900">Emergency Support</h3>
+            <div className="bg-[#FAFAFA] border border-gray-200 rounded-2xl p-5">
+                <div className="flex items-start gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-xl bg-white border border-gray-100 flex items-center justify-center flex-shrink-0">
+                        <Shield className="w-4 h-4 text-[#e53935]" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-[#2c3e50] text-sm">Emergency Support</h3>
+                        <p className="text-xs text-[#6c757d] mt-0.5 leading-relaxed">
+                            24/7 emergency visa support hotline for urgent policy clarifications.
+                        </p>
+                    </div>
                 </div>
-                <p className="text-sm text-green-800 mb-3">
-                    24/7 emergency visa support hotline available for urgent policy clarifications.
-                </p>
-                <div className="flex items-center gap-2 text-green-900 font-bold">
-                    <Phone className="w-4 h-4" />
+                <div className="flex items-center gap-2 text-sm font-bold text-[#2c3e50] pl-0.5">
+                    <Phone className="w-4 h-4 text-[#e53935]" />
                     <span>+91-9098909890</span>
                 </div>
             </div>

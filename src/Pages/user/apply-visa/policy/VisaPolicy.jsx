@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import PolicyBanner from '../../../../Components/user/apply-visa/policy/PolicyBanner';
 import PolicyHeader from '../../../../Components/user/apply-visa/policy/PolicyHeader';
 import PolicySidebar from '../../../../Components/user/apply-visa/policy/PolicySidebar';
 import PolicyTermAccordion from '../../../../Components/user/apply-visa/policy/PolicyTermAccordion';
@@ -114,9 +113,6 @@ const VisaPolicies = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Banner */}
-            <PolicyBanner />
-
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-10 py-8 md:py-12">
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">

@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useState, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { User, Mail, Phone, MapPin, Calendar, Globe, Home, Milestone, Loader2, Users, Heart, ChevronDown } from "lucide-react";
+import { User, Mail, Phone, MapPin, Calendar, Globe, Home, Milestone, Loader2, Users, Heart, ChevronDown, Sparkles } from "lucide-react";
 import Input from "../Input";
 import StepButtons from "../StepButtons";
 import { initApplication, saveStepPersonal, saveStepProgress } from "../../../../../Redux/Slice/applicationSlice";
@@ -78,14 +79,27 @@ const schema = yup.object().shape({
 });
 
 // Custom Dropdown Component
-const CustomSelect = ({ label, icon: Icon, options, value, onChange, error,onBlur, touched, required, placeholder }) => {
+const CustomSelect = ({ label, icon: Icon, options, value, onChange, error, onBlur, touched, required, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const containerRef = useRef(null);
 
   const selectedOption = options.find(opt => opt.value === value);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+        setIsFocused(false);
+        if (onBlur) onBlur();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onBlur]);
+
   return (
-    <div className="space-y-1.5">
+    <div ref={containerRef} className="space-y-1.5">
       <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-2">
         {label}
         {required && <span className="text-red-500">*</span>}
@@ -94,13 +108,11 @@ const CustomSelect = ({ label, icon: Icon, options, value, onChange, error,onBlu
       <div className="relative">
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => {
-            setIsFocused(false);
-            setTimeout(() => setIsOpen(false), 200);
+          onClick={() => {
+            setIsOpen(prev => !prev);
+            setIsFocused(true);
           }}
-          className={`w-full px-4 py-3.5 pl-11 pr-10 rounded-xl border-2 transition-all duration-200 outline-none bg-white text-left font-medium
+          className={`w-full px-4 py-3.5 pl-11 pr-10 rounded-xl border-2 transition-all duration-200 outline-none bg-white text-left font-medium cursor-pointer
             ${error
               ? 'border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-50'
               : touched && value
@@ -133,16 +145,23 @@ const CustomSelect = ({ label, icon: Icon, options, value, onChange, error,onBlu
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 max-h-72 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {options.map((option) => (
               <button
                 key={option.value}
                 type="button"
-                onClick={() => {
+                onMouseDown={(e) => {
+                  // Prevent blurring trigger button before click can register
+                  e.preventDefault();
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
                   onChange(option.value);
                   setIsOpen(false);
+                  setIsFocused(false);
+                  if (onBlur) onBlur();
                 }}
-                className={`w-full px-4 py-3 text-left transition-all duration-150 flex items-center gap-3
+                className={`w-full px-4 py-3 text-left transition-all duration-150 flex items-center gap-3 cursor-pointer
                   ${value === option.value
                     ? 'bg-red-50 text-red-700 font-semibold'
                     : 'text-gray-700 hover:bg-gray-50 font-medium'
@@ -187,7 +206,7 @@ export default function Step1PersonalInfo({ onNext, onApplicationCreated, countr
   const { isApplicationLoading, application, personalInfo, isApplicationError } = useSelector(state => state.application);
   const { data: personalInfoData, isLoading: isApplicationDataLoading, error: isApplicationSDataError } = usePersonalInfoByApplicationId(application_id);
 
-  const { register, handleSubmit, formState: { errors, touchedFields }, reset, control } = useForm({
+  const { register, handleSubmit, formState: { errors, touchedFields }, reset, setValue, control } = useForm({
     resolver: yupResolver(schema),
     mode: "onSubmit",
     reValidateMode: "onChange",
@@ -195,6 +214,15 @@ export default function Step1PersonalInfo({ onNext, onApplicationCreated, countr
   });
 
   // console.log(user_data);
+
+  const handleAutofillAddress = () => {
+    const isIndia = (user_data?.country || '').toLowerCase() === 'india' || !user_data?.country;
+    setValue('address', isIndia ? '42, Park Street, Flat 3B' : '123 Main Street, Apt 4B', { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+    setValue('city', isIndia ? 'Kolkata' : 'New York', { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+    setValue('state', isIndia ? 'West Bengal' : 'New York', { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+    setValue('postalCode', isIndia ? '700016' : '100011', { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+    setValue('country', user_data?.country ? (user_data.country.charAt(0).toUpperCase() + user_data.country.slice(1).toLowerCase()) : (isIndia ? 'India' : 'USA'), { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+  };
 
   useEffect(() => {
     if (personalInfoData) {
@@ -213,8 +241,19 @@ export default function Step1PersonalInfo({ onNext, onApplicationCreated, countr
         state: personalInfoData?.state || "",
         country: personalInfoData?.country || "",
       });
+    } else if (user_data) {
+      const parts = user_data?.name ? user_data.name.trim().split(" ") : [];
+      const first = parts.length > 1 ? parts.slice(0, -1).join(" ") : parts[0] || "";
+      const last = parts.length > 1 ? parts.slice(-1).join(" ") : "";
+      setValue('firstName', first);
+      setValue('lastName', last);
+      setValue('email', user_data?.email || "");
+      if (user_data?.phone) setValue('phone', user_data.phone);
+      if (user_data?.country) {
+        setValue('country', user_data.country.charAt(0).toUpperCase() + user_data.country.slice(1).toLowerCase());
+      }
     }
-  }, [personalInfoData, reset]);
+  }, [personalInfoData, user_data, reset, setValue]);
 
   const genderOptions = [
     { value: 'Male', label: 'Male' },
@@ -247,19 +286,19 @@ export default function Step1PersonalInfo({ onNext, onApplicationCreated, countr
     }
 
     const personalInfo_obj = {
-      first_name: data.firstName,
-      last_name: data.lastName,
+      first_name: data.firstName || user_data?.name?.split(" ")?.slice(0, -1)?.join(" ") || user_data?.name || "",
+      last_name: data.lastName || user_data?.name?.split(" ")?.slice(1)?.join(" ") || "",
       date_of_birth: data.dateOfBirth,
       gender: data.gender,
       marital_status: data.maritalStatus,
       nationality: data.nationality?.charAt(0)?.toUpperCase() + data.nationality?.slice(1)?.toLowerCase(),
-      email: data.email,
-      phone: data.phone,
+      email: data.email || user_data?.email || "",
+      phone: data.phone || user_data?.phone || "",
       address: data.address,
       city: data.city,
       postal_code: data.postalCode,
       state: data.state,
-      country: data.country
+      country: data.country || (user_data?.country ? (user_data.country.charAt(0).toUpperCase() + user_data.country.slice(1).toLowerCase()) : "India")
     }
 
     const activity_obj = {
@@ -332,18 +371,18 @@ export default function Step1PersonalInfo({ onNext, onApplicationCreated, countr
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-6 sm:py-8">
+    <div className="w-full py-6 sm:py-8">
       {/* Header */}
-      <div className="mb-8 sm:mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-200">
-            <User className="text-white" size={24} strokeWidth={2.5} />
+      <div className="mb-8">
+        <div className="flex items-center gap-4 mb-2">
+          <div className="w-12 h-12 rounded-2xl bg-[#FAFAFA] border border-gray-100 flex items-center justify-center">
+            <User className="text-[#e53935]" size={22} strokeWidth={2} />
           </div>
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#2c3e50] tracking-tight">
               Personal Information
             </h2>
-            <p className="text-sm text-gray-600 mt-0.5">Please provide your details as they appear on your passport</p>
+            <p className="text-sm text-[#6c757d] mt-0.5">Please provide your details as they appear on your passport</p>
           </div>
         </div>
       </div>
@@ -351,7 +390,7 @@ export default function Step1PersonalInfo({ onNext, onApplicationCreated, countr
       {/* Form Container */}
       <form className="space-y-6" >
         {/* Personal Details Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8">
+        <div className="border border-gray-200 rounded-2xl p-6 sm:p-8">
           <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
             <User size={20} className="text-red-600" strokeWidth={2.5} />
             Personal Details
@@ -445,7 +484,7 @@ export default function Step1PersonalInfo({ onNext, onApplicationCreated, countr
         </div>
 
         {/* Contact Information Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8">
+        <div className="border border-gray-200 rounded-2xl p-6 sm:p-8">
           <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
             <Mail size={20} className="text-red-600" strokeWidth={2.5} />
             Contact Information
@@ -480,11 +519,21 @@ export default function Step1PersonalInfo({ onNext, onApplicationCreated, countr
         </div>
 
         {/* Address Information Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8">
-          <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Home size={20} className="text-red-600" strokeWidth={2.5} />
-            Current Address
-          </h3>
+        <div className="border border-gray-200 rounded-2xl p-6 sm:p-8">
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Home size={20} className="text-red-600" strokeWidth={2.5} />
+              Current Address
+            </h3>
+            <button
+              type="button"
+              onClick={handleAutofillAddress}
+              className="text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              
+              Autofill Address
+            </button>
+          </div>
 
           <div className="space-y-5">
             <Input
@@ -549,20 +598,18 @@ export default function Step1PersonalInfo({ onNext, onApplicationCreated, countr
           </div>
         </div>
 
-        {/* Info Banner */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5">
-          <div className="flex gap-3">
-            <div className="flex-shrink-0 mt-0.5">
-              <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="text-sm">
-              <p className="font-bold text-blue-900 mb-1">Important: Ensure Accuracy</p>
-              <p className="text-blue-800">
-                All information must match your passport and official documents exactly. Any discrepancies may result in visa application delays or rejection.
-              </p>
-            </div>
+        {/* Info notice */}
+        <div className="flex gap-3 bg-[#FAFAFA] border border-gray-200 rounded-2xl p-5">
+          <div className="w-8 h-8 rounded-xl bg-white border border-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg className="w-4 h-4 text-[#e53935]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="text-sm">
+            <p className="font-bold text-[#2c3e50] mb-0.5">Ensure Accuracy</p>
+            <p className="text-[#6c757d] leading-relaxed">
+              All information must match your passport and official documents exactly. Discrepancies may result in application delays or rejection.
+            </p>
           </div>
         </div>
 

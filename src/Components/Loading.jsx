@@ -37,13 +37,27 @@ const LoadingAnimation = ({ alwaysShow = false, message: propMessage }) => {
     initial: { opacity: 0 },
     animate: {
       opacity: 1,
-      transition: { duration: 0.3 }
+      transition: { duration: 0.35, ease: 'easeOut' }
     },
     exit: {
       opacity: 0,
-      scale: 1.04,
-      filter: 'blur(16px)',
-      transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] }
+      scale: 1.05,
+      filter: 'blur(20px)',
+      transition: {
+        duration: 0.95,
+        ease: [0.22, 1, 0.36, 1]
+      }
+    },
+  };
+
+  const contentVariants = {
+    initial: { opacity: 1, y: 0, scale: 1 },
+    exit: {
+      opacity: 0,
+      y: -20,
+      scale: 0.95,
+      filter: 'blur(10px)',
+      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
     },
   };
 
@@ -69,25 +83,25 @@ const LoadingAnimation = ({ alwaysShow = false, message: propMessage }) => {
     },
   };
 
+  if (!isLoading) return null;
+
   return (
-    <AnimatePresence>
-      {isLoading && (
-        <motion.div
-          variants={containerVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-cover bg-center select-none"
-          style={{ backgroundImage: 'url("/Slider1.jpg")' }}
-        >
-          {/* Inject CSS keyframes */}
-          <style>{loaderStyles}</style>
+    <motion.div
+      variants={containerVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-cover bg-center select-none"
+      style={{ backgroundImage: 'url("/Slider1.jpg")' }}
+    >
+      {/* Inject CSS keyframes */}
+      <style>{loaderStyles}</style>
 
-          {/* Dark Blur Overlay */}
-          <div className="absolute inset-0 bg-black/65 backdrop-blur-[24px]" />
+      {/* Dark Blur Overlay */}
+      <div className="absolute inset-0 bg-black/65 backdrop-blur-[24px]" />
 
-          {/* Main content */}
-          <div className="relative z-10 flex flex-col items-center gap-4 px-4 text-center">
+      {/* Main content with exit dissolve */}
+      <motion.div variants={contentVariants} className="relative z-10 flex flex-col items-center gap-4 px-4 text-center">
             {/* Plane */}
             <div className="relative">
               <motion.div
@@ -148,10 +162,8 @@ const LoadingAnimation = ({ alwaysShow = false, message: propMessage }) => {
                 />
               ))}
             </div>
-          </div>
+          </motion.div>
         </motion.div>
-      )}
-    </AnimatePresence>
   );
 };
 

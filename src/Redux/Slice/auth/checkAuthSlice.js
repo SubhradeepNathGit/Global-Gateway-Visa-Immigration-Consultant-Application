@@ -6,11 +6,22 @@ import toastifyAlert from "../../../util/alert/toastify";
 export const fetchLoggedUserDetails = createAsyncThunk("checkUserAuthSlice/fetchLoggedUserDetails",
     async (userId, { rejectWithValue }) => {
         try {
-            const res = await supabase.from("users").select("*").eq("id", userId).single();
-            // console.log('Logged user details', res);
+            const isEmbassy = !!sessionStorage.getItem("embassy_token");
+            const firstTable = isEmbassy ? "embassy" : "users";
+            const secondTable = isEmbassy ? "users" : "embassy";
 
-            if (res?.error) throw new Error(res?.error.message);
-            return res?.data;
+            let res = await supabase.from(firstTable).select("*").eq("id", userId).maybeSingle();
+
+            if (res?.error) throw new Error(res.error.message);
+
+            if (!res?.data) {
+                res = await supabase.from(secondTable).select("*").eq("id", userId).maybeSingle();
+                if (res?.error) throw new Error(res.error.message);
+            }
+
+            if (!res?.data) throw new Error("User not found");
+
+            return res.data;
         }
         catch (err) {
             const message = err?.message ?? "Failed to fetch user details";
@@ -128,7 +139,11 @@ export const checkUserAuthSlice = createSlice({
     reducers: {
         setuser: (state, action) => {
             state.isuserAuth = true;
-            state.userAuthData = action.payload.user;
+            const existingRole = state.userAuthData?.role;
+            const hasValidRole = ['admin', 'embassy', 'user'].includes(existingRole);
+            state.userAuthData = hasValidRole && state.userAuthData?.id === action.payload.user?.id
+                ? { ...action.payload.user, ...state.userAuthData }
+                : action.payload.user;
             state.session = action.payload.session;
             state.isInitialized = true;
             state.userError = null;

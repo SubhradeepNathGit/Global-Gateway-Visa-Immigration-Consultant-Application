@@ -1,7 +1,8 @@
 import React from 'react'
-import { CheckCircle, GripVertical, XCircle, Lock } from 'lucide-react';
+import { CheckCircle, GripVertical, XCircle, Lock, FileText } from 'lucide-react';
 
 const VisaCardHeader = ({ visaDetails, visaData, Icon }) => {
+    const CardIcon = Icon || FileText;
 
     return (
         <>
@@ -13,7 +14,7 @@ const VisaCardHeader = ({ visaDetails, visaData, Icon }) => {
             <div className="flex items-center gap-3 mb-4">
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${visaDetails?.status != "active" ? 'bg-red-100' : 'bg-blue-100'
                     }`}>
-                    <Icon className={`w-6 h-6 ${visaDetails?.status != "active" ? 'text-red-600' : 'text-blue-600'}`} />
+                    <CardIcon className={`w-6 h-6 ${visaDetails?.status != "active" ? 'text-red-600' : 'text-blue-600'}`} />
                 </div>
                 <div className="flex-1">
                     <h3 className="font-semibold text-gray-900">{visaData?.visa_type}</h3>

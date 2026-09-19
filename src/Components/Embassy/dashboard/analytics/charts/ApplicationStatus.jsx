@@ -35,7 +35,7 @@ const ApplicationStatus = ({ applicationStatusData }) => {
                 callbacks: {
                     label: function (context) {
                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                        const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : '0.0';
                         return `${context.parsed} applications (${percentage}%)`;
                     }
                 }

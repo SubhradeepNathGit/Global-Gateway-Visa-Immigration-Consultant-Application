@@ -19,21 +19,70 @@ function App() {
   });
 
   useEffect(() => {
-    // Set root background to white now that React has mounted (prevents white flash)
-    document.getElementById('root').style.backgroundColor = '#ffffff';
+    const isHome = window.location.pathname === '/' || window.location.pathname === '';
+    // Set root background: pure black for home banner, white for other user pages
+    const rootEl = document.getElementById('root');
+    if (rootEl) {
+      rootEl.style.backgroundColor = isHome ? '#000000' : '#ffffff';
+    }
 
     // Initialize Auth Session and Listeners
     dispatch(checkLoggedInUser());
     dispatch(listenAuthChanges());
 
     if (showInitialLoader) {
-      // Home page refresh: show cinematic loader, then dismiss
-      const timer = setTimeout(() => {
-        dispatch(stopLoading());
-        setShowInitialLoader(false);
-      }, 2200);
+      let isCancelled = false;
 
-      return () => clearTimeout(timer);
+      // Robust image preloader with off-main-thread decode for zero-jitter paint
+      const preloadAndDecode = (src) => {
+        return new Promise((resolve) => {
+          if (!src) return resolve();
+          const img = new Image();
+          img.src = src;
+
+          const handleLoaded = () => {
+            if ('decode' in img) {
+              img.decode().then(resolve).catch(resolve);
+            } else {
+              resolve();
+            }
+          };
+
+          if (img.complete && img.naturalWidth > 0) {
+            handleLoaded();
+          } else {
+            img.onload = handleLoaded;
+            img.onerror = resolve; // Continue gracefully on network failure
+          }
+        });
+      };
+
+      // 1. Minimum cinematic flight duration (1.9s)
+      const minDurationPromise = new Promise((resolve) => setTimeout(resolve, 1900));
+
+      // 2. Full download & GPU decode of the critical hero banner images
+      const bannerImagesPromise = Promise.all([
+        preloadAndDecode('/Slider1.jpg'),
+        preloadAndDecode('/Slider7.jpg'),
+        preloadAndDecode('/Slider2.jpg'),
+      ]);
+
+      // 3. Safety ceiling (4.5s) to guarantee no infinite hang on offline/slow 2G
+      const maxSafetyCeiling = new Promise((resolve) => setTimeout(resolve, 4500));
+
+      Promise.race([
+        Promise.all([minDurationPromise, bannerImagesPromise]),
+        maxSafetyCeiling,
+      ]).then(() => {
+        if (!isCancelled) {
+          dispatch(stopLoading());
+          setShowInitialLoader(false);
+        }
+      });
+
+      return () => {
+        isCancelled = true;
+      };
     } else {
       // Not on home — kill loading state immediately
       dispatch(stopLoading());

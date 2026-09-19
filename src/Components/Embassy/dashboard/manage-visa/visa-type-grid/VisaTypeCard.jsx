@@ -9,14 +9,30 @@ import { useVisaDetails } from '../../../../../tanstack/query/getVisaDetails';
 const VisaTypeCard = ({ visaType,countryWiseVisa, country_id, expandedVisa, iconMapping, handleEditVisa, dragOverItem, index, draggedItem, selectedCountry,
  handleDragStart, handleDragEnd, handleDragOver, handleDragEnter, handleDrop, setExpandedVisa }) => {
 
-    const { data: visaData, isLoading: isVisaDataLoading } = useVisaDetailsViaId(Object.keys(visaType)[0]);
-    const { data: specificVisaDetails, isLoading: isSpecificVisaDetails } = useVisaDetails({ countryId: country_id, visitorCountryId: selectedCountry?.id, visaId: Object.keys(visaType)[0] });
-    const visaDetails = specificVisaDetails?.[0];
-    // console.log(Object.keys(visaType)[0],selectedCountry?.id,country_id);
+    // Safely resolve visaId and iconName whether visaType is an object or string
+    let resolvedVisaId = null;
+    let iconName = null;
 
-    const Icon = iconMapping[Object.values(visaType)[0]];
-    // const visaDetails = allVisaDetails[0];
-    // console.log(specificVisaDetails);
+    if (visaType && typeof visaType === 'object' && !Array.isArray(visaType)) {
+        const keys = Object.keys(visaType);
+        if (keys.length > 0 && keys[0] !== "0") {
+            resolvedVisaId = keys[0];
+            iconName = visaType[resolvedVisaId];
+        }
+    } else if (typeof visaType === 'string') {
+        resolvedVisaId = countryWiseVisa?.visa_id?.[index] || null;
+        iconName = visaType;
+    }
+
+    if (!resolvedVisaId || resolvedVisaId === "0") {
+        resolvedVisaId = countryWiseVisa?.visa_id?.[index] || null;
+    }
+
+    const { data: visaData, isLoading: isVisaDataLoading } = useVisaDetailsViaId(resolvedVisaId);
+    const { data: specificVisaDetails, isLoading: isSpecificVisaDetails } = useVisaDetails({ countryId: country_id, visitorCountryId: selectedCountry?.id, visaId: resolvedVisaId });
+    const visaDetails = specificVisaDetails?.[0];
+
+    const Icon = (iconName && iconMapping?.[iconName]) || (visaData?.visa_type && iconMapping?.[visaData.visa_type]) || null;
 
     if (isVisaDataLoading || isSpecificVisaDetails) {
         return (
@@ -57,7 +73,7 @@ const VisaTypeCard = ({ visaType,countryWiseVisa, country_id, expandedVisa, icon
                         <VisaCardFooter handleEditVisa={handleEditVisa} visaDetails={visaDetails} visaData={visaData} />
                     </div>
                 ) : (
-                    <VisaCardConfigBtn handleEditVisa={handleEditVisa} visaType={visaType} visaData={countryWiseVisa} country_id={country_id} />
+                    <VisaCardConfigBtn handleEditVisa={handleEditVisa} visaType={visaType} visaId={resolvedVisaId} visaData={countryWiseVisa} country_id={country_id} />
                 )}
             </div>
         </div>

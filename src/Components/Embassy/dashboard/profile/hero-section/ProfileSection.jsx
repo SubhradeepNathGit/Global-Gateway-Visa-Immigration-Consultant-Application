@@ -1,6 +1,9 @@
 import React from 'react'
+import { formatContinents } from '../../../../../util/format/formatContinents'
 
 const ProfileSection = ({ profileData }) => {
+    const continentText = formatContinents(profileData?.details?.continents);
+
     return (
         <div className="px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto relative">
@@ -26,7 +29,9 @@ const ProfileSection = ({ profileData }) => {
                         </span>
                     </h1>
 
-                    <p className="text-md text-gray-600 font-medium ml-1">{profileData?.name}, {profileData?.details?.continents}</p>
+                    <p className="text-md text-gray-600 font-medium ml-1">
+                        {profileData?.name}{continentText && continentText !== 'N/A' ? `, ${continentText}` : ''}
+                    </p>
                 </div>
             </div>
         </div>

@@ -5,7 +5,7 @@ export async function fetchPersonalInfoByApplicationId(application_id) {
 
     if (!application_id) return null;
 
-    const res = await supabase.from("application_personal_info").select("*").eq("application_id", application_id).single();
+    const res = await supabase.from("application_personal_info").select("*").eq("application_id", application_id).maybeSingle();
     // console.log('Response for fetching personal information', res);
 
     if (res.error) throw new Error(res.error.message);

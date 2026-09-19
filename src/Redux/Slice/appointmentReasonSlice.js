@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import supabase from "../../util/Supabase/supabase";
+import { DEFAULT_APPOINTMENT_REASONS } from "../../data/appointmentReasonsData";
 
 
 // fetch appointment
@@ -13,11 +14,33 @@ export const fetchAppointmentReasons = createAsyncThunk("appointmentReasonSlice/
             if (status === "inactive") query = query.eq("status", false);
 
             const res = await query;
-            // console.log('Response for fetching active reasons', res);
 
             if (res?.error) throw res?.error;
-            return res?.data;
+
+            if (res?.data && res.data.length > 0) {
+                return res.data;
+            }
+
+            // If active reasons are requested but none found in DB, try to seed default active reasons
+            if (status === "active" || status === "all") {
+                try {
+                    const seedRows = DEFAULT_APPOINTMENT_REASONS.map(({ id, ...rest }) => rest);
+                    const insertRes = await supabase.from("appointment_reason").insert(seedRows).select();
+                    if (insertRes?.data && insertRes.data.length > 0) {
+                        return insertRes.data;
+                    }
+                } catch (seedErr) {
+                    console.warn("Could not seed default reasons to DB:", seedErr);
+                }
+                return DEFAULT_APPOINTMENT_REASONS;
+            }
+
+            return res?.data || [];
         } catch (err) {
+            console.error("Error fetching appointment reasons:", err);
+            if (status === "active" || status === "all") {
+                return DEFAULT_APPOINTMENT_REASONS;
+            }
             return rejectWithValue(err.message);
         }
     }

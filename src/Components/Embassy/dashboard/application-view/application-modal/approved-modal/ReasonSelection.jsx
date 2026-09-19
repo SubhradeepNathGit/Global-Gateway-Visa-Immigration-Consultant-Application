@@ -1,16 +1,20 @@
 import React from 'react';
 import { CheckCircle2, Circle } from 'lucide-react';
+import { DEFAULT_APPOINTMENT_REASONS } from '../../../../../../data/appointmentReasonsData';
 
-const ReasonSelection = ({ selectedReasons, appointmentReasons, setSelectedReasons }) => {
+const ReasonSelection = ({ selectedReasons = [], appointmentReasons = [], setSelectedReasons }) => {
 
-    // console.log('Appointment reasons',appointmentReasons);
+    const reasons = (appointmentReasons && appointmentReasons.length > 0)
+        ? appointmentReasons
+        : DEFAULT_APPOINTMENT_REASONS;
 
     const toggleReason = (reasonId) => {
         setSelectedReasons(prev => {
-            if (prev.includes(reasonId)) {
-                return prev.filter(id => id !== reasonId);
+            const current = prev || [];
+            if (current.includes(reasonId)) {
+                return current.filter(id => id !== reasonId);
             } else {
-                return [...prev, reasonId];
+                return [...current, reasonId];
             }
         });
     };
@@ -25,15 +29,16 @@ const ReasonSelection = ({ selectedReasons, appointmentReasons, setSelectedReaso
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {appointmentReasons.map((reason) => {
+                {reasons.map((reason) => {
                     const isSelected = selectedReasons.includes(reason?.reason_id);
 
                     return (
                         <button
-                            key={reason.id}
+                            key={reason.id || reason.reason_id}
+                            type="button"
                             onClick={() => toggleReason(reason.reason_id)}
                             className={`
-                                flex items-start gap-3 p-4 rounded-lg border-2 text-left transition-all
+                                flex items-start gap-3 p-4 rounded-lg border-2 text-left transition-all cursor-pointer
                                 ${isSelected
                                     ? 'border-blue-500 bg-blue-50'
                                     : 'border-gray-200 bg-white hover:border-gray-300'

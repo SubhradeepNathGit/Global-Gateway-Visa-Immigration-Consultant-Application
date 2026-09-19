@@ -244,7 +244,7 @@ const Training = () => {
           </Typography>
 
           <Grid container spacing={4} alignItems="center" justifyContent="space-between">
-            <Grid item xs={12} md={8}>
+            <Grid size={{ xs: 12, md: 8 }}>
               <Typography
                 variant="h2"
                 sx={{
@@ -261,7 +261,7 @@ const Training = () => {
               </Typography>
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box
                 sx={{
                   display: 'flex',
@@ -324,7 +324,7 @@ const Training = () => {
             sx={{ justifyContent: 'center', m: 0 }}
           >
             {trainings.map((item, idx) => (
-              <Grid item xs={12} sm={6} md={3} key={idx} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={idx} sx={{ display: 'flex', justifyContent: 'center' }}>
                 <TrainingCard {...item} />
               </Grid>
             ))}

@@ -2,40 +2,73 @@ import React from 'react'
 import { Activity, DollarSign, FileText, TrendingUp, Users } from 'lucide-react'
 
 const AnalyticsStats = ({ totalApplication, aplicationApprovalStats, avgProcessingTime, totalCountryWiseRevenue, totalApplications }) => {
+    const rawRevenue = totalCountryWiseRevenue?.[0]?.total_amount;
+    const rawTransactions = totalCountryWiseRevenue?.[0]?.total_transactions;
+
+    const totalRevenueAmount = (rawRevenue !== null && rawRevenue !== undefined && !isNaN(rawRevenue)) ? Number(rawRevenue) : 0;
+    const totalTransactionsCount = (rawTransactions !== null && rawTransactions !== undefined && !isNaN(rawTransactions)) ? Number(rawTransactions) : 0;
+
+    // Format revenue value: ₹0 initially, or e.g. ₹50K / ₹1,200 once loaded
+    const displayRevenue = totalRevenueAmount > 0
+        ? (totalRevenueAmount >= 1000 
+            ? `₹${(totalRevenueAmount / 1000).toFixed(totalRevenueAmount % 1000 === 0 ? 0 : 1)}K` 
+            : `₹${totalRevenueAmount.toLocaleString()}`)
+        : '₹0';
+
+    // Average revenue per application: ₹0/application initially
+    const avgPerApp = (totalRevenueAmount > 0 && totalTransactionsCount > 0)
+        ? (totalRevenueAmount / totalTransactionsCount >= 1000
+            ? `₹${((totalRevenueAmount / totalTransactionsCount) / 1000).toFixed(1)}K/application`
+            : `₹${Math.round(totalRevenueAmount / totalTransactionsCount)}/application`)
+        : '₹0/application';
+
+    const safeApplications = Number(totalApplications) || 0;
+    const avgPerMonth = safeApplications > 0 ? Math.round(safeApplications / 12) : 0;
+
+    const approvalSuccessRate = aplicationApprovalStats?.successRate;
+    const displayApprovalRate = (approvalSuccessRate !== null && approvalSuccessRate !== undefined && !isNaN(approvalSuccessRate))
+        ? `${approvalSuccessRate}%`
+        : '0%';
+
+    const approvedCount = aplicationApprovalStats?.approvedStats?.totalApproved ?? 0;
+
+    const safeProcessingTime = Number(avgProcessingTime) || 0;
+    const processingTimeText = `${safeProcessingTime} ${safeProcessingTime === 1 ? 'day' : 'days'}`;
+
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[
                 {
                     icon: DollarSign,
                     title: 'Total Revenue',
-                    value: `₹${(totalCountryWiseRevenue?.[0]?.total_amount / 1000).toFixed(0)}K`,
+                    value: displayRevenue,
                     change: `+50%`,
-                    subtitle: `Avg: ₹${(totalCountryWiseRevenue?.[0]?.total_amount / totalCountryWiseRevenue?.[0]?.total_transactions).toFixed(1)}K/application`,
+                    subtitle: `Avg: ${avgPerApp}`,
                     bgColor: 'bg-blue-50',
                     iconBg: 'bg-blue-600'
                 },
                 {
                     icon: FileText,
                     title: 'Total Applications',
-                    value: totalApplications?.toLocaleString() ?? 0,
+                    value: safeApplications.toLocaleString(),
                     change: totalApplication?.changeText,
-                    subtitle: `Avg: ${Math.round(totalApplications / 12) ?? 0}/month`,
+                    subtitle: `Avg: ${avgPerMonth}/month`,
                     bgColor: 'bg-green-50',
                     iconBg: 'bg-green-600'
                 },
                 {
                     icon: Users,
                     title: 'Approval Rate',
-                    value: aplicationApprovalStats?.successRate ?? 0 + '%',
+                    value: displayApprovalRate,
                     change: '+8.2%',
-                    subtitle: (aplicationApprovalStats?.approvedStats?.totalApproved ?? 0) + ' approved this year',
+                    subtitle: `${approvedCount} approved this year`,
                     bgColor: 'bg-purple-50',
                     iconBg: 'bg-purple-600'
                 },
                 {
                     icon: Activity,
                     title: 'Avg Processing Time',
-                    value: avgProcessingTime + `${avgProcessingTime > 1 ? ' days' : ' day'}`,
+                    value: processingTimeText,
                     change: '+5.1%',
                     subtitle: 'Target: 5 days',
                     bgColor: 'bg-orange-50',

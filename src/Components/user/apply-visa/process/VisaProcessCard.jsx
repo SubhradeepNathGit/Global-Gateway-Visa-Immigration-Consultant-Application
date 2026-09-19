@@ -1,119 +1,48 @@
-import React from 'react'
-import { Box, Typography, Card, CardContent, Avatar } from '@mui/material';
-import { motion as Motion } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
 
 const VisaProcessCard = ({ id, title, description, image, delay }) => {
-
-    const stepVariants = {
-        hidden: { opacity: 0, scale: 0.8 },
-        visible: {
-            opacity: 1,
-            scale: 1,
-            transition: {
-                duration: 0.6,
-                ease: 'easeOut'
-            }
-        }
-    };
-
     return (
-        <Motion.div
-            key={id}
-            variants={stepVariants}
-            initial="hidden"
-            whileInView="visible"
+        <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ delay: delay }}
-
+            transition={{ duration: 0.5, delay, ease: 'easeOut' }}
+            className="flex flex-col items-center text-center relative z-10 h-full w-full"
         >
-            <Box textAlign="center">
-                <Box position="relative" display="inline-block" mb={4}>
-                    <Box
-                        sx={{
-                            width: 200,
-                            height: 200,
-                            borderRadius: '50%',
-                            overflow: 'hidden',
-                            boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
-                            position: 'relative',
-                            border: '4px solid white'
-                        }}
-                    >
-                        <img
-                            src={image}
-                            alt={title}
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                objectPosition: 'center'
-                            }}
-                        />
-                    </Box>
-
-                    <Avatar
-                        sx={{
-                            width: 60,
-                            height: 60,
-                            backgroundColor: '#dc2626',
-                            color: 'white',
-                            fontSize: '1.25rem',
-                            fontWeight: 700,
-                            position: 'absolute',
-                            bottom: 10,
-                            right: 10,
-                            border: '4px solid white',
-                            boxShadow: '0 8px 20px rgba(220, 38, 38, 0.4)',
-                            zIndex: 2
-                        }}
-                    >
-                        {id}
-                    </Avatar>
-                </Box>
-
-                <Card
-                    elevation={0}
-                    sx={{
-                        backgroundColor: '#f1f5f9',
-                        borderRadius: '16px',
-                        boxShadow: 'none',
-                        border: 'none',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                            backgroundColor: '#e2e8f0',
-                            transform: 'translateY(-2px)'
-                        }
-                    }}
+            {/* Circle image with step badge */}
+            <div className="relative inline-block mb-3.5 flex-shrink-0">
+                <div
+                    className="w-28 h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-white bg-white relative z-10 transition-transform duration-300 hover:scale-105"
+                    style={{ boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }}
                 >
-                    <CardContent sx={{ p: { xs: 3, md: 4 } }}>
-                        <Typography
-                            variant="h5"
-                            sx={{
-                                fontSize: { xs: '1.25rem', md: '1.5rem' },
-                                fontWeight: 700,
-                                color: '#1e293b',
-                                mb: 2,
-                                lineHeight: 1.3
-                            }}
-                        >
-                            {title}
-                        </Typography>
+                    <img
+                        src={image}
+                        alt={title}
+                        className="w-full h-full object-cover object-center"
+                    />
+                </div>
 
-                        <Typography
-                            variant="body1"
-                            sx={{
-                                color: '#64748b',
-                                fontSize: { xs: '0.95rem', md: '1rem' },
-                                lineHeight: 1.6
-                            }}
-                        >
-                            {description}
-                        </Typography>
-                    </CardContent>
-                </Card>
-            </Box>
-        </Motion.div>
-    )
-}
+                {/* Step number badge */}
+                <div
+                    className="absolute bottom-1 right-1 w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-[#e53935] border-2 border-white flex items-center justify-center z-20 shadow-md"
+                    style={{ boxShadow: '0 4px 12px rgba(229,57,53,0.35)' }}
+                >
+                    <span className="text-xs lg:text-sm font-bold text-white leading-none">{id}</span>
+                </div>
+            </div>
 
-export default VisaProcessCard
+            {/* Text card - Equal size across all cards */}
+            <div className="bg-[#f8fafc] border border-gray-100 rounded-2xl p-5 w-full flex-1 flex flex-col justify-start min-h-[140px] transition-all duration-300 hover:bg-[#f1f5f9] hover:border-gray-200">
+                <h3 className="text-base lg:text-lg font-bold text-[#2c3e50] mb-2 leading-snug">
+                    {title}
+                </h3>
+                <p className="text-xs lg:text-sm text-[#6c757d] leading-relaxed">
+                    {description}
+                </p>
+            </div>
+        </motion.div>
+    );
+};
+
+export default VisaProcessCard;

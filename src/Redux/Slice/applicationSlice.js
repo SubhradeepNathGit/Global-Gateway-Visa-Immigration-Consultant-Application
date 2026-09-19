@@ -3,16 +3,17 @@ import supabase from "../../util/Supabase/supabase";
 
 // delete removed additional uploaded document from bucket
 async function deleteRemovedVisaDocument(applicationId, folder, payload) {
-  // console.log('Received visa data to remove deleted doc from bucket', applicationId, payload);
-
   try {
     let existingDocName = [];
     const { data, error } = await supabase.from("application_visa_details")
-      .select(`document1_name,document2_name,document3_name,document4_name,document5_name`).eq("application_id", applicationId).single();
+      .select(`document1_name,document2_name,document3_name,document4_name,document5_name`).eq("application_id", applicationId).maybeSingle();
 
     if (error) {
       console.error(error);
-    } else {
+      return;
+    }
+
+    if (data) {
       existingDocName = [
         data.document1_name,
         data.document2_name,
@@ -21,42 +22,35 @@ async function deleteRemovedVisaDocument(applicationId, folder, payload) {
         data.document5_name,
       ].filter(Boolean);
     }
-    const availableDocName = payload?.supportingDocs?.map(item => item.docName);
-    // console.log(existingDocName, availableDocName);
+    const availableDocName = (payload?.supportingDocs || []).map(item => item?.docName).filter(Boolean);
 
     const deletedDocName = existingDocName.filter(x => !availableDocName.includes(x));
-    // console.log('Deleted Doc name', deletedDocName);
 
-    for (let i = 0; i <= deleteDocument.length; i++) {
-      const res = await supabase.storage.from("documents").remove(`${folder}/${deletedDocName[i]}`);
-      // console.log('Response for deleted document from bucket', res);
+    if (deletedDocName.length > 0) {
+      const pathsToRemove = deletedDocName.map(name => `${folder}/${name}`);
+      await supabase.storage.from("documents").remove(pathsToRemove);
     }
   }
   catch (err) {
-    console.log('Error occured', err);
+    console.log('Error occurred while deleting removed visa document:', err);
   }
 }
 
 
 // delete additional uploaded document from bucket
 async function deleteVisaDocument(applicationId, folder, nameKey) {
-  // console.log("Document deletion application I'd", applicationId, " from", folder," of document ",nameKey);
-
   try {
     // Fetch existing application documents
-    const { data: doc, error: fetchErr } = await supabase.from("application_visa_details").select(nameKey).eq("application_id", applicationId).single();
-    // console.log('Fetched document', doc);
-    // console.log('Deleted doc name', doc[nameKey]);
+    const { data: doc, error: fetchErr } = await supabase.from("application_visa_details").select(nameKey).eq("application_id", applicationId).maybeSingle();
 
     if (fetchErr) throw fetchErr;
+    if (!doc) return null;
 
     const deleted_doc_name = doc[nameKey];
 
     // delete old documents from bucket
     if (deleted_doc_name) {
-      // console.log('Deleted doc name', deleted_doc_name);
-      const res = await supabase.storage.from("documents").remove(`${folder}/${deleted_doc_name}`);
-      // console.log('Response for deleting doc', res);
+      await supabase.storage.from("documents").remove([`${folder}/${deleted_doc_name}`]);
     }
 
     return deleted_doc_name;
@@ -69,24 +63,18 @@ async function deleteVisaDocument(applicationId, folder, nameKey) {
 
 // delete uploaded document from bucket
 async function deleteDocument(applicationId, folder) {
-  // console.log("Document deletion application I'd", applicationId, " from", folder);
-
   try {
     // Fetch existing application documents
-    const { data: doc, error: fetchErr } = await supabase.from("application_documents").select("*").eq("application_id", applicationId).single();
-    // console.log('Fetched document', doc);
+    const { data: doc, error: fetchErr } = await supabase.from("application_documents").select("*").eq("application_id", applicationId).maybeSingle();
 
     if (fetchErr) throw fetchErr;
+    if (!doc) return null;
 
     const deleted_doc = folder === 'passport' ? doc?.passport_name : folder === 'photo' ? doc?.photo_name : doc?.bank_statement_name;
 
     // delete old documents from bucket
     if (deleted_doc) {
-      // console.log('Deleted doc id', deleted_doc,folder);
-
-      const res = await supabase.storage.from("documents").remove(`${folder}/${deleted_doc}`);
-      // console.log('Response for deleting doc', res);
-
+      await supabase.storage.from("documents").remove([`${folder}/${deleted_doc}`]);
     }
 
     return deleted_doc;
@@ -153,13 +141,29 @@ export const saveStepPersonal = createAsyncThunk("applicationSlice/saveStepPerso
   async ({ applicationId, payload }) => {
     // console.log('Received personal data for application', applicationId, payload);
 
-    const res = await supabase.from("application_personal_info")
-      .upsert({ application_id: applicationId, ...payload }, { onConflict: "application_id" })
-      .select().single();
-    // console.log('Response for adding personal details for application in slice', res);
+    const { data: existing } = await supabase
+      .from("application_personal_info")
+      .select("id")
+      .eq("application_id", applicationId)
+      .maybeSingle();
+
+    let res;
+    if (existing) {
+      res = await supabase
+        .from("application_personal_info")
+        .update(payload)
+        .eq("id", existing.id)
+        .select()
+        .single();
+    } else {
+      res = await supabase
+        .from("application_personal_info")
+        .insert({ application_id: applicationId, ...payload })
+        .select()
+        .single();
+    }
 
     if (res.error) throw res.error;
-
     return res.data;
   }
 );
@@ -170,13 +174,29 @@ export const saveStepPassport = createAsyncThunk("applicationSlice/saveStepPassp
   async ({ applicationId, payload }) => {
     // console.log('Received passport data for application', applicationId, payload);
 
-    const res = await supabase.from("application_passport")
-      .upsert({ application_id: applicationId, ...payload }, { onConflict: "application_id" })
-      .select().single();
-    // console.log('Response for adding passport details for application in slice', res);
+    const { data: existing } = await supabase
+      .from("application_passport")
+      .select("id")
+      .eq("application_id", applicationId)
+      .maybeSingle();
+
+    let res;
+    if (existing) {
+      res = await supabase
+        .from("application_passport")
+        .update(payload)
+        .eq("id", existing.id)
+        .select()
+        .single();
+    } else {
+      res = await supabase
+        .from("application_passport")
+        .insert({ application_id: applicationId, ...payload })
+        .select()
+        .single();
+    }
 
     if (res.error) throw res.error;
-
     return res.data;
   }
 );
@@ -185,52 +205,74 @@ export const saveStepPassport = createAsyncThunk("applicationSlice/saveStepPassp
 // Save visa details
 export const saveVisaDetails = createAsyncThunk("applicationSlice/saveVisaDetails",
   async ({ applicationId, payload }) => {
-    // console.log('Received visa data for application', applicationId, payload);
-
-    // Fetch existing application documents
-    const { data: doc, error: fetchErr } = await supabase.from("application_documents").select("*").eq("application_id", applicationId).single();
-    // console.log('Fetched document', doc);
+    console.log('Received visa data for application', applicationId, payload);
 
     const uploadedDocs = {};
 
     for (let i = 1; i <= 5; i++) {
-      const fileKey = `document${i}_file`;
       const pathKey = `document${i}_path`;
       const nameKey = `document${i}_name`;
+      const doc = payload?.supportingDocs?.[i - 1];
 
-      if (payload.supportingDocs[i - 1] && !payload.supportingDocs[i - 1].isOld) {
-        // console.log("Doc details", payload.supportingDocs[i - 1]);
-
-        // delete old document
-        const docName = payload?.supportingDocs[i - 1]?.docName;
+      if (doc && !doc.isOld) {
+        // New file — delete old from bucket first, then upload
         await deleteVisaDocument(applicationId, 'additional', nameKey);
 
-        const upload = await uploadFileToBucket("additional", payload.supportingDocs[i - 1].file);
-        // console.log('Upload response', upload);
-
-        uploadedDocs[nameKey] = upload.docName;
-        uploadedDocs[pathKey] = upload.url;
-        uploadedDocs[fileKey] = upload;
-      }
-      else {
-        uploadedDocs[nameKey] = payload?.supportingDocs[i - 1]?.docName || null;
-        uploadedDocs[pathKey] = payload?.supportingDocs[i - 1]?.url || null;
-        uploadedDocs[fileKey] = payload?.supportingDocs[i - 1]?.file || null;
+        const fileToUpload = doc.file instanceof File ? doc.file : doc.file?.file;
+        if (fileToUpload) {
+          const upload = await uploadFileToBucket("additional", fileToUpload);
+          uploadedDocs[nameKey] = upload?.docName || null;
+          uploadedDocs[pathKey] = upload?.url || null;
+        } else {
+          uploadedDocs[nameKey] = doc?.docName || null;
+          uploadedDocs[pathKey] = doc?.url || null;
+        }
+      } else {
+        // Old/existing file — preserve as-is
+        uploadedDocs[nameKey] = doc?.docName || null;
+        uploadedDocs[pathKey] = doc?.url || null;
       }
     }
 
     await deleteRemovedVisaDocument(applicationId, 'additional', payload);
 
-    const res = await supabase.from("application_visa_details")
-      .upsert(
-        { application_id: applicationId, visa_type: payload.visaType, validity: payload.validity, entry_type: payload.entry_type, visaId: payload.visaId, purpose: payload.visaPurpose, ...uploadedDocs },
-        { onConflict: "application_id" }
-      );
-    // console.log('Response for adding visa details for application in slice', res);
+    // Build save data — exclude visaId (camelCase column causes PGRST204 schema cache issues)
+    const visaDataToSave = {
+      visa_type: payload.visaType || null,
+      validity: payload.validity || null,
+      entry_type: payload.entry_type || null,
+      purpose: payload.visaPurpose || null,
+      ...uploadedDocs
+    };
 
-    if (res.error) throw res.error;
-    return res.data;
+    // Check if record already exists — use insert or update accordingly
+    const { data: existingRecord } = await supabase
+      .from("application_visa_details")
+      .select("id")
+      .eq("application_id", applicationId)
+      .maybeSingle();
 
+    let res;
+    if (existingRecord?.id) {
+      res = await supabase
+        .from("application_visa_details")
+        .update(visaDataToSave)
+        .eq("id", existingRecord.id)
+        .select()
+        .single();
+    } else {
+      res = await supabase
+        .from("application_visa_details")
+        .insert({ application_id: applicationId, ...visaDataToSave })
+        .select()
+        .single();
+    }
+
+    if (res?.error) {
+      console.error("Supabase visa details save error:", res.error);
+      throw res.error;
+    }
+    return res?.data;
   }
 );
 
@@ -246,17 +288,17 @@ export const saveStepDocuments = createAsyncThunk("applicationSlice/saveStepDocu
 
     // Only upload if it's a NEW file
     if (payload.passportFile && !payload.passportFile.isOld) {
-      deleteDocument(applicationId, "passport");
+      await deleteDocument(applicationId, "passport");
       passportUpload = await uploadFileToBucket("passport", payload.passportFile.file);
     }
 
     if (payload.photoFile && !payload.photoFile.isOld) {
-      deleteDocument(applicationId, "photo");
+      await deleteDocument(applicationId, "photo");
       photoUpload = await uploadFileToBucket("photo", payload.photoFile.file);
     }
 
     if (payload.bankStatementFile && !payload.bankStatementFile.isOld) {
-      deleteDocument(applicationId, "bank_statement");
+      await deleteDocument(applicationId, "bank_statement");
       bankStatementUpload = await uploadFileToBucket("bank_statement", payload.bankStatementFile.file);
     }
 
@@ -265,27 +307,39 @@ export const saveStepDocuments = createAsyncThunk("applicationSlice/saveStepDocu
     // console.log('After bank statement uploading data', bankStatementUpload);
 
     const payloadToSave = {
-      passport_file: passportUpload || payload.passportFile,
-      photo_file: photoUpload || payload.photoFile,
-      bank_statement_file: bankStatementUpload || payload.bankStatementFile,
-      passport_name: passportUpload?.docName || payload.passportFile?.docName,
-      photo_name: photoUpload?.docName || payload.photoFile?.docName,
-      bank_statement_name: bankStatementUpload?.docName || payload.bankStatementFile?.docName,
-      passport_path: passportUpload?.url || payload.passportFile?.url,
-      photo_path: photoUpload?.url || payload.photoFile?.url,
-      bank_statement_path: bankStatementUpload?.url || payload.bankStatementFile?.url,
+      passport_name: passportUpload?.docName || payload.passportFile?.docName || null,
+      photo_name: photoUpload?.docName || payload.photoFile?.docName || null,
+      bank_statement_name: bankStatementUpload?.docName || payload.bankStatementFile?.docName || null,
+      passport_path: passportUpload?.url || payload.passportFile?.url || null,
+      photo_path: photoUpload?.url || payload.photoFile?.url || null,
+      bank_statement_path: bankStatementUpload?.url || payload.bankStatementFile?.url || null,
     };
 
-    // console.log("Uploaded doc object",payloadToSave);
+    // console.log("Uploaded doc object", payloadToSave);
 
-    const res = await supabase.from("application_documents")
-      .upsert(
-        { application_id: applicationId, ...payloadToSave },
-        { onConflict: "application_id" }
-      );
+    // Check if record already exists to avoid 400 ON CONFLICT error
+    const { data: existingDoc, error: checkErr } = await supabase
+      .from("application_documents")
+      .select("id")
+      .eq("application_id", applicationId)
+      .maybeSingle();
+
+    let res;
+    if (existingDoc) {
+      res = await supabase
+        .from("application_documents")
+        .update(payloadToSave)
+        .eq("id", existingDoc.id)
+        .select();
+    } else {
+      res = await supabase
+        .from("application_documents")
+        .insert({ application_id: applicationId, ...payloadToSave })
+        .select();
+    }
 
     if (res.error) throw res.error;
-    return res.data;
+    return res.data?.[0] || null;
   }
 );
 
@@ -293,12 +347,16 @@ export const saveStepDocuments = createAsyncThunk("applicationSlice/saveStepDocu
 // add payment details
 export const saveStepPayment = createAsyncThunk("applicationSlice/saveStepPayment",
   async ({ applicationId, payload }) => {
-    // console.log('Received payment details in slice', applicationId, payload);
+    const { data: existing } = await supabase.from("application_payment").select("id").eq("application_id", applicationId).maybeSingle();
 
-    const res = await supabase.from("application_payment").upsert({ application_id: applicationId, ...payload });
-    // console.log('Response after adding payment details of application', res);
+    let res;
+    if (existing?.id) {
+      res = await supabase.from("application_payment").update({ ...payload, application_id: applicationId }).eq("id", existing.id);
+    } else {
+      res = await supabase.from("application_payment").insert([{ application_id: applicationId, ...payload }]);
+    }
 
-    if (res.error) throw res.error;
+    if (res?.error) throw res.error;
 
     return payload;
   }
@@ -375,7 +433,7 @@ export const getActiveApplication_specificCountry_specificUser = createAsyncThun
     // console.log('Fetching active application for specific country and specific user', country_id, user_id);
 
     try {
-      const res = await supabase.from("applications").select("*").eq("user_id", user_id).eq("country_id", country_id).order("created_at", { ascending: false }).limit(1).single();
+      const res = await supabase.from("applications").select("*").eq("user_id", user_id).eq("country_id", country_id).order("created_at", { ascending: false }).limit(1).maybeSingle();
       // console.log('Response for fetching pending application', res);
 
       if (res.error) return rejectWithValue(res.error.message);

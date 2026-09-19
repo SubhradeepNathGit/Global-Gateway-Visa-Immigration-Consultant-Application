@@ -125,22 +125,42 @@ html {
 }
 
 
-/* Fix Chrome / Edge autofill white background globally */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-textarea:-webkit-autofill,
-select:-webkit-autofill {
+/* Fix Chrome / Edge autofill for dark-themed inputs (with white text) */
+input.text-white:-webkit-autofill,
+input.text-white:-webkit-autofill:hover,
+input.text-white:-webkit-autofill:focus,
+textarea.text-white:-webkit-autofill,
+select.text-white:-webkit-autofill {
   -webkit-text-fill-color: white !important;
   -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
   transition: background-color 5000s ease-in-out 0s;
-  caret-color: red ;
+  caret-color: red;
+}
+
+/* Fix Chrome / Edge autofill for light / standard inputs so text is dark and visible */
+input:not(.text-white):-webkit-autofill,
+input:not(.text-white):-webkit-autofill:hover,
+input:not(.text-white):-webkit-autofill:focus,
+textarea:not(.text-white):-webkit-autofill,
+select:not(.text-white):-webkit-autofill {
+  -webkit-text-fill-color: #111827 !important;
+  -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* Custom Notification Scrollbar */
 .custom-notification-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #ef4444 #ffffff;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .custom-notification-scrollbar::-webkit-scrollbar {

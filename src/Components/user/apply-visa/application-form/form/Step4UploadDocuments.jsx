@@ -248,7 +248,7 @@ export default function Step4UploadDocuments({ onNext, onBack, user_id, applicat
   const allUploaded = completedCount === totalCount;
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-6 sm:py-8">
+    <div className="w-full py-6 sm:py-8">
       {/* Header */}
       <div className="mb-8 sm:mb-10">
         <div className="flex items-center gap-3 mb-4">

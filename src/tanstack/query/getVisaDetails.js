@@ -10,7 +10,7 @@ export const useVisaDetails = ({ countryId, visitorCountryId, visaId }) => {
                 visitorCountryId,
                 visaId,
             }),
-        enabled: !!countryId && !!visitorCountryId && !!visaId,
+        enabled: !!countryId && !!visitorCountryId && !!visaId && visaId !== "0",
         staleTime: 5 * 60 * 1000,
     })
 }

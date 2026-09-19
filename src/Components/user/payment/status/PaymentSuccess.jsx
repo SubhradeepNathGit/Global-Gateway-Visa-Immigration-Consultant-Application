@@ -5,15 +5,12 @@ import StatusCard from "./success/StatusCard";
 import SuccessHeader from "./success/SuccessHeader";
 import SuccessFooter from "./success/SuccessFooter";
 import ActionButton from "./success/ActionButton";
-import Confetti from "./success/Confetti";
 
 const PaymentSuccess = ({ type, paymentDetails, personalInfoData, currentDate, passportData, visaData, visaSpecification, handlePrintReceipt,
   handleShareStatus, showConfetti, no_course, promocode }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-inter">
-      <Confetti showConfetti={showConfetti} />
-
       <div className="print-receipt">
         {/* Blue Header Section - Full Width */}
         <SuccessHeader paymentDetails={paymentDetails} type={type} />

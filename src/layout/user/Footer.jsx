@@ -4,12 +4,12 @@ import { Email, Phone, Twitter, Facebook, Pinterest, Instagram } from '@mui/icon
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 
 const galleryImages = [
-  'Footer1.jpg',
-  'Footer2.jpeg',
-  'Footer3.jpeg',
-  'Footer4.jpg',
-  'Footer5.jpg',
-  'Footer6.jpg'
+  '/Footer1.jpg',
+  '/Footer2.jpeg',
+  '/Footer3.jpeg',
+  '/Footer4.jpg',
+  '/Footer5.jpg',
+  '/Footer6.jpg'
 ];
 
 const Footer = () => {
@@ -117,7 +117,7 @@ const Footer = () => {
       <Box sx={{ px: { xs: 3, md: 8 }, py: 5 }}>
         <Grid container spacing={4} justifyContent="space-between">
           {/* Contact Section */}
-          <Grid item xs={12} sm={6} md={2.2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2.2 }}>
             <Typography
               sx={{
                 color: 'white',
@@ -149,7 +149,7 @@ const Footer = () => {
           </Grid>
 
           {/* Explore Section */}
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <Typography
               sx={{ color: 'white', fontWeight: 'bold', fontSize: '16px', mb: 2.5 }}
             >
@@ -168,7 +168,7 @@ const Footer = () => {
           </Grid>
 
           {/* Visa Section */}
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <Typography
               sx={{ color: 'white', fontWeight: 'bold', fontSize: '16px', mb: 2.5 }}
             >
@@ -187,7 +187,7 @@ const Footer = () => {
           </Grid>
 
           {/* Services Section */}
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <Typography
               sx={{ color: 'white', fontWeight: 'bold', fontSize: '16px', mb: 2.5 }}
             >
@@ -206,7 +206,7 @@ const Footer = () => {
           </Grid>
 
           {/* Gallery Section */}
-          <Grid item xs={12} md={3.5}>
+          <Grid size={{ xs: 12, md: 3.5 }}>
             <Typography
               sx={{ color: 'white', fontWeight: 'bold', fontSize: '16px', mb: 2.5 }}
             >

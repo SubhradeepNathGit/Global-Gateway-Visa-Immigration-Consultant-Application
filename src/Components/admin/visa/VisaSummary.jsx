@@ -20,19 +20,19 @@ const VisaSummary = ({ visa }) => {
                 <div className="bg-slate-700/30 border border-slate-600/50 rounded-lg p-4">
                     <div className="text-slate-400 text-xs mb-1.5 font-medium">Active Countries</div>
                     <div className="text-white text-2xl font-bold">
-                        {data?.activeCountries ?? 'N/A'}
+                        {data?.activeCountries ?? 0}
                     </div>
                 </div>
                 <div className="bg-slate-700/30 border border-slate-600/50 rounded-lg p-4">
                     <div className="text-slate-400 text-xs mb-1.5 font-medium">Blocked Countries</div>
                     <div className="text-white text-2xl font-bold">
-                        {data?.blockedCountries ?? 'N/A'}
+                        {data?.blockedCountries ?? 0}
                     </div>
                 </div>
                 <div className="bg-slate-700/30 border border-slate-600/50 rounded-lg p-4">
                     <div className="text-slate-400 text-xs mb-1.5 font-medium">Total Applications</div>
                     <div className="text-white text-2xl font-bold">
-                        {data?.totalApplications?.toLocaleString() ?? 'N/A'}
+                        {data?.totalApplications != null ? data.totalApplications.toLocaleString() : 0}
                     </div>
                 </div>
             </div>

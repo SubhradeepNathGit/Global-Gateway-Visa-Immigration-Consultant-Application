@@ -36,7 +36,7 @@ const CountryVisaRow = ({ countryId, visaId }) => {
             <td className="px-4 py-3 text-slate-300 text-sm font-medium">
                 {isCountryList ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" /> : countryList?.length ?? 'N/A'}
             </td>
-            <td className="px-4 py-3 text-slate-300 text-sm font-medium">{isApplicationLoading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" /> : application?.length ?? 'N/A'}</td>
+            <td className="px-4 py-3 text-slate-300 text-sm font-medium">{isApplicationLoading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" /> : (application?.length ?? 0)}</td>
             <td className="px-4 py-3">
                 {isLoading ? (
                     <span className="text-slate-400 text-xs">

@@ -138,56 +138,65 @@ const CountrySetup = () => {
 
   return (
     <div
-      className="min-h-screen flex justify-center items-center px-4 py-8"
+      className="flex h-screen w-screen overflow-hidden"
       style={{
         backgroundImage: `url(/Slider1.jpg)`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
       }}
     >
-      <div
-        className="w-full max-w-6xl flex flex-col md:flex-row shadow-2xl rounded-xl overflow-hidden
-        md:h-[650px]"
-      >
-        {/* LEFT VIDEO (TABLET + DESKTOP) */}
-        <div className="hidden md:block md:w-1/2 relative bg-black/80">
-          <video autoPlay loop muted playsInline poster="/Slider1.jpg" className="absolute w-full h-full object-cover">
-            <source src="/signup.mp4" type="video/mp4" />
-          </video>
 
-          <div className="relative z-10 text-white h-full px-10 flex flex-col justify-center bg-black/50">
-            <h4 className="text-3xl font-bold mb-4">
-              Country Setup
-            </h4>
-            <p className="text-base mb-6">
-              Add your embassy country details to continue verification
-            </p>
+      {/* ── LEFT: VIDEO PANEL ── */}
+      <div className="hidden md:flex md:w-1/2 relative bg-black flex-col">
+        <video
+          autoPlay loop muted playsInline poster="/Slider1.jpg"
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/signup.mp4" type="video/mp4" />
+        </video>
 
-            <div className="flex items-center gap-2 text-sm text-white/70">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>One-time setup process</span>
-            </div>
+        {/* dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/40 to-black/60" />
+
+        <div className="relative z-10 text-white h-full px-12 flex flex-col justify-center">
+          <div className="mb-3">
+            <span className="text-xs tracking-[0.25em] uppercase text-white/50 font-medium">Embassy Portal</span>
+          </div>
+          <h2 className="text-4xl font-bold mb-4 leading-tight">
+            Country Setup
+          </h2>
+          <p className="text-base text-white/70 mb-8 leading-relaxed max-w-xs">
+            Add your embassy country details to continue the verification process.
+          </p>
+
+          <div className="flex items-center gap-2 text-sm text-white/50">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+            </svg>
+            <span>One-time setup process</span>
           </div>
         </div>
+      </div>
 
-        {/* RIGHT FORM (ALL DEVICES) */}
-        <form onSubmit={handleSubmit(handleRegisteredCountry)}
-          className="w-full md:w-1/2 bg-black/20 backdrop-blur-md text-white
-          px-6 sm:px-8 md:px-12 py-8 flex flex-col justify-center gap-6">
+      {/* ── RIGHT: FORM PANEL ── */}
+      <form
+        onSubmit={handleSubmit(handleRegisteredCountry)}
+        className="w-full md:w-1/2 bg-black/60 backdrop-blur-md text-white flex flex-col overflow-y-auto glass-scrollbar"
+        style={{ minHeight: '100vh' }}
+      >
+        <div className="flex flex-col justify-center flex-1 px-8 sm:px-12 md:px-16 py-12">
 
-          <h4 className="text-2xl sm:text-3xl font-bold">
-            Embassy Country Details
-          </h4>
+          <div className="mb-8">
+            <span className="text-xs tracking-[0.25em] uppercase text-white/40 font-medium block mb-2">Step 2 of 2</span>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-2 leading-tight">
+              Embassy Country Details
+            </h2>
+            <p className="text-sm text-white/50">
+              This information will be reviewed by admin before approval.
+            </p>
+          </div>
 
-          <p className="text-sm text-white/60">
-            This information will be reviewed by admin before approval
-          </p>
+          <div className="flex flex-col gap-6">
 
           <Controller name="country" control={control} rules={{ required: "Country is required" }}
             render={({ field }) => (
@@ -214,21 +223,21 @@ const CountrySetup = () => {
                   message: "Description should be between 400–600 characters",
                 },
                 pattern: {
-                  value: /^[A-Za-z0-9,.;\-()\[\]{}'" ]+$/,
+                  value: /^[A-Za-z0-9,.;\-()[\]{}'" ]+$/,
                   message: "Only letters, numbers, spaces, and characters , . ; - ( ) [ ] { } ' \" are allowed",
                 }
               })}
               placeholder=" "
               className="w-full px-4 py-3 rounded-md bg-transparent text-white placeholder-white/70
-              border border-white/50 focus:border-white transition duration-300
+              border border-white/30 focus:border-white transition duration-300
               focus:outline-none peer resize-none glass-scrollbar"
             />
             <label
               className="absolute left-3 transition-all duration-300 pointer-events-none
               peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-white/70
-              peer-focus:-top-2 peer-focus:text-xs peer-focus:bg-black/50 peer-focus:px-1 peer-focus:text-white
+              peer-focus:-top-2 peer-focus:text-xs peer-focus:bg-[#0b1020] peer-focus:px-1 peer-focus:text-white
               peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:text-xs
-              peer-[:not(:placeholder-shown)]:bg-black/50 peer-[:not(:placeholder-shown)]:px-1"
+              peer-[:not(:placeholder-shown)]:bg-[#0b1020] peer-[:not(:placeholder-shown)]:px-1"
             >
               Country Description
             </label>
@@ -245,7 +254,7 @@ const CountrySetup = () => {
             onDragLeave={() => setDragActive(false)}
             onDrop={handleDrop}
             className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition
-            ${dragActive ? "border-white bg-white/10" : "border-white/40"}`}>
+            ${dragActive ? "border-white bg-white/10" : "border-white/30"}`}>
 
             <input
               type="file"
@@ -267,10 +276,10 @@ const CountrySetup = () => {
               ) : (
                 <p className="text-sm flex flex-col">
                   <span className="text-white/70">
-                    Drag & drop country image or{" "}
+                    Drag &amp; drop country image or{" "}
                     <span className="underline">browse</span>
                   </span>
-                  <span className="text-[12px]">
+                  <span className="text-[12px] text-white/40 mt-1">
                     Upload an image (recommended: 800x600px)
                   </span>
                 </p>
@@ -283,15 +292,12 @@ const CountrySetup = () => {
                 required: "Country image is required",
                 validate: (file) => {
                   if (!file) return "Country image is required";
-
                   if (!file.type?.match(/image\/(png|jpeg|jpg)/)) {
                     return "Only PNG, JPG, JPEG files are allowed";
                   }
-
                   if (file.size > 2 * 1024 * 1024) {
                     return "Maximum file size is 2 MB";
                   }
-
                   return true;
                 },
               })}
@@ -304,11 +310,16 @@ const CountrySetup = () => {
             )}
           </div>
 
-          <button type="submit" className={`py-3 mt-2 rounded-md font-semibold text-white bg-black hover:bg-black/80 transition duration-300 ${isAllCountryListLoading ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+          <button
+            type="submit"
+            className={`py-3 rounded-md font-semibold text-white bg-white/10 border border-white/20 hover:bg-white/20 transition duration-300 ${isAllCountryListLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+          >
             {isAllCountryListLoading ? 'Processing...' : 'Submit for Review'}
           </button>
-        </form>
-      </div>
+
+          </div>
+        </div>
+      </form>
     </div>
   );
 };

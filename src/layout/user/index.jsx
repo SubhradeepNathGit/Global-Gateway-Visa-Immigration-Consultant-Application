@@ -24,14 +24,19 @@ const UserLayout = () => {
     pathname.startsWith('/coaching/course/') &&
     pathname !== '/coaching/course';
 
-  // Hide BOTH navbar & footer on cart page
-  const hideBoth = pathname === '/coaching/cart';
+  // Hide BOTH navbar & footer on cart page, visaprocess page, and policy page
+  const hideBoth =
+    pathname === '/coaching/cart' ||
+    pathname.startsWith('/visaprocess') ||
+    pathname.startsWith('/policy');
+
+  const isHome = pathname === '/' || pathname === '';
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+    <div className={`min-h-screen ${isHome ? 'bg-black' : 'bg-white'} text-gray-900 flex flex-col`}>
       {!hideNavbar && !hideBoth && <Navbar />}
 
-      <div className="flex-1 bg-white">
+      <div className={`flex-1 ${isHome ? 'bg-black' : 'bg-white'}`}>
         <Outlet />
       </div>
       <GlobalLiveChat />

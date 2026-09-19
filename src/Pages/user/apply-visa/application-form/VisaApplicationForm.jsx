@@ -130,7 +130,7 @@ export default function VisaApplicationForm() {
       )}
 
       {/* Main Content Container */}
-      <div className={`${step === 6 ? "w-full" : "max-w-6xl mx-auto -mt-10 px-10 py-8"}`}>
+      <div className={`${step === 6 ? "w-full" : "max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8"}`}>
         <div
           className={`transition-all duration-300 ${step === 6
             ? ""

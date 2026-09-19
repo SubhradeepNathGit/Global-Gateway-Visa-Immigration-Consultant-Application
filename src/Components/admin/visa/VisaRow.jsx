@@ -123,8 +123,7 @@ const VisaRow = ({ expandedVisa, setExpandedVisa, visa }) => {
                 </td>
                 <td className="px-6 py-4 hidden lg:table-cell">
                     <div className="text-white font-semibold text-sm text-center">
-                        {isApplicationListLoading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" /> : applicationList?.length}
-
+                        {isApplicationListLoading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" /> : (applicationList?.length ?? 0)}
                     </div>
                 </td>
                 <td className="px-6 py-4">

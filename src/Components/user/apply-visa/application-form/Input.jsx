@@ -1,8 +1,23 @@
 import React from "react";
 import { CheckCircle, AlertCircle } from "lucide-react";
 
+const getAutoComplete = (id, type, explicit) => {
+  if (explicit) return explicit;
+  if (type === "email") return "email";
+  if (type === "tel") return "tel";
+  if (id === "firstName") return "given-name";
+  if (id === "lastName") return "family-name";
+  if (id?.toLowerCase().includes("name")) return "name";
+  if (id === "address" || id?.toLowerCase().includes("address") || id?.toLowerCase().includes("street")) return "street-address";
+  if (id === "city") return "address-level2";
+  if (id === "state") return "address-level1";
+  if (id === "postalCode" || id?.toLowerCase().includes("postal") || id?.toLowerCase().includes("zip")) return "postal-code";
+  if (id === "country") return "country-name";
+  return "on";
+};
+
 const Input = React.forwardRef(({ label, id, type = "text", register, errors, icon: Icon, placeholder, description,
-  required = false, disabled = false, touched = false, ...rest }, ref) => {
+  required = false, disabled = false, touched = false, autoComplete, ...rest }, ref) => {
 
   const hasError = errors?.[id];
   const isValid = touched && !hasError;
@@ -39,7 +54,7 @@ const Input = React.forwardRef(({ label, id, type = "text", register, errors, ic
           type={type}
           placeholder={placeholder}
           disabled={disabled}
-          autoComplete={type === "email" ? "email" : type === "tel" ? "tel" : id?.includes("name") ? "name" : "off"}
+          autoComplete={getAutoComplete(id, type, autoComplete)}
           ref={ref} {...rest} {...(register ? register(id) : {})}
           className={` w-full 
               ${Icon ? "pl-11" : "pl-4"} 
@@ -100,12 +115,13 @@ const Input = React.forwardRef(({ label, id, type = "text", register, errors, ic
           animation: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         
-        /* Remove autofill yellow background */
+        /* Remove autofill yellow background and make autofill text visible */
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus {
-          -webkit-box-shadow: 0 0 0 1000px white inset;
-          -webkit-text-fill-color: #111827;
+          -webkit-box-shadow: 0 0 0 1000px white inset !important;
+          -webkit-text-fill-color: #111827 !important;
+          color: #111827 !important;
           transition: background-color 5000s ease-in-out 0s;
         }
         

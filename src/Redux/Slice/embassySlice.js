@@ -300,6 +300,18 @@ export const embassySlice = createSlice({
                 state.isEmbassyLoading = false;
                 state.hasEmbassyerror = action.payload;
             })
+
+            // Sync embassyData when logged user details or login returns an embassy profile
+            .addCase("checkUserAuthSlice/fetchLoggedUserDetails/fulfilled", (state, action) => {
+                if (action.payload?.role === "embassy") {
+                    state.embassyData = action.payload;
+                }
+            })
+            .addCase("authSlice/loginUser/fulfilled", (state, action) => {
+                if (action.payload?.user?.role === "embassy") {
+                    state.embassyData = action.payload.user;
+                }
+            });
     }
 })
 

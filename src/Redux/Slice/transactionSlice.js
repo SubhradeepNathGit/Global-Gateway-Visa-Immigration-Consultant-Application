@@ -35,17 +35,27 @@ export const fetchUserTransactions = createAsyncThunk("transactionSlice/fetchUse
 
         if (payErr) throw payErr;
 
-        const txnIds = payments.map(p => p.transaction_id);
+        // Deduplicate payments: keep only one (latest) record per application_id or transaction_id
+        const uniquePaymentsMap = new Map();
+        for (const p of (payments || [])) {
+          const key = p.application_id || p.transaction_id || p.id;
+          if (!uniquePaymentsMap.has(key)) {
+            uniquePaymentsMap.set(key, p);
+          }
+        }
+        const uniquePayments = Array.from(uniquePaymentsMap.values());
+
+        const txnIds = uniquePayments.map(p => p.transaction_id).filter(Boolean);
         const { data: txnDetails, error: txnErr } = await supabase.from("transaction_details").select("*").in("transaction_id", txnIds);
 
         if (txnErr) throw txnErr;
 
-        visaTxns = payments.map(p => ({
+        visaTxns = uniquePayments.map(p => ({
           ...p,
           txn_for: "visa",
           application: applications.find(a => a.id === p.application_id) || null,
           transaction_details:
-            txnDetails.find(t => t.transaction_id === p.transaction_id) || null,
+            txnDetails?.find(t => t.transaction_id === p.transaction_id) || null,
         }));
       }
 

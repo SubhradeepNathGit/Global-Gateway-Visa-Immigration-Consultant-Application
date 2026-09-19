@@ -16,16 +16,7 @@ const EmbassyDashboardLayout = () => {
     const { embassyData } = useSelector(state => state.embassy);
     const { data: countryDetails } = useFullCountryDetails(embassyData?.country_id);
 
-    useEffect(() => {
-        dispatch(checkLoggedInUser())
-            .then(res => {
-                // console.log('Response for fetching embassy profile', res);
-            })
-            .catch((err) => {
-                getSweetAlert('Oops...', 'Something went wrong!', 'error');
-                console.log("Error occurred", err);
-            });
-    }, [dispatch]);
+    // Redundant checkLoggedInUser removed (already handled by App.jsx and ProtectedRoute)
 
     useEffect(() => {
         if (userAuthData) {

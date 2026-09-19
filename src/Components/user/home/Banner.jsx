@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectFade, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -6,6 +6,7 @@ import 'swiper/css/effect-fade';
 import 'swiper/css/pagination';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useSelector } from 'react-redux';
 
 const bannerData = [
   {
@@ -93,13 +94,25 @@ const buttonVariants = {
 const Banner = () => {
   const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(0);
+  const isAppLoading = useSelector((state) => state.loading?.isLoading ?? false);
+  const [isReady, setIsReady] = useState(!isAppLoading);
+
+  useEffect(() => {
+    if (!isAppLoading) {
+      // Coordinate entrance smoothly right as the loader begins its fade-out
+      const timer = setTimeout(() => {
+        setIsReady(true);
+      }, 120);
+      return () => clearTimeout(timer);
+    }
+  }, [isAppLoading]);
 
   const handleDiscoverMore = () => {
     navigate('/country');
   };
 
   return (
-    <div className="w-screen h-screen overflow-hidden relative select-none">
+    <div className="w-screen h-screen overflow-hidden relative select-none bg-black">
       {/* Top Scrim for Ultimate Navbar Legibility & Luxury Feel */}
       <div 
         className="absolute top-0 left-0 right-0 h-44 md:h-56 z-20 pointer-events-none"
@@ -121,31 +134,33 @@ const Banner = () => {
             bulletClass: 'swiper-pagination-bullet !bg-white/40 !w-2.5 !h-2.5 !transition-all !duration-500',
             bulletActiveClass: 'swiper-pagination-bullet-active !bg-[#ff3c3c] !w-9 !rounded-full !shadow-[0_0_12px_rgba(255,60,60,0.6)]'
         }}
-        className="w-full h-full"
+        className="w-full h-full bg-black"
       >
         {bannerData.map((item, index) => (
           <SwiperSlide key={index}>
-            <div className="h-screen w-screen flex flex-col justify-center items-center text-white text-center px-4 relative overflow-hidden">
+            <div className="h-screen w-screen flex flex-col justify-center items-center text-white text-center px-4 relative overflow-hidden bg-black">
               
               {/* Original Photo Background - Clean & Vibrant */}
               <motion.div
                 initial={{ scale: 1 }}
-                animate={activeIndex === index ? { scale: 1.05 } : { scale: 1 }}
+                animate={(isReady && activeIndex === index) ? { scale: 1.05 } : { scale: 1 }}
                 transition={{ duration: 7, ease: "easeOut" }}
-                className="absolute inset-0 z-[-1]"
+                className="absolute inset-0 z-0 pointer-events-none"
                 style={{
                   backgroundImage: `url(${item.image})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   willChange: 'transform',
                   transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden',
+                  WebkitBackfaceVisibility: 'hidden',
                 }}
               />
 
               {/* Subtitle (Eyebrow Heading) */}
               <motion.div
                 initial="hidden"
-                animate={activeIndex === index ? 'visible' : 'hidden'}
+                animate={(isReady && activeIndex === index) ? 'visible' : 'hidden'}
                 variants={subtitleVariants}
                 className="relative z-10"
               >
@@ -157,7 +172,7 @@ const Banner = () => {
               {/* Main Title */}
               <motion.div
                 initial="hidden"
-                animate={activeIndex === index ? 'visible' : 'hidden'}
+                animate={(isReady && activeIndex === index) ? 'visible' : 'hidden'}
                 variants={titleVariants}
                 className="relative z-10 max-w-5xl"
               >
@@ -167,14 +182,13 @@ const Banner = () => {
               </motion.div>
 
               {/* Animated Premium Button */}
-             
                 <button
                   onClick={handleDiscoverMore}
-                  className="group relative overflow-hidden bg-[#ff3c3c] text-white px-10 py-3.5 rounded-sm font-bold text-[14px] tracking-[0.2em] transition-all duration-300 hover:bg-[#e03131] hover:shadow-[0_8px_25px_rgba(255,60,60,0.45)] hover:-translate-y-0.5 active:translate-y-0 border border-white/20 cursor-pointer shadow-lg"
+                  className="group relative overflow-hidden bg-[#ff3c3c] text-white px-10 py-3.5 rounded-sm font-bold text-[14px] tracking-[0.2em] transition-all duration-300 hover:bg-[#e03131] hover:-translate-y-0.5 active:translate-y-0 border border-white/20 cursor-pointer shadow-lg"
                 >
                   <span className="relative z-10">START JOURNEY</span>
                 </button>
-            
+           
               
             </div>
           </SwiperSlide>

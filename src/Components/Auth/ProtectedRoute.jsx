@@ -43,13 +43,18 @@ const ProtectedRoute = ({ children, allowedRoles = [], publicOnly = false }) => 
         );
     }
 
+    // Valid application roles from our DB
+    const validApplicationRoles = ['admin', 'embassy', 'user'];
+
     // Special case for public only routes (Login/Register/Reset Password)
     if (publicOnly && isuserAuth && !isVerifying) {
-        // Redirect to their respective dashboard
+        // Redirect to their respective dashboard ONLY once real application role is known
         const role = userAuthData?.role;
         if (role === 'admin') return <Navigate to="/admin/dashboard" replace />;
         if (role === 'embassy') return <Navigate to="/embassy/dashboard" replace />;
-        return <Navigate to="/dashboard" replace />;
+        if (role === 'user') return <Navigate to="/dashboard" replace />;
+        // Still resolving DB role — show skeleton instead of prematurely redirecting
+        return <DashboardSkeleton type={location.pathname.startsWith('/embassy') ? 'embassy' : location.pathname.startsWith('/admin') ? 'admin' : 'user'} />;
     }
 
     // If it's not a public only route and user is NOT authenticated
@@ -62,13 +67,26 @@ const ProtectedRoute = ({ children, allowedRoles = [], publicOnly = false }) => 
     }
 
     // If role-based protection is requested.
-    // Guard: only enforce role redirect if userAuthData has a .role already
-    // populated from the DB. During a tab-return re-fetch it can briefly be the
-    // raw Supabase session user (no .role), which would wrongly redirect admins.
-    if (allowedRoles.length > 0 && userAuthData?.role) {
-        const userRole = userAuthData.role;
+    // Guard: only enforce role redirect if userAuthData has a REAL application role
+    // ('admin', 'embassy', 'user') populated from the database.
+    // During an initial fetch, userAuthData may temporarily have Supabase's role='authenticated'
+    // or undefined role, which must show skeleton and NEVER trigger an incorrect redirect loop!
+    if (allowedRoles.length > 0) {
+        const userRole = userAuthData?.role;
+
+        // If the DB role has not loaded yet, wait with skeleton instead of redirecting
+        if (!validApplicationRoles.includes(userRole)) {
+            if (location.pathname.startsWith('/admin')) {
+                return <DashboardSkeleton type="admin" />;
+            }
+            if (location.pathname.startsWith('/embassy')) {
+                return <DashboardSkeleton type="embassy" />;
+            }
+            return <DashboardSkeleton type="user" />;
+        }
+
+        // Real application role is confirmed. If not authorized for this route, redirect to native dashboard
         if (!allowedRoles.includes(userRole)) {
-            // Unauthorized - redirect to their native dashboard or home
             const homePath = userRole === 'admin' ? '/admin/dashboard' : 
                            userRole === 'embassy' ? '/embassy/dashboard' : 
                            '/dashboard';

@@ -1,7 +1,64 @@
+import React, { useMemo } from 'react';
+import { CreditCard } from 'lucide-react';
 import { formatTransactionDate } from '../../../util/dateFormat/dateFormatConvertion';
 import Skeleton from '../../Skeleton';
+import { useVisaDetailsByApplicationId } from '../../../tanstack/query/getApplicationVisaDetails';
+import { useCountryByApplicationId } from '../../../tanstack/query/getCountryByApplicationId';
+
+const PaymentItem = ({ payment, getStatusColor, getStatusIcon }) => {
+    const { data: visaData } = useVisaDetailsByApplicationId(payment?.application_id);
+    const { data: countryDetails } = useCountryByApplicationId(visaData?.application_id || payment?.application_id);
+
+    const title = payment?.txn_for === "course"
+        ? payment.courses?.map((txn, index) => (
+            <span key={index}> {txn?.course_name} <br /> </span>
+        ))
+        : `${countryDetails?.name || ''} ${visaData?.visa_type || ''}`.trim() || 'Visa Application';
+
+    return (
+        <div className="border border-slate-200 rounded-lg p-6 hover:border-slate-300 transition-colors">
+            <div className="flex items-start justify-between mb-3">
+                <div>
+                    <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+                    <p className="text-2xl font-bold text-slate-900 mt-1">
+                        {payment?.currency === 'Rupee' ? '₹' : ''} {payment?.amount?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                </div>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${getStatusColor(payment?.status)}`}>
+                    {getStatusIcon(payment?.status)}
+                    {payment?.status ? (payment.status.charAt(0).toUpperCase() + payment.status.slice(1)) : ''}
+                </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm text-slate-600">
+                <div><span className="font-medium text-slate-700">Transaction ID:</span> {payment?.transaction_details?.transaction_id || payment?.transaction_id}</div>
+                <div><span className="font-medium text-slate-700">Payment Mode:</span> {payment?.transaction_details?.payment_method === "card" ? "Card" : "UPI"}</div>
+                <div><span className="font-medium text-slate-700">Date:</span> {formatTransactionDate(payment?.purchase_date || payment?.payment_date || payment?.created_at)}</div>
+            </div>
+        </div>
+    );
+};
 
 const PaymentsSection = ({ transactions, getStatusColor, getStatusIcon, isLoading }) => {
+    // Only show one payment record per visa / transaction
+    const uniqueTransactions = useMemo(() => {
+        if (!Array.isArray(transactions) || transactions.length === 0) return [];
+
+        const seen = new Set();
+        const result = [];
+
+        for (const payment of transactions) {
+            const key = payment?.txn_for === 'course'
+                ? (payment?.transaction_id || payment?.id)
+                : (payment?.application_id || payment?.transaction_id || payment?.id);
+
+            if (key && !seen.has(key)) {
+                seen.add(key);
+                result.push(payment);
+            }
+        }
+
+        return result;
+    }, [transactions]);
 
     if (isLoading) {
         return (
@@ -26,7 +83,7 @@ const PaymentsSection = ({ transactions, getStatusColor, getStatusIcon, isLoadin
         );
     }
 
-    if (transactions?.length == 0) {
+    if (!uniqueTransactions || uniqueTransactions.length === 0) {
         return (
             <div className="py-12 px-4">
                 <div className="text-center">
@@ -39,43 +96,21 @@ const PaymentsSection = ({ transactions, getStatusColor, getStatusIcon, isLoadin
                     </p>
                 </div>
             </div>
-        )
+        );
     }
+
     return (
         <div className="space-y-4">
-            {transactions?.map(payment => {
-                const { data: visaData, isLoading: isVisaDataLoading, error: isVisaDataError } = useVisaDetailsByApplicationId(payment?.application_id);
-                const { data: countryDetails, isLoading: isCountryLoading, error: countryError } = useCountryByApplicationId(visaData?.application_id);
-
-                // console.log('Visa data retrive', visaData);
-                // console.log('country details', countryDetails);
-
-                const title = payment.txn_for === "course" ? payment.courses?.map((txn, index) => (
-                    <span key={index}> {txn?.course_name} <br /> </span>
-                )) : `${countryDetails?.name} ${visaData?.visa_type}`;
-
-                return (
-                    <div key={payment?.id} className="border border-slate-200 rounded-lg p-6 hover:border-slate-300 transition-colors">
-                        <div className="flex items-start justify-between mb-3">
-                            <div>
-                                <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-                                <p className="text-2xl font-bold text-slate-900 mt-1">{payment?.currency == 'Rupee' ? '₹' : ''} {payment?.amount?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                            </div>
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${getStatusColor(payment?.status)}`}>
-                                {getStatusIcon(payment?.status)}
-                                {payment?.status?.charAt(0).toUpperCase() + payment?.status?.slice(1)}
-                            </span>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm text-slate-600">
-                            <div><span className="font-medium text-slate-700">Transaction ID:</span> {payment?.transaction_details?.transaction_id}</div>
-                            <div><span className="font-medium text-slate-700">Payment Mode:</span> {payment?.transaction_details?.payment_method == "card" ? "Card" : "UPI"}</div>
-                            <div><span className="font-medium text-slate-700">Date:</span> {formatTransactionDate(payment?.purchase_date || payment?.payment_date)}</div>
-                        </div>
-                    </div>
-                )
-            })}
+            {uniqueTransactions.map(payment => (
+                <PaymentItem
+                    key={payment?.id || payment?.application_id || payment?.transaction_id}
+                    payment={payment}
+                    getStatusColor={getStatusColor}
+                    getStatusIcon={getStatusIcon}
+                />
+            ))}
         </div>
-    )
-}
+    );
+};
 
-export default PaymentsSection
+export default PaymentsSection;

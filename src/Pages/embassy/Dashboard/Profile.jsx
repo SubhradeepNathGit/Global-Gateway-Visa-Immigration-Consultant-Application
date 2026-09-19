@@ -108,9 +108,9 @@ export default function Profile() {
     const file = e.target.files[0];
     if (!file) return;
 
-    const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!validTypes.includes(file.type)) {
-      hotToast("Only JPG, JPEG, and PNG files are allowed", "error");
+      hotToast("Only JPG, JPEG, PNG, and WebP files are allowed", "error");
       return;
     }
 
@@ -119,8 +119,8 @@ export default function Profile() {
       return;
     }
 
-    if (file.size > 500 * 1024) {
-      hotToast("File size must be less than 5KB", "error");
+    if (file.size > 10 * 1024 * 1024) {
+      hotToast("File size must be less than 10MB", "error");
       return;
     }
 
