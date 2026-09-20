@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, LogOut, Settings, ChevronDown, Moon, Sun, X } from "lucide-react";
+import { Bell, LogOut, Settings, ChevronDown, Moon, Sun, Menu } from "lucide-react";
 import { useSidebarStore } from "../../../util/useSidebarStore";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../../Redux/Slice/auth/checkAuthSlice";
@@ -13,6 +13,7 @@ export default function EmbassyNavbar({ embassyData, countryDetails }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const collapsed = useSidebarStore((s) => s.collapsed);
+    const toggleMobileOpen = useSidebarStore((s) => s.toggleMobileOpen);
 
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -97,9 +98,19 @@ export default function EmbassyNavbar({ embassyData, countryDetails }) {
         >
             <div className="flex items-center justify-between px-4 h-16 md:h-18 lg:h-18 md:px-6">
                 {/* Left Section - Logo & Title */}
-                <div className="flex items-center gap-3 md:gap-4">
+                <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                    {isMobile && (
+                        <button
+                            type="button"
+                            onClick={toggleMobileOpen}
+                            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all shrink-0"
+                            aria-label="Open menu"
+                        >
+                            <Menu size={20} />
+                        </button>
+                    )}
                     {/* Title */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                         <div>
                             <h1 className="text-gray-900 text-sm sm:text-base md:text-base font-semibold">
                                 Global Gateway

@@ -65,8 +65,8 @@ const EmbassyDashboardLayout = () => {
                 </div>
 
                 {/* Page Content */}
-                <main className="min-h-screen bg-gray-50">
-                    <div className="p-4 mt-15 md:p-6 lg:p-10 ">
+                <main className="min-h-screen bg-gray-50 pt-16 overflow-x-hidden">
+                    <div className="p-4 sm:p-6 lg:p-10 max-w-full">
                         <Outlet />
                     </div>
                 </main>

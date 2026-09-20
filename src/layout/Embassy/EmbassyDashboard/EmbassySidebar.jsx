@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Home, FileText, Menu, LogOut, UserCircle, X, ChevronLeft, ChevronRight, Building2, BarChart2, Bell, Columns4, School } from "lucide-react";
+import { Home, FileText, LogOut, UserCircle, X, ChevronLeft, ChevronRight, Building2, BarChart2, Bell, Columns4, School } from "lucide-react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useSidebarStore } from "../../../util/useSidebarStore";
 import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
@@ -44,7 +44,8 @@ export default function EmbassySidebar({ embassyData }) {
   const location = useLocation();
   const sidebarRef = useRef(null);
 
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const mobileOpen = useSidebarStore((s) => s.mobileOpen);
+  const setMobileOpen = useSidebarStore((s) => s.setMobileOpen);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { isNotificationLoading, notificationList, hasNotificationError } = useSelector(state => state?.notification);
 
@@ -248,13 +249,6 @@ export default function EmbassySidebar({ embassyData }) {
           )}
         </div>
       </aside>
-
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-30 p-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 md:hidden shadow-lg"
-      >
-        <Menu size={20} />
-      </button>
 
       <div
         className={`hidden md:block transition-all duration-300 ${collapsed ? "md:w-20" : "md:w-64"

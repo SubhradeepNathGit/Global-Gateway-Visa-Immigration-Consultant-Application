@@ -84,8 +84,8 @@ const ProfileCard = ({ userAuthData, isLoading }) => {
     }, [userAuthData]);
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20 mb-8">
-            <div className="bg-white rounded-lg shadow-xl p-6 md:p-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 sm:-mt-14 md:-mt-20 relative z-20 mb-8">
+            <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
                 {isLoading ? (
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6 animate-pulse">
                         <Skeleton variant="circle" className="w-32 h-32 border-4 border-slate-100 shadow-lg" />
@@ -127,7 +127,7 @@ const ProfileCard = ({ userAuthData, isLoading }) => {
                         </div>
 
                         <div className="flex-1 text-center md:text-left">
-                            <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome, {userAuthData?.name.split(' ')[0] ?? 'User'}!</h2>
+                            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 break-words">Welcome, {userAuthData?.name.split(' ')[0] ?? 'User'}!</h2>
                             <div className="space-y-2">
                                 {userAuthData?.email && (
                                     <div className="flex items-center justify-center md:justify-start gap-2 text-gray-600">
@@ -146,10 +146,10 @@ const ProfileCard = ({ userAuthData, isLoading }) => {
                         </div>
 
                         {/* Logout Button */}
-                        <div className="hidden md:flex items-center self-center ml-auto pr-4">
+                        <div className="flex items-center justify-center md:justify-end w-full md:w-auto md:self-center md:ml-auto md:pr-4 mt-2 md:mt-0">
                             <button
                                 onClick={handleLogout}
-                                className="group flex items-center text-red-600 font-semibold transition-all duration-300 cursor-pointer"
+                                className="group flex items-center gap-2 text-red-600 font-semibold transition-all duration-300 cursor-pointer px-4 py-2 rounded-lg hover:bg-red-50"
                             >
                                 <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                                 <span>Sign Out</span>

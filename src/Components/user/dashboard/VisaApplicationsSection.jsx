@@ -25,13 +25,13 @@ const VisaApplicationCard = ({ visa, getStatusColor, getStatusIcon, openModal, h
     const normalizedStatus = visa.status?.toLowerCase();
 
     return (
-        <div key={visa?.id} className="border border-slate-200 rounded-lg p-6 hover:border-slate-300 transition-colors">
-            <div className="flex items-start justify-between mb-3">
-                <div>
+        <div key={visa?.id} className="border border-slate-200 rounded-lg p-4 sm:p-6 hover:border-slate-300 transition-colors">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-3">
+                <div className="min-w-0">
                     <h3 className="text-lg font-semibold text-slate-900">{countryDetails?.name}</h3>
                     <p className="text-slate-600 text-sm">{visaData?.visa_type}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
                     {normalizedStatus === 'approved' && (
                         <>
                             <button

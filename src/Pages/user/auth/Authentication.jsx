@@ -241,13 +241,13 @@ const AuthForm = () => {
 
   return (
     <div
-      className="min-h-screen bg-cover bg-center flex justify-center items-center overflow-hidden bg-black"
+      className="min-h-[100dvh] bg-cover bg-center flex justify-center items-stretch bg-black md:overflow-hidden"
       style={{ backgroundImage: 'url(/Slider1.jpg)' }}
     >
-      <div className="w-full h-screen flex flex-col md:flex-row shadow-2xl overflow-hidden">
+      <div className="w-full min-h-[100dvh] md:h-screen flex flex-col md:flex-row shadow-2xl md:overflow-hidden">
 
-        {/* LEFT VIDEO SECTION */}
-        <div className="w-full md:w-1/2 relative bg-black/80 h-[300px] md:h-full">
+        {/* LEFT VIDEO SECTION — desktop only */}
+        <div className="hidden md:block md:w-1/2 relative bg-black/80 md:h-full">
           <video
             key={isLogin ? 'login-video' : 'register-video'}
             autoPlay loop muted playsInline
@@ -290,10 +290,26 @@ const AuthForm = () => {
           </div>
         </div>
 
-        {/* RIGHT FORM SECTION */}
-        <div className="w-full md:w-1/2 h-[300px] md:h-full bg-black/45 backdrop-blur-md border-l border-white/10 overflow-hidden">
+        {/* FORM SECTION — full screen on mobile */}
+        <div className="w-full md:w-1/2 min-h-[100dvh] md:h-full bg-black/55 backdrop-blur-md md:border-l border-white/10 flex flex-col">
 
-          <div className="h-full overflow-y-auto auth-scrollbar flex flex-col justify-center">
+          <div className="md:hidden shrink-0 flex items-center justify-between gap-3 px-4 pt-5 pb-2 border-b border-white/10">
+            <div className="flex items-center gap-2 min-w-0">
+              <FlightTakeoffIcon className="text-white text-[26px] shrink-0" />
+              <span className="text-white font-bold text-lg tracking-wide truncate">Global Gateway</span>
+            </div>
+            {!showOtp && !showForgotPassword && (
+              <button
+                type="button"
+                onClick={handleToggle}
+                className="shrink-0 px-4 py-2 text-xs font-bold tracking-wider uppercase border border-white/40 text-white rounded-full hover:bg-white hover:text-black transition-colors"
+              >
+                {isLogin ? 'Sign Up' : 'Sign In'}
+              </button>
+            )}
+          </div>
+
+          <div className="flex-1 overflow-y-auto auth-scrollbar flex flex-col justify-center">
             <AnimatePresence mode="wait">
               <motion.div 
                 key={showOtp ? 'otp' : showForgotPassword ? 'forgot' : isLogin ? 'login' : 'register'}
@@ -301,10 +317,10 @@ const AuthForm = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
-                className="w-full max-w-md mx-auto px-2 md:px-2 py-6"
+                className="w-full max-w-md mx-auto px-4 sm:px-6 py-6 pb-10"
               >
 
-              <h2 className="text-2xl md:text-3xl font-bold text-white/70  mb-2 mt-8 md:mt-10 tracking-tight">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white/70 mb-2 mt-2 md:mt-10 tracking-tight">
                 {showOtp ? "Verify OTP" : showForgotPassword ? "Reset Password" : isLogin ? "Sign in to Global Gateway" : "Create New Account "}
               </h2>
               <p className="text-white/40 text-xs mb-5">
@@ -421,8 +437,8 @@ const AuthForm = () => {
                   >
                     {!isLogin && (
                       <>
-                        <div className="flex gap-3">
-                          <div className="flex flex-col flex-1">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <div className="flex flex-col flex-1 min-w-0">
                             <label className="text-xs font-medium text-white/70 mb-1">Full Name</label>
                             <input
                               type="text"

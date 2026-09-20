@@ -153,7 +153,7 @@ const Dashboard = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap cursor-pointer ${activeTab === tab.id
+                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap cursor-pointer shrink-0 ${activeTab === tab.id
                     ? 'border-red-600 text-red-700'
                     : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
                     }`}
@@ -165,7 +165,7 @@ const Dashboard = () => {
             </nav>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 sm:p-6 overflow-x-auto">
             {activeTab === 'overview' && (
               <VisaApplicationsSection
                 visaApplications={Array.isArray(application) ? application : []}

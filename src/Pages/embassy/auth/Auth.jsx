@@ -247,20 +247,20 @@ const EmbassyAuth = () => {
 
   return (
     <div
-      className="min-h-screen bg-cover bg-center flex justify-center items-center overflow-hidden"
+      className="min-h-[100dvh] bg-cover bg-center flex justify-center items-stretch md:overflow-hidden"
       style={{ backgroundImage: 'url(/Slider1.jpg)' }}
     >
-      <div className="w-full h-screen flex flex-col md:flex-row-reverse shadow-2xl overflow-hidden relative">
-        {/* Brand name — top left of entire container */}
-        <div className="absolute top-10 left-10 z-30 flex items-center gap-3">
+      <div className="w-full min-h-[100dvh] md:h-screen flex flex-col md:flex-row-reverse shadow-2xl md:overflow-hidden relative">
+        {/* Brand name — desktop */}
+        <div className="hidden md:flex absolute top-10 left-10 z-30 items-center gap-3">
           <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20">
             <FlightTakeoffIcon className="text-white text-[24px]" />
           </div>
           <span className="text-white font-bold text-xl tracking-wide">Global Gateway</span>
         </div>
 
-        {/* LEFT VIDEO SECTION */}
-        <div className="w-full md:w-1/2 relative bg-black/80 h-[300px] md:h-full border-l border-white/10">
+        {/* VIDEO SECTION — desktop only */}
+        <div className="hidden md:block md:w-1/2 relative bg-black/80 md:h-full border-l border-white/10">
           <video
             key={isSignup ? 'embassy-signup' : 'embassy-login'}
             autoPlay loop muted playsInline
@@ -305,10 +305,28 @@ const EmbassyAuth = () => {
           </div>
         </div>
 
-        {/* RIGHT FORM SECTION (Rendered on Left due to flex-row-reverse) */}
-        <div className="w-full md:w-1/2 h-full bg-black/45 backdrop-blur-sm overflow-hidden">
+        {/* FORM SECTION (left on desktop due to flex-row-reverse) */}
+        <div className="w-full md:w-1/2 min-h-[100dvh] md:h-full bg-black/55 backdrop-blur-sm flex flex-col">
 
-          <div className="h-full overflow-y-auto auth-scrollbar flex flex-col justify-center">
+          <div className="md:hidden shrink-0 flex items-center justify-between gap-3 px-4 pt-5 pb-2 border-b border-white/10">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-9 h-9 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 shrink-0">
+                <FlightTakeoffIcon className="text-white text-[22px]" />
+              </div>
+              <span className="text-white font-bold text-lg tracking-wide truncate">Global Gateway</span>
+            </div>
+            {!showOtp && !showForgotPassword && (
+              <button
+                type="button"
+                onClick={handleToggle}
+                className="shrink-0 px-3 py-2 text-[10px] sm:text-xs font-bold tracking-wider uppercase border border-white/40 text-white rounded-full hover:bg-white hover:text-black transition-colors"
+              >
+                {isSignup ? 'Sign In' : 'Register'}
+              </button>
+            )}
+          </div>
+
+          <div className="flex-1 overflow-y-auto auth-scrollbar flex flex-col justify-center">
             <AnimatePresence mode="wait">
               <motion.div
                 key={showOtp ? 'otp' : showForgotPassword ? 'forgot' : isSignup ? 'signup' : 'login'}
@@ -316,10 +334,10 @@ const EmbassyAuth = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
-                className="w-full max-w-md mx-auto px-4 md:px-8 py-6"
+                className="w-full max-w-md mx-auto px-4 sm:px-6 md:px-8 py-6 pb-10"
               >
 
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-1 mt-8 md:mt-10 tracking-tight">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 mt-2 md:mt-10 tracking-tight">
                 {showOtp ? "Verify OTP" : showForgotPassword ? "Reset Password" : isSignup ? "Register New Embassy " : "Sign in to Embassy "}
               </h2>
               <p className="text-white/40 text-xs mb-5">
