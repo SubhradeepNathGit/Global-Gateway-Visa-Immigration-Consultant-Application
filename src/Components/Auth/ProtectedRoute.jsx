@@ -27,20 +27,13 @@ const ProtectedRoute = ({ children, allowedRoles = [], publicOnly = false }) => 
     // the route tree just because a transient auth event fired (e.g. tab switch).
     const alreadyReady = isInitialized && isuserAuth;
     if ((!isInitialized || isLoggingOut) && !alreadyReady) {
-        // Use structural skeletons for Admin and Embassy dashboards
         if (location.pathname.startsWith('/admin')) {
             return <DashboardSkeleton type="admin" />;
         }
         if (location.pathname.startsWith('/embassy')) {
             return <DashboardSkeleton type="embassy" />;
         }
-
-        // Lightweight spinner for user routes — no cinematic loader on navigation
-        return (
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90">
-                <div className="w-10 h-10 border-[3px] border-white/20 border-t-[#FF5252] rounded-full animate-spin" />
-            </div>
-        );
+        return <DashboardSkeleton type="user" />;
     }
 
     // Valid application roles from our DB

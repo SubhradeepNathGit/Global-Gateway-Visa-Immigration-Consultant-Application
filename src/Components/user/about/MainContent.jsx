@@ -14,15 +14,15 @@ const MainContent = ({ setOpenConfirmDialog }) => {
     };
 
     return (
-        <Container maxWidth="xl" sx={{ py: 10 }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 6, md: 10 }, px: { xs: 2, sm: 3, md: 3 } }}>
             <Box
                 sx={{
                     display: 'flex',
                     flexDirection: { xs: 'column', md: 'row' },
-                    gap: 6,
+                    gap: { xs: 4, md: 6 },
                 }}
             >
-                <Box flex={1} sx={{ position: 'relative', minHeight: 500 }}>
+                <Box flex={1} sx={{ position: 'relative', minHeight: { xs: 280, sm: 360, md: 500 } }}>
                     <img
                         src="/About2.jpg"
                         alt="Immigration Service"
@@ -34,34 +34,46 @@ const MainContent = ({ setOpenConfirmDialog }) => {
                             boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
                         }}
                     />
-                    <motion.div
+                    <Box
+                        component={motion.div}
                         animate={{ y: [0, -15, 0] }}
                         transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                        style={{ position: 'absolute', bottom: 30, left: 30 }}
+                        sx={{
+                            position: 'absolute',
+                            bottom: { xs: 12, sm: 20, md: 30 },
+                            left: { xs: 12, sm: 20, md: 30 },
+                            right: { xs: 12, sm: 'auto' },
+                            maxWidth: { xs: 'calc(100% - 24px)', sm: 'none' },
+                        }}
                     >
                         <Card
                             sx={{
                                 bgcolor: 'transparent',
-                                px: 3,
-                                py: 2,
+                                px: { xs: 2, md: 3 },
+                                py: { xs: 1.5, md: 2 },
                                 border: '3px solid #FF5252',
                                 boxShadow: '0 12px 30px rgba(0,0,0,0.1)',
                                 borderRadius: 2,
                             }}
                         >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <TrendingUp sx={{ fontSize: 40, color: '#FF5252' }} />
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, md: 2 } }}>
+                                <TrendingUp sx={{ fontSize: { xs: 32, md: 40 }, color: '#FF5252' }} />
                                 <Box>
-                                    <Typography variant="h4" color="rgba(255, 254, 254, 1)" fontWeight="bold">
+                                    <Typography
+                                        variant="h4"
+                                        color="rgba(255, 254, 254, 1)"
+                                        fontWeight="bold"
+                                        sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}
+                                    >
                                         15+
                                     </Typography>
-                                    <Typography variant="body2" color="#FF5252">
+                                    <Typography variant="body2" color="#FF5252" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                                         Years Experience
                                     </Typography>
                                 </Box>
                             </Box>
                         </Card>
-                    </motion.div>
+                    </Box>
                 </Box>
 
                 {/* Right Side */}
@@ -101,6 +113,8 @@ const MainContent = ({ setOpenConfirmDialog }) => {
                             color: '#4A90E2',
                             fontWeight: 600,
                             mb: 4,
+                            fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
+                            lineHeight: 1.35,
                         }}
                     >
                         India Based Immigration Consultant Agency
@@ -112,13 +126,13 @@ const MainContent = ({ setOpenConfirmDialog }) => {
                         just a process, but a life-changing journey
                     </Typography>
 
-                    <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 4 }}>
+                    <Box sx={{ display: 'flex', gap: { xs: 2, md: 3 }, flexDirection: { xs: 'column', sm: 'row' }, flexWrap: 'wrap', mb: 4 }}>
                         <MotionCard
                             whileHover={{ y: -5 }}
                             sx={{
-                                p: 3,
-                                flex: 1,
-                                minWidth: 240,
+                                p: { xs: 2, md: 3 },
+                                flex: { xs: '1 1 100%', sm: 1 },
+                                minWidth: { xs: 0, sm: 240 },
                                 border: '1px solid #eee',
                                 borderRadius: 2,
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
@@ -135,9 +149,9 @@ const MainContent = ({ setOpenConfirmDialog }) => {
                         <MotionCard
                             whileHover={{ y: -5 }}
                             sx={{
-                                p: 3,
-                                flex: 1,
-                                minWidth: 240,
+                                p: { xs: 2, md: 3 },
+                                flex: { xs: '1 1 100%', sm: 1 },
+                                minWidth: { xs: 0, sm: 240 },
                                 border: '1px solid #eee',
                                 borderRadius: 2,
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
@@ -170,7 +184,7 @@ const MainContent = ({ setOpenConfirmDialog }) => {
                             <Typography
                                 variant="h6"
                                 fontWeight={600}
-                                sx={{ mb: 1.5, color: '#2c3e50', fontSize: '1.3rem' }}
+                                sx={{ mb: 1.5, color: '#2c3e50', fontSize: { xs: '1.1rem', md: '1.3rem' } }}
                             >
                                 The Best Visa Services
                             </Typography>

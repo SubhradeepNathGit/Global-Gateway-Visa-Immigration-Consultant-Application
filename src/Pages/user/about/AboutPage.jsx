@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Button, Dialog, DialogContent, DialogActions } from '@mui/material';
+import { Box, Typography, Button, Dialog, DialogContent, DialogActions, useMediaQuery, useTheme } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import TeamSection from '../../../Components/user/common/Team';
 import CountrySupportSection from '../../../Components/user/common/Countries';
@@ -9,6 +9,8 @@ import MainContent from '../../../Components/user/about/MainContent';
 const AboutSection = () => {
   const [openConfirmDialog, setOpenConfirmDialog] = React.useState(false);
   const { enqueueSnackbar } = useSnackbar();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleConfirmBooking = () => {
     setOpenConfirmDialog(false);
@@ -38,9 +40,10 @@ const AboutSection = () => {
         onClose={() => setOpenConfirmDialog(false)}
         maxWidth="sm"
         fullWidth
+        fullScreen={isMobile}
       >
-        <DialogContent>
-          <Typography variant="h6" fontWeight={600} gutterBottom>
+        <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
+          <Typography variant="h6" fontWeight={600} gutterBottom sx={{ fontSize: { xs: '1.05rem', sm: '1.25rem' } }}>
             🎯 Schedule Your Personal Immigration Consultation
           </Typography>
           <Typography variant="body2" sx={{ mb: 2 }}>
@@ -58,7 +61,15 @@ const AboutSection = () => {
             <strong>🎁 Free</strong> for applications above ₹50,000
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: 2,
+            flexDirection: { xs: 'column-reverse', sm: 'row' },
+            gap: 1,
+            '& .MuiButton-root': { width: { xs: '100%', sm: 'auto' } },
+          }}
+        >
           <Button onClick={() => setOpenConfirmDialog(false)} variant="outlined">Cancel</Button>
           <Button
             variant="contained"

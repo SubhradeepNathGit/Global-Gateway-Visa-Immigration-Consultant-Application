@@ -10,7 +10,7 @@ import QuickLinks from "../../Components/admin/dashboard/QuickLinks";
 export default function AdminDashboard() {
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
       {/* Header */}
       <div className="mb-4 sm:mb-6">
         <div className="flex items-center gap-3 mb-2">

@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import {
-  Box, Typography, Grid, Card, CardContent,
-  IconButton, Avatar, Dialog, DialogContent, Container, CardMedia, Button, Skeleton
+  Box, Typography, Grid, Card,
+  IconButton, Dialog, DialogContent, Container, CardMedia, Button, Skeleton
 } from '@mui/material';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ShareIcon from '@mui/icons-material/Share';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { useNavigate } from 'react-router-dom';
 
@@ -41,165 +38,177 @@ const TrainingCard = ({ title, img, desc, avatar }) => {
 
   return (
     <Card
+      elevation={0}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={() => setIsHovered(prev => !prev)}
       sx={{
-        maxWidth: 280,
-        width: '100%',
-        height: 420,
+        width: { xs: '100%', sm: 275, md: 285 },
+        maxWidth: 290,
+        height: 365,
         position: 'relative',
-        borderRadius: 3,
+        borderRadius: '22px',
         overflow: 'hidden',
         cursor: 'pointer',
-        transition: 'all 0.4s ease',
-        transform: isHovered ? 'translateY(-12px) scale(1.02)' : 'none',
-        boxShadow: isHovered
-          ? '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-          : '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-        '&::before': {
-          content: '""',
+        boxShadow: 'none',
+        border: '1px solid rgba(255, 255, 255, 0.5)',
+        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+        transform: isHovered ? 'translateY(-6px)' : 'none',
+      }}
+    >
+      {/* Full-bleed background image */}
+      <CardMedia
+        component="img"
+        image={img.startsWith('/') ? img : `/${img}`}
+        alt={title}
+        sx={{
           position: 'absolute',
           top: 0,
           left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05))',
-          opacity: isHovered ? 1 : 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+          transform: isHovered ? 'scale(1.08)' : 'scale(1)',
+        }}
+      />
+
+      {/* Atmospheric gradient overlay for image depth */}
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.1) 40%, rgba(0, 0, 0, 0.65) 100%)',
+          pointerEvents: 'none',
           transition: 'opacity 0.4s ease',
-          zIndex: 1,
+        }}
+      />
+
+      {/* Resting title pill at bottom (fades down when hovered) */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 14,
+          left: 14,
+          right: 14,
+          zIndex: 2,
+          opacity: isHovered ? 0 : 1,
+          transform: isHovered ? 'translateY(12px)' : 'translateY(0)',
+          transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
           pointerEvents: 'none'
-        }
-      }}
-    >
-      <Box sx={{ position: 'relative', overflow: 'hidden', height: 200 }}>
-        <CardMedia
-          component="img"
-          height="200"
-          image={img}
-          alt={title}
-          sx={{
-            objectFit: 'cover',
-            backgroundColor: '#e5e7eb',
-            transition: 'transform 0.4s ease',
-            transform: isHovered ? 'scale(1.1)' : 'scale(1)',
-          }}
-        />
-
-        <Avatar
-          sx={{
-            position: 'absolute',
-            top: 16,
-            right: 16,
-            bgcolor: '#ef4444',
-            width: 40,
-            height: 40,
-            fontWeight: 'bold',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            transform: isHovered ? 'scale(1.1) rotate(5deg)' : 'none',
-            transition: 'all 0.3s ease',
-            zIndex: 2
-          }}
-        >
-          {avatar}
-        </Avatar>
-
+        }}
+      >
         <Box
           sx={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '50%',
-            background: 'linear-gradient(transparent, rgba(0,0,0,0.3))',
-            opacity: isHovered ? 1 : 0,
-            transition: 'opacity 0.3s ease'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            px: 2,
+            py: 0.9,
+            borderRadius: '14px',
+            background: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255, 255, 255, 0.25)',
           }}
-        />
+        >
+          <Typography
+            sx={{
+              color: '#ffffff',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              letterSpacing: 0.2,
+              textAlign: 'center',
+            }}
+          >
+            {title}
+          </Typography>
+        </Box>
       </Box>
 
-      <CardContent sx={{
-        p: 3,
-        height: 'calc(100% - 200px)',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        zIndex: 2
-      }}>
-        <Typography variant="h6" sx={{
-          fontWeight: 700,
-          mb: 1,
-          color: isHovered ? '#ef4444' : '#1a1a1a',
-          transition: 'color 0.3s ease'
-        }}>
+      {/* On cursor: Liquid morphic div that slides up with name and slight overview */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 12,
+          left: 12,
+          right: 12,
+          zIndex: 4,
+          borderRadius: '18px',
+          background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.78) 100%)',
+          backdropFilter: 'blur(20px) saturate(190%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(190%)',
+          border: '1px solid rgba(255, 255, 255, 0.9)',
+          borderTop: '1px solid rgba(255, 255, 255, 1)',
+          boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.95)',
+          p: 1.8,
+          opacity: isHovered ? 1 : 0,
+          transform: isHovered ? 'translateY(0)' : 'translateY(105%)',
+          transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          pointerEvents: isHovered ? 'auto' : 'none',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 700,
+            fontSize: '1.05rem',
+            color: '#0f172a',
+            mb: 0.5,
+            lineHeight: 1.3,
+          }}
+        >
           {title}
         </Typography>
 
-        <Typography variant="body2" sx={{
-          color: '#6b7280',
-          lineHeight: 1.6,
-          mb: 2,
-          flexGrow: 1
-        }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: '#475569',
+            fontSize: '0.78rem',
+            lineHeight: 1.45,
+            mb: 1.2,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
           {desc}
         </Typography>
 
-        <Typography variant="caption" sx={{
-          color: '#9ca3af',
-          fontWeight: 500,
-          textTransform: 'uppercase',
-          letterSpacing: 0.5
-        }}>
-          Updated July 2025
-        </Typography>
-
-        <Box sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          mt: 2,
-          opacity: isHovered ? 1 : 0.7,
-          transition: 'opacity 0.3s ease'
-        }}>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <IconButton
-              size="small"
-              sx={{
-                color: '#ef4444',
-                '&:hover': {
-                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                  transform: 'scale(1.1)'
-                },
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <FavoriteIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              size="small"
-              sx={{
-                color: '#6b7280',
-                '&:hover': {
-                  backgroundColor: 'rgba(107, 114, 128, 0.1)',
-                  transform: 'scale(1.1)'
-                },
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <ShareIcon fontSize="small" />
-            </IconButton>
-          </Box>
-          <IconButton
-            size="small"
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box
             sx={{
-              color: '#6b7280',
-              transform: isHovered ? 'rotate(180deg)' : 'none',
-              transition: 'transform 0.3s ease'
+              display: 'inline-flex',
+              alignItems: 'center',
+              px: 1.2,
+              py: 0.3,
+              borderRadius: '20px',
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              border: '1px solid rgba(255, 255, 255, 0.9)',
             }}
           >
-            <ExpandMoreIcon fontSize="small" />
-          </IconButton>
+            <Typography
+              variant="caption"
+              sx={{
+                color: '#64748b',
+                fontWeight: 600,
+                fontSize: '0.64rem',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              Updated July 2025
+            </Typography>
+          </Box>
         </Box>
-      </CardContent>
+      </Box>
     </Card>
   );
 };
@@ -223,9 +232,35 @@ const Training = () => {
     <Box
       sx={{
         bgcolor: '#f8fafc',
+        position: 'relative',
+        overflow: 'hidden',
         display: 'flex',
         alignItems: 'flex-start',
-        py: { xs: 2, md: 4 }
+        py: { xs: 2, md: 4 },
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: '20%',
+          left: '10%',
+          width: '340px',
+          height: '340px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(239, 68, 68, 0.06) 0%, transparent 70%)',
+          pointerEvents: 'none',
+          filter: 'blur(40px)',
+        },
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          bottom: '15%',
+          right: '8%',
+          width: '380px',
+          height: '380px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(239, 68, 68, 0.04) 0%, transparent 70%)',
+          pointerEvents: 'none',
+          filter: 'blur(45px)',
+        }
       }}
     >
       <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 4, md: 6 } }}>
@@ -320,8 +355,8 @@ const Training = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
           <Grid
             container
-            spacing={3}
-            sx={{ justifyContent: 'center', m: 0 }}
+            spacing={2}
+            sx={{ justifyContent: 'center', m: 0, width: '100%', maxWidth: 1260 }}
           >
             {trainings.map((item, idx) => (
               <Grid size={{ xs: 12, sm: 6, md: 3 }} key={idx} sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -331,7 +366,7 @@ const Training = () => {
           </Grid>
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 4, md: 6 } }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <Button
             variant="outlined"
             size="small"
@@ -352,7 +387,7 @@ const Training = () => {
                 color: 'white',
                 borderColor: '#ef4444',
                 transform: 'translateY(-2px)',
-                boxShadow: '0 8px 20px rgba(239, 68, 68, 0.3)',
+                boxShadow: 'none',
               },
             }}
           >

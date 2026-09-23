@@ -77,7 +77,7 @@ const ContactForm = ({ setShowToast }) => {
     }
 
     return (
-        <div className="flex-none w-1/2 flex items-stretch">
+        <div className="flex-none w-full lg:w-1/2 flex items-stretch min-w-0">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}

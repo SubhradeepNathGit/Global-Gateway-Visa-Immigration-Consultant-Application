@@ -18,6 +18,7 @@ import { getMonthlyChange } from "../../../util/embassy-stats/calcMonthlyChange"
 import { buildMonthlyApplicationVolume } from "../../../util/embassy-stats/applicationVolumeChart";
 import { fetchApplicationsByCountry } from "../../../Redux/Slice/applicationSlice";
 import { useApplicationsWithAppointment } from "../../../tanstack/query/getApplicationsWithAppointment";
+import DashboardSkeleton from "../../../Components/DashboardSkeleton";
 
 export default function EmbassyDashboard() {
   const dispatch = useDispatch();
@@ -133,8 +134,12 @@ export default function EmbassyDashboard() {
   // console.log('Application data', allTypeApplications);
   // console.log('All Application data', allApplications);
 
+  if (isEmbassyLoading || !embassyData) {
+    return <DashboardSkeleton type="embassy" isContentOnly={true} />;
+  }
+
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
       {/* Header */}
       <DashboardHeader />
 

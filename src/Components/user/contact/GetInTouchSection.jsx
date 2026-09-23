@@ -6,7 +6,9 @@ const GetInTouchSection = ({ contactItems }) => {
     return (
         <Box
             sx={{
-                flex: '0 0 45%',
+                flex: { xs: '1 1 auto', lg: '0 0 45%' },
+                width: { xs: '100%', lg: 'auto' },
+                minWidth: 0,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'flex-start',

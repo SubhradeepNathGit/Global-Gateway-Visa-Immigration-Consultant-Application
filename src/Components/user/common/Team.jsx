@@ -43,7 +43,7 @@ const teamMembers = [
 
 const TeamSection = () => {
   return (
-    <Box sx={{ py: 10, px: 2, backgroundColor: '#fdfdfd' }}>
+    <Box sx={{ py: { xs: 6, md: 10 }, px: { xs: 2, md: 2 }, backgroundColor: '#fdfdfd' }}>
       <Container maxWidth="lg">
         <Box
           flex={1}
@@ -64,6 +64,7 @@ const TeamSection = () => {
               fontWeight: 700,
               mt: 1,
               color: '#0f172a',
+              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' },
             }}
           >
             Meet Our Team
@@ -77,10 +78,11 @@ const TeamSection = () => {
           </Typography>
         </Box>
 
-        <Grid container justifyContent="center" spacing={5}>
+        <Grid container justifyContent="center" spacing={{ xs: 4, md: 5 }}>
           {teamMembers.map((member, index) => (
             <Grid
               key={index}
+              size={{ xs: 12, sm: 6, md: 3 }}
               component={motion.div}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}

@@ -15,6 +15,7 @@ import { useApplicationsByUser } from '../../../tanstack/query/getApplicationsBy
 import { useApplicationsWithAppointmentForUser } from '../../../tanstack/query/getAvailableAppointmentForUser';
 import getSweetAlert from '../../../util/alert/sweetAlert';
 import { fetchUserOrders } from '../../../Redux/Slice/orderSlice';
+import DashboardSkeleton from '../../../Components/DashboardSkeleton';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -26,6 +27,11 @@ const Dashboard = () => {
   const { data: appointment = [], isLoading: isAppointmentLoading, isError: isAppointmentError } = useApplicationsWithAppointmentForUser(userAuthData?.id, "processing", true);
   const { isTransactionLoading, allTransactions: { all, visa, course } } = useSelector(state => state.transaction);
   const { isOrderLoading, allOrders, hasOrderError } = useSelector(state => state.orders);
+
+  const isAppsLoading = isApplicationLoading || (application === undefined && !isApplicationError);
+  const isApptsLoading = isAppointmentLoading || (appointment === undefined && !isAppointmentError);
+  const isTxnsLoading = isTransactionLoading || (all === undefined);
+  const isOrdLoading = isOrderLoading || (allOrders === undefined && !hasOrderError);
 
   useEffect(() => {
     // Redundant auth check removed (handled by App.jsx and ProtectedRoute)
@@ -123,8 +129,12 @@ const Dashboard = () => {
     navigate(path);
   };
 
+  if (isuserLoading || !userAuthData) {
+    return <DashboardSkeleton type="user" />;
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 animate-fadeIn">
       {/* Header Banner with Image */}
       <DashboardHeader isLoading={isuserLoading} />
 
@@ -136,7 +146,7 @@ const Dashboard = () => {
         visaApplications={Array.isArray(application) ? application : []}
         appointments={appointment} 
         uniqueCourses={uniqueCourses}
-        isLoading={isuserLoading || isApplicationLoading || isOrderLoading}
+        isLoading={isuserLoading || isAppsLoading || isOrdLoading || isApptsLoading}
       />
 
       {/* Tabs */}
@@ -171,7 +181,7 @@ const Dashboard = () => {
                 visaApplications={Array.isArray(application) ? application : []}
                 getStatusColor={getStatusColor}
                 getStatusIcon={getStatusIcon}
-                isLoading={isApplicationLoading}
+                isLoading={isAppsLoading}
               />
             )}
 
@@ -180,7 +190,7 @@ const Dashboard = () => {
                 appointments={appointment}
                 getStatusColor={getStatusColor}
                 getStatusIcon={getStatusIcon}
-                isLoading={isAppointmentLoading}
+                isLoading={isApptsLoading}
               />
             )}
 
@@ -189,7 +199,7 @@ const Dashboard = () => {
                 transactions={all}
                 getStatusColor={getStatusColor}
                 getStatusIcon={getStatusIcon}
-                isLoading={isTransactionLoading}
+                isLoading={isTxnsLoading}
               />
             )}
 
@@ -200,7 +210,7 @@ const Dashboard = () => {
                 getStatusIcon={getStatusIcon}
                 onNavigate={handleNavigate}
                 userAuthData={userAuthData}
-                isLoading={isOrderLoading}
+                isLoading={isOrdLoading}
               />
             )}
           </div>

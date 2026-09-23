@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import './App.css';
 import Routing from './Routing/Routing';
@@ -11,6 +12,7 @@ import { checkLoggedInUser, listenAuthChanges } from './Redux/Slice/auth/checkAu
 
 function App() {
   const dispatch = useDispatch();
+  const location = useLocation();
 
   // Show the cinematic loader ONLY when refreshing on the home banner section (/)
   const [showInitialLoader, setShowInitialLoader] = useState(() => {
@@ -19,14 +21,29 @@ function App() {
   });
 
   useEffect(() => {
-    const isHome = window.location.pathname === '/' || window.location.pathname === '';
-    // Set root background: pure black for home banner, white for other user pages
-    const rootEl = document.getElementById('root');
-    if (rootEl) {
-      rootEl.style.backgroundColor = isHome ? '#000000' : '#ffffff';
+    const p = location.pathname;
+    let targetBg = '#ffffff';
+
+    if (p === '/' || p === '') {
+      targetBg = '#000000';
+    } else if (p.startsWith('/admin')) {
+      targetBg = '#0b1020';
+    } else if (p.startsWith('/embassy')) {
+      targetBg = '#f9fafb';
+    } else if (p.startsWith('/dashboard')) {
+      targetBg = '#f8fafc';
     }
 
-    // Initialize Auth Session and Listeners
+    const rootEl = document.getElementById('root');
+    if (rootEl) {
+      rootEl.style.backgroundColor = targetBg;
+    }
+    document.documentElement.style.backgroundColor = targetBg;
+    document.body.style.backgroundColor = targetBg;
+  }, [location.pathname]);
+
+  // Initialize Auth Session and Listeners + cinematic loader
+  useEffect(() => {
     dispatch(checkLoggedInUser());
     dispatch(listenAuthChanges());
 

@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 
 const bannerData = [
   {
-    image: '/Slider7.jpg',
+    image: '/Slider-front1.jpg',
     title: 'APPLY FOR VISA',
     subtitle: 'GO BEYOND BORDERS',
   },
@@ -30,15 +30,11 @@ const bannerData = [
     subtitle: 'OUR RESPONSIBILITY',
   },
   {
-  image: '/Slider9.jpg',
+  image: '/Slider-front.jpg',
   title: 'VISA PROCESSING',
   subtitle: 'SIMPLE. CLEAR. RELIABLE.',
 },
-  {
-    image: '/Slider4.jpg',
-    title: 'IMMIGRATION PROCESS',
-    subtitle: 'STARTS HERE',
-  },
+ 
 ];
 
 // ===== Clean Animation Variants (No Blur, No White Haze) =====
@@ -181,13 +177,34 @@ const Banner = () => {
                 </h2>
               </motion.div>
 
-              {/* Animated Premium Button */}
+              {/* Animated Premium Liquid Morphic Button */}
+            
                 <button
                   onClick={handleDiscoverMore}
-                  className="group relative overflow-hidden bg-[#ff3c3c] text-white px-10 py-3.5 rounded-sm font-bold text-[14px] tracking-[0.2em] transition-all duration-300 hover:bg-[#e03131] hover:-translate-y-0.5 active:translate-y-0 border border-white/20 cursor-pointer shadow-lg"
+                  className="group relative overflow-hidden px-10 py-3.5 rounded-lg font-bold text-[13px] sm:text-[14px] tracking-[0.22em] text-white uppercase transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] cursor-pointer shadow-none border border-white/35 hover:border-white/60 bg-white/10 hover:bg-white/20 backdrop-blur-xl"
+                  style={{
+                    boxShadow: 'none',
+                    backdropFilter: 'blur(36px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                  }}
                 >
-                  <span className="relative z-10">START JOURNEY</span>
+                  {/* Liquid Specular Top Glare */}
+                  <span
+                    className="absolute inset-0 rounded-sm bg-gradient-to-b from-white/25 via-white/5 to-transparent pointer-events-none"
+                    style={{ boxShadow: 'none' }}
+                  />
+
+                  {/* Fluid Liquid Light Sweep Effect */}
+                  <span
+                    className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none"
+                    style={{ boxShadow: 'none' }}
+                  />
+
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    START JOURNEY
+                  </span>
                 </button>
+      
            
               
             </div>

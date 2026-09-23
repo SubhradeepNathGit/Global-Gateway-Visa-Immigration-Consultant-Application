@@ -86,8 +86,16 @@ const Routing = () => {
                 <Route path="/payment" element={<ProtectedRoute allowedRoles={['user']}><PaymentInterfaceCourse /></ProtectedRoute>} />
                 <Route path="/application-form/:country_id" element={<ProtectedRoute allowedRoles={['user']}><VisaApplicationForm /></ProtectedRoute>} />
                 <Route path="/payment-preview" element={<ProtectedRoute allowedRoles={['user']}><PaymentPreview /></ProtectedRoute>} />
-                <Route path="/payment-status" element={<ProtectedRoute allowedRoles={['user']}><PaymentStatus /></ProtectedRoute>} />
-                <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['user']}><Dashboard /></ProtectedRoute>} />
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute allowedRoles={['user']}>
+                            <Suspense fallback={<DashboardSkeleton type="user" />}>
+                                <Dashboard />
+                            </Suspense>
+                        </ProtectedRoute>
+                    }
+                />
 
                 {/* Course */}
                 <Route path="/course/:course_id" element={<CourseDetails />} />
@@ -123,7 +131,7 @@ const Routing = () => {
                         </ProtectedRoute>
                     }
                 >
-                    <Route index element={<AdminDashboard />} />
+                    <Route index element={<Suspense fallback={<DashboardSkeleton type="admin" isContentOnly={true} />}><AdminDashboard /></Suspense>} />
                     <Route path="users" element={<Users />} />
                     <Route path="payments" element={<Payments />} />
                     <Route path="settings" element={<Settings />} />
@@ -160,7 +168,7 @@ const Routing = () => {
                         </ProtectedRoute>
                     }
                 >
-                    <Route index element={<EmbassyDashboard />} />
+                    <Route index element={<Suspense fallback={<DashboardSkeleton type="embassy" isContentOnly={true} />}><EmbassyDashboard /></Suspense>} />
                     <Route path="profile" element={<EmbassyProfile />} />
                     <Route path="new-embassy" element={<AddEmbassy />} />
                     <Route path="applications" element={<EmbassyApplications />} />

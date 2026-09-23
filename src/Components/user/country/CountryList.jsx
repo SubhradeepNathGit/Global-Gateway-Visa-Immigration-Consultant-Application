@@ -68,13 +68,14 @@ const CountryList = () => {
     // Skeleton Loader
     const renderSkeletons = () =>
         Array.from({ length: 12 }).map((_, index) => (
-            <div key={index} className="w-full sm:w-1/2 lg:w-1/4 p-3">
-                <div className="bg-white rounded-[1.5rem] border border-gray-100 h-[380px] animate-pulse">
-                    <div className="h-[160px] bg-gray-100 rounded-t-[1.5rem]"></div>
-                    <div className="p-6 space-y-3">
-                        <div className="h-6 bg-gray-100 rounded-full w-3/4 mx-auto"></div>
-                        <div className="h-4 bg-gray-100 rounded-full w-full"></div>
-                        <div className="h-10 bg-gray-100 rounded-xl w-full mt-4"></div>
+            <div key={index} className="w-full sm:w-1/2 lg:w-1/4 p-3 flex">
+                <div className="w-full bg-white rounded-[1.4rem] border border-gray-100 overflow-hidden flex flex-col shadow-sm animate-pulse">
+                    <div className="h-52 bg-gray-200/70"></div>
+                    <div className="p-4 space-y-2.5">
+                        <div className="h-4 bg-gray-200/70 rounded-md w-3/4"></div>
+                        <div className="h-3 bg-gray-200/50 rounded-md w-full"></div>
+                        <div className="h-3 bg-gray-200/40 rounded-md w-2/3"></div>
+                        <div className="h-9 bg-gray-200/70 rounded-xl w-full mt-2"></div>
                     </div>
                 </div>
             </div>

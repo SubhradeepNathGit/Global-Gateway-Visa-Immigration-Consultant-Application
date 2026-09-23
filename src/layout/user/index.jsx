@@ -36,7 +36,7 @@ const UserLayout = () => {
     <div className={`min-h-screen ${isHome ? 'bg-black' : 'bg-white'} text-gray-900 flex flex-col`}>
       {!hideNavbar && !hideBoth && <Navbar />}
 
-      <div className={`flex-1 ${isHome ? 'bg-black' : 'bg-white'}`}>
+      <div className={`flex-1 min-w-0 overflow-x-hidden ${isHome ? 'bg-black' : 'bg-white'}`}>
         <Outlet />
       </div>
       <GlobalLiveChat />

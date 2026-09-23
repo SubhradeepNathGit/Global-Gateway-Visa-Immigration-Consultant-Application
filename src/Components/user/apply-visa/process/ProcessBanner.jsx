@@ -1,39 +1,18 @@
 import React from 'react';
 import { Box, Typography, Breadcrumbs, Link } from '@mui/material';
+import {
+    pageBannerOuterSx,
+    pageBannerOverlaySx,
+    pageBannerInnerSx,
+    pageBannerTitleSx,
+} from '../../../../util/pageBannerStyles';
 
 const ProcessBanner = () => {
     return (
-        <Box
-            sx={{
-                height: '300px',
-                backgroundImage: 'url(/PageBanner.jpg)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                display: 'flex',
-                alignItems: 'center',
-                color: '#fff',
-                position: 'relative',
-            }}
-        >
-            <Box
-                sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    bgcolor: 'rgba(0, 0, 0, 0.7)',
-                }}
-            />
-            <Box
-                sx={{
-                    position: 'relative',
-                    zIndex: 1,
-                    width: '100%',
-                    px: { xs: 2, md: 10 },
-                }}
-            >
-                <Typography variant="h3" fontWeight="bold">
+        <Box sx={pageBannerOuterSx}>
+            <Box sx={pageBannerOverlaySx} />
+            <Box sx={pageBannerInnerSx}>
+                <Typography variant="h3" sx={pageBannerTitleSx}>
                     Visa Process
                 </Typography>
                 <Breadcrumbs sx={{ color: 'red', mt: 1 }} separator="›">

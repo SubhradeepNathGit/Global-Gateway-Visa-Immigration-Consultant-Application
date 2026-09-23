@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { useSelector } from "react-redux";
-import { Loader2 } from "lucide-react";
+import DashboardSkeleton from "../../Components/DashboardSkeleton";
 
 export default function AdminLayout() {
   const { userAuthData } = useSelector(state => state.checkAuth);
@@ -36,11 +36,7 @@ export default function AdminLayout() {
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 mt-16 md:mt-[72px] lg:mt-[72px] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#0b1020] via-[#07080a] to-[#050506] overflow-x-hidden">
           <div className="max-w-full">
-            <Suspense fallback={
-              <div className="flex items-center justify-center min-h-[400px]">
-                <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
-              </div>
-            }>
+            <Suspense fallback={<DashboardSkeleton type="admin" isContentOnly={true} />}>
               <Outlet />
             </Suspense>
           </div>

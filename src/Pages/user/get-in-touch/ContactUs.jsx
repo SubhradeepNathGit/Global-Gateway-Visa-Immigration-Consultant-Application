@@ -57,7 +57,7 @@ const Contact = () => {
           zIndex: 9999,
           background: 'linear-gradient(to right, rgb(34, 197, 94), rgb(5, 150, 105))',
           color: 'white',
-          padding: '16px 24px',
+          padding: '16px 20px',
           borderRadius: '16px',
           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
           backdropFilter: 'blur(12px)',
@@ -65,6 +65,7 @@ const Contact = () => {
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
+          width: 'calc(100% - 32px)',
           maxWidth: '28rem'
         }}>
           <MdCheckCircle style={{ fontSize: '24px', flexShrink: 0 }} />

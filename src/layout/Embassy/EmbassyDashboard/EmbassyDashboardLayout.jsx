@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import EmbassySidebar from "./EmbassySidebar";
 import EmbassyNavbar from "./EmbassyNavbar";
@@ -8,6 +8,7 @@ import { checkLoggedInUser } from "../../../Redux/Slice/auth/checkAuthSlice";
 import getSweetAlert from "../../../util/alert/sweetAlert";
 import { fetchEmbassyById } from "../../../Redux/Slice/embassySlice";
 import { useFullCountryDetails } from "../../../tanstack/query/getCountryDetails";
+import DashboardSkeleton from "../../../Components/DashboardSkeleton";
 
 const EmbassyDashboardLayout = () => {
     const collapsed = useSidebarStore((s) => s.collapsed);
@@ -64,10 +65,11 @@ const EmbassyDashboardLayout = () => {
                     <EmbassyNavbar embassyData={embassyData} countryDetails={countryDetails} />
                 </div>
 
-                {/* Page Content */}
                 <main className="min-h-screen bg-gray-50 pt-16 overflow-x-hidden">
                     <div className="p-4 sm:p-6 lg:p-10 max-w-full">
-                        <Outlet />
+                        <Suspense fallback={<DashboardSkeleton type="embassy" isContentOnly={true} />}>
+                            <Outlet />
+                        </Suspense>
                     </div>
                 </main>
             </div>

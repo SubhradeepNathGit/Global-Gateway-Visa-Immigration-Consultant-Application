@@ -49,11 +49,10 @@ const CountrySupportSection = () => {
         <Typography
           variant="subtitle2"
           sx={{
-            color: 'red',
+            color: '#dc2626',
             mb: 1,
-            fontWeight: 700,
-            fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-            letterSpacing: 2,
+            fontWeight: 'bold',
+            letterSpacing: '0.05em',
             textTransform: 'uppercase',
           }}
         >
@@ -70,11 +69,9 @@ const CountrySupportSection = () => {
         <Typography
           variant="h4"
           sx={{
-            fontWeight: 800,
-            mb: { xs: 5, md: 7 },
-            fontSize: { xs: '1.7rem', sm: '2.1rem', md: '2.6rem' },
-            lineHeight: { xs: 1.3, md: 1.4 },
-            color: '#111',
+            fontWeight: 700,
+            mb: 6,
+            color: '#111827',
           }}
         >
           Countries We Support <br /> for Immigration.
@@ -167,13 +164,16 @@ const CountrySupportSection = () => {
           sx={{
             mt: { xs: 7, md: 9 },
             py: { xs: 1.5, md: 2 },
-            px: { xs: 3, md: 5 },
+            px: { xs: 2, sm: 3, md: 5 },
+            mx: { xs: 1, md: 0 },
+            maxWidth: { xs: '100%', md: 'none' },
             backgroundColor: '#f7f7f7',
             display: 'inline-block',
             borderRadius: 1,
             fontWeight: 600,
-            letterSpacing: 1,
-            fontSize: { xs: '11px', sm: '12px', md: '13px' },
+            letterSpacing: { xs: 0.5, md: 1 },
+            fontSize: { xs: '10px', sm: '12px', md: '13px' },
+            lineHeight: 1.5,
             color: '#555',
           }}
         >

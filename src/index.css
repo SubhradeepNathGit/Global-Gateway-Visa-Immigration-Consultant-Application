@@ -15,6 +15,13 @@ html {
   scrollbar-gutter: stable;
 }
 
+@media (max-width: 767px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+}
+
 /* Prevent SweetAlert2 from causing page shifting and white margin on the right */
 html.swal2-shown,
 body.swal2-shown {
