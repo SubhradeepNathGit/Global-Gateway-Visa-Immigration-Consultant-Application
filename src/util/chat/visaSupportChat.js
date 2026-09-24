@@ -106,6 +106,9 @@ export async function sendVisaSupportChat(messages) {
       });
 
       if (data?.reply && typeof data.reply === "string") {
+        if (data?.debugError) {
+          console.warn("[VisaChat Edge Function Warning]:", data.debugError);
+        }
         const engine = typeof data.engine === "string" ? data.engine : "local";
         // If Supabase edge function produced an AI reply (groq or gemini), use it directly
         if (engine === "groq" || engine === "gemini") {

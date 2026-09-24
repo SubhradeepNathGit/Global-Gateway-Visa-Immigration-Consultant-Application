@@ -345,9 +345,14 @@ function isRateLimited(key: string): boolean {
   return false;
 }
 
+let lastError = "";
+
 async function tryGroq(messages: ChatMessage[]): Promise<string | null> {
   const apiKey = Deno.env.get("GROQ_API_KEY")?.trim();
-  if (!apiKey) return null;
+  if (!apiKey) {
+    lastError = "GROQ_API_KEY secret missing on Supabase";
+    return null;
+  }
 
   const configured = Deno.env.get("GROQ_MODEL")?.trim();
   const models = [
@@ -360,7 +365,8 @@ async function tryGroq(messages: ChatMessage[]): Promise<string | null> {
   for (const model of models) {
     try {
       return await callGroq(apiKey, model, messages);
-    } catch (e) {
+    } catch (e: any) {
+      lastError = `Groq (${model}): ${e?.message || String(e)}`;
       console.warn("[visa-support-chat] Groq failed", model, e);
     }
   }
@@ -369,7 +375,10 @@ async function tryGroq(messages: ChatMessage[]): Promise<string | null> {
 
 async function tryGemini(messages: ChatMessage[]): Promise<string | null> {
   const apiKey = Deno.env.get("GEMINI_API_KEY")?.trim();
-  if (!apiKey) return null;
+  if (!apiKey) {
+    if (!lastError) lastError = "GEMINI_API_KEY secret missing on Supabase";
+    return null;
+  }
 
   const configured = Deno.env.get("GEMINI_MODEL")?.trim();
   const models = [
@@ -383,7 +392,8 @@ async function tryGemini(messages: ChatMessage[]): Promise<string | null> {
   for (const model of models) {
     try {
       return await callGemini(apiKey, model, messages);
-    } catch (e) {
+    } catch (e: any) {
+      lastError += ` | Gemini (${model}): ${e?.message || String(e)}`;
       console.warn("[visa-support-chat] Gemini failed", model, e);
     }
   }
@@ -421,6 +431,7 @@ Deno.serve(async (req) => {
     });
   }
 
+  lastError = "";
   let reply = await tryGroq(messages);
   let engine = "groq";
 
@@ -434,5 +445,5 @@ Deno.serve(async (req) => {
     engine = "local";
   }
 
-  return json({ reply: formatChatReply(reply), engine });
+  return json({ reply: formatChatReply(reply), engine, debugError: lastError || undefined });
 });
