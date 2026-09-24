@@ -1,4 +1,5 @@
 import { INTENTS } from './siteIntents';
+import { formatChatReply } from './chatReplyFormat';
 
 function normalize(text) {
   return String(text ?? '')
@@ -17,15 +18,24 @@ export function lastUserText(messages) {
   return '';
 }
 
+function keywordMatches(normalized, keyword) {
+  const k = normalize(keyword);
+  if (!k) return false;
+  if (k.length <= 4) {
+    const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`\\b${escaped}\\b`, 'i').test(normalized);
+  }
+  return normalized.includes(k);
+}
+
 function scoreIntents(normalized) {
   let best = { score: 0, reply: null };
   for (const intent of INTENTS) {
     let score = 0;
     for (const kw of intent.keywords) {
+      if (!keywordMatches(normalized, kw)) continue;
       const k = normalize(kw);
-      if (k && normalized.includes(k)) {
-        score += k.length > 8 ? 4 : k.length > 5 ? 3 : 2;
-      }
+      score += k.length > 8 ? 4 : k.length > 5 ? 3 : 2;
     }
     if (score > best.score) {
       best = { score, reply: intent.reply };
@@ -34,12 +44,12 @@ function scoreIntents(normalized) {
   return best;
 }
 
-/** Short greetings / ack — answer locally without waiting on API */
-export function isInstantLocalMessage(userText) {
+/** Only true for hello / thanks / bye — everything else goes to AI first */
+export function isPureGreetingOnly(userText) {
   const n = normalize(userText);
   if (!n) return true;
-  if (n.length <= 3 && !/\d/.test(n)) return true;
-  const instant = new Set([
+
+  const exact = new Set([
     'hi',
     'hey',
     'hello',
@@ -58,13 +68,25 @@ export function isInstantLocalMessage(userText) {
     'good morning',
     'good evening',
     'good afternoon',
+    'hi there',
+    'hey there',
+    'hello there',
   ]);
-  if (instant.has(n)) return true;
-  if (/^(hi|hey|hello)\b/.test(n) && n.length < 20) return true;
+  if (exact.has(n)) return true;
+
+  if (n.split(/\s+/).length === 1 && n.length <= 2 && !/\d/.test(n)) {
+    return true;
+  }
+
   return false;
 }
 
-function composeContextualReply(userText, normalized) {
+/** @deprecated use isPureGreetingOnly */
+export function isInstantLocalMessage(userText) {
+  return isPureGreetingOnly(userText);
+}
+
+function composeContextualReply(normalized) {
   const isIndian =
     /\b(indian|india|from india|indian citizen|indian national)\b/.test(normalized);
   const isSA =
@@ -75,30 +97,47 @@ function composeContextualReply(userText, normalized) {
   const isTourist = /\b(tourist|tourism|visit|holiday|travel)\b/.test(normalized);
   const isWork = /\b(work|working|employment|job)\b/.test(normalized);
 
+  if (
+    /\b(reschedule|rescheduling|change appointment|move appointment|postpone appointment)\b/.test(
+      normalized,
+    ) ||
+    (/\b(appointment|interview|biometric)\b/.test(normalized) &&
+      /\b(can i|how|change|reschedule|cancel)\b/.test(normalized))
+  ) {
+    return (
+      'Visa appointments (biometrics, embassy interviews) are usually arranged after you apply.\n\n' +
+      '1. Sign in and open your dashboard to see any scheduled date, time, and location.\n' +
+      '2. Check email and in-site notifications for updates from the embassy or our team.\n' +
+      '3. If you need a new date, use any reschedule option shown on your application in the dashboard. ' +
+      'If you do not see one, contact us via the Contact us page with your registered email and application reference — we will help coordinate with the embassy when possible.\n\n' +
+      'We cannot guarantee a specific slot; policies depend on the embassy and visa type.'
+    );
+  }
+
   if (isStudent && isSA) {
     let reply =
       'South Africa student visa on Global Gateway:\n\n' +
-      '1. Open /country and select South Africa.\n' +
-      '2. Go to Visa Process — confirm **Student visa** is listed and read requirements, fees, and documents.\n' +
-      '3. Sign in at /authentication and complete the application form.\n' +
-      '4. Upload documents (passport, admission/LOA, funds, etc. — exact list on the form).\n' +
-      '5. Pay at checkout and track status in /dashboard.\n\n';
+      '1. Open the Countries page and select South Africa.\n' +
+      '2. Open Visa Process — confirm student visa is listed and read requirements, fees, and documents.\n' +
+      '3. Sign in on the Sign in page and complete the application form.\n' +
+      '4. Upload documents (passport, admission letter, funds, etc.).\n' +
+      '5. Pay at checkout and track status in your dashboard.\n\n';
     if (isIndian) {
       reply +=
-        'As an **Indian passport holder**, use the nationality and document fields in the form as shown for your profile. ' +
-        'If anything is unclear, contact /contact with your course and university name.\n\n';
+        'As an Indian passport holder, enter your nationality in the form and upload the documents listed for student visa. ' +
+        'If anything is unclear, use the Contact us page with your course and university name.\n\n';
     }
     reply +=
-      'If South Africa or student visa does not appear on /country yet, use /contact — we will confirm availability for your case.';
+      'If South Africa or student visa is not listed yet, contact us — we will confirm availability for your case.';
     return reply;
   }
 
   if (isIndian && isStudent && !isSA) {
     return (
-      'For an **Indian student visa** application:\n\n' +
-      '1. Go to /country and choose your **destination country** (e.g. South Africa, UK, Canada).\n' +
-      '2. Open Visa Process for that country and select the student visa type if listed.\n' +
-      '3. Apply at /authentication with your Indian passport details and required documents.\n\n' +
+      'For an Indian student visa application:\n\n' +
+      '1. Go to the Countries page and choose your destination country.\n' +
+      '2. Open Visa Process and select the student visa type if listed.\n' +
+      '3. Apply on the Sign in page with your Indian passport details and required documents.\n\n' +
       'Tell me the destination country and I can outline the exact steps.'
     );
   }
@@ -106,9 +145,9 @@ function composeContextualReply(userText, normalized) {
   if (isSA && (isTourist || isWork)) {
     const type = isWork ? 'work' : 'tourist';
     return (
-      `For a South Africa **${type} visa**, visit /country → South Africa → Visa Process. ` +
-      `If ${type} visa is listed, you can apply online after signing in at /authentication. ` +
-      `Otherwise contact /contact with your travel or job details.`
+      `For a South Africa ${type} visa, go to the Countries page, select South Africa, then Visa Process. ` +
+      `If ${type} visa is listed, you can apply online after signing in. ` +
+      `Otherwise use the Contact us page with your travel or job details.`
     );
   }
 
@@ -118,10 +157,10 @@ function composeContextualReply(userText, normalized) {
   ) {
     return (
       'To see what we offer:\n\n' +
-      '• Go to /country and pick the destination.\n' +
-      '• Open **Visa Process** — listed visa types are available to apply for online.\n' +
+      '• Open the Countries page and pick the destination.\n' +
+      '• Open Visa Process — listed visa types are available to apply for online.\n' +
       '• Fees and documents are shown before payment.\n\n' +
-      'Not listed? Email /contact with nationality, destination, and visa type (e.g. Indian student for South Africa).'
+      'Not listed? Use the Contact us page with nationality, destination, and visa type.'
     );
   }
 
@@ -132,7 +171,7 @@ function greetingReply() {
   const g = INTENTS.find((i) => i.id === 'greeting');
   return (
     g?.reply ??
-    "Hi! I'm here to help with visas, countries on /country, applications, fees, courses, and your dashboard. What would you like to know?"
+    "Hi! I'm here to help with visas, countries, applications, fees, courses, and your dashboard. What would you like to know?"
   );
 }
 
@@ -145,9 +184,9 @@ function unclearShortInput(normalized) {
   if (normalized.length <= 2 || /^[a-z]{1,2}$/.test(normalized)) {
     return (
       "I didn't quite catch that. Try asking something like:\n" +
-      '• "Student visa for South Africa as an Indian"\n' +
-      '• "How do I apply?"\n' +
-      '• "What visas do you offer?"'
+      '• Student visa for South Africa as an Indian\n' +
+      '• How do I apply?\n' +
+      '• Can I reschedule my visa appointment?'
     );
   }
   return null;
@@ -162,41 +201,56 @@ export function getSmartLocalReply(messages) {
   const normalized = normalize(userText);
 
   if (!normalized) {
-    return greetingReply();
+    return formatChatReply(greetingReply());
   }
 
-  if (isInstantLocalMessage(userText)) {
-    if (/thank|thx/.test(normalized)) return thanksReply();
+  if (isPureGreetingOnly(userText)) {
+    if (/thank|thx/.test(normalized)) return formatChatReply(thanksReply());
     if (/bye|goodbye|later/.test(normalized)) {
-      return "Goodbye! Safe travels — message anytime if you need visa or site help.";
+      return formatChatReply(
+        'Goodbye! Safe travels — message anytime if you need visa or site help.',
+      );
     }
     if (/^ok(ay)?$/.test(normalized)) {
-      return 'Sure! What would you like help with — a country, visa type, fees, or how to apply on /country?';
+      return formatChatReply(
+        'Sure! What would you like help with — a country, visa type, fees, or how to apply?',
+      );
     }
     const unclear = unclearShortInput(normalized);
-    if (unclear) return unclear;
-    return greetingReply();
+    if (unclear) return formatChatReply(unclear);
+    return formatChatReply(greetingReply());
   }
 
-  const contextual = composeContextualReply(userText, normalized);
-  if (contextual) return contextual;
+  const contextual = composeContextualReply(normalized);
+  if (contextual) return formatChatReply(contextual);
 
   const best = scoreIntents(normalized);
-  if (best.score >= 1 && best.reply) return best.reply;
+  if (best.score >= 1 && best.reply) return formatChatReply(best.reply);
 
   if (
-    /\b(visa|passport|country|apply|student|tourist|work|course|ielts|payment|fee|dashboard|embassy|document)\b/.test(
+    /\b(visa|passport|country|apply|student|tourist|work|course|ielts|payment|fee|dashboard|embassy|document|appointment|reschedule)\b/.test(
       normalized,
     )
   ) {
-    return (
-      'On Global Gateway: use /country to pick a destination → Visa Process for requirements and fees → ' +
-      '/authentication to apply → /dashboard to track. For personal help: /contact or needhelp@company.com.'
+    return formatChatReply(
+      'On Global Gateway: use the Countries page to pick a destination, then Visa Process for requirements and fees, ' +
+        'Sign in to apply, and your dashboard to track. For personal help: Contact us page or needhelp@company.com.',
     );
   }
 
+  return formatChatReply(
+    'I can help with visa types, applying, fees, IELTS courses, payments, and your dashboard. ' +
+      'Example: "Indian student visa for South Africa — is it available?"',
+  );
+}
+
+export function isWeakGenericReply(text) {
+  const t = String(text ?? '').toLowerCase();
   return (
-    'I can help with visa types, applying on /country, fees, IELTS courses (/course), payments, and your dashboard. ' +
-    'Example: "Indian student visa for South Africa — is it available?"'
+    t.includes('great to hear from you') ||
+    t.includes('what country or visa are you interested') ||
+    t.includes('try /country') ||
+    t.includes('i can help with global gateway visas and the website') ||
+    (t.includes('global gateway assistant') && t.length < 120)
   );
 }

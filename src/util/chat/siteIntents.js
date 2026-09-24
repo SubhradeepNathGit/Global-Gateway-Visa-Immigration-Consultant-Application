@@ -15,7 +15,7 @@ export const INTENTS = [
     id: 'greeting',
     keywords: ['hello', 'hi', 'hey', 'good morning', 'good evening', 'good afternoon', 'namaste', 'hola', 'yo', 'sup'],
     reply:
-      "Hi! Great to hear from you. I can help with visa types, applying on /country, fees, IELTS courses, payments, and your /dashboard. What country or visa are you interested in?",
+      'Hi! Great to hear from you. I can help with visa types, applying, fees, IELTS courses, payments, and your dashboard. What country or visa are you interested in?',
   },
   {
     id: 'goodbye',
@@ -220,9 +220,20 @@ export const INTENTS = [
   },
   {
     id: 'appointment',
-    keywords: ['appointment', 'interview', 'biometric', 'vfs', 'embassy visit', 'schedule'],
+    keywords: [
+      'appointment',
+      'interview',
+      'biometric',
+      'vfs',
+      'embassy visit',
+      'schedule',
+      'reschedule',
+      'rescheduling',
+      'change appointment',
+      'move appointment',
+    ],
     reply:
-      "Embassies can schedule appointments through the platform. Check /dashboard and email/notifications for date, time, and documents to bring.",
+      'Embassies can schedule appointments through the platform. Open your dashboard and check email or notifications for date, time, and documents to bring. To change a date, use any reschedule option on your application in the dashboard, or contact us with your application reference if you do not see one.',
   },
   {
     id: 'documents',

@@ -4,9 +4,11 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sendVisaSupportChat } from '../util/chat/visaSupportChat';
+import { formatChatReply } from '../util/chat/chatReplyFormat';
 import {
   getSmartLocalReply,
-  isInstantLocalMessage,
+  isPureGreetingOnly,
+  isWeakGenericReply,
   lastUserText,
 } from '../util/chat/smartChatReply';
 
@@ -62,20 +64,20 @@ const GlobalLiveChat = () => {
     const apiMessages = toApiMessages(historyMessages);
     const latest = lastUserText(apiMessages);
 
-    if (isInstantLocalMessage(latest)) {
-      return { text: getSmartLocalReply(apiMessages), source: 'local' };
-    }
-
     const api = await sendVisaSupportChat(apiMessages);
-    if (
-      api.ok &&
-      api.reply &&
-      (api.engine === 'groq' || api.engine === 'gemini')
-    ) {
-      return { text: api.reply, source: api.engine };
+    const smartLocal = getSmartLocalReply(apiMessages);
+
+    if (api.ok && api.reply && (api.engine === 'groq' || api.engine === 'gemini')) {
+      const fromApi = formatChatReply(api.reply);
+      if (fromApi && !isWeakGenericReply(fromApi)) {
+        return { text: fromApi, source: api.engine };
+      }
     }
 
-    const smartLocal = getSmartLocalReply(apiMessages);
+    if (isPureGreetingOnly(latest)) {
+      return { text: smartLocal, source: 'local' };
+    }
+
     return { text: smartLocal, source: 'local' };
   }, []);
 

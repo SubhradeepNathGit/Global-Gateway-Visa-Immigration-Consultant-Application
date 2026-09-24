@@ -1,6 +1,7 @@
 import { formatDateTimeMeridian } from "../dateFormat/dateFormatConvertion"
 
 const handleDownload = (application) => {
+    const appointmentDate = application?.appointment_date;
     const content = `
 VISA APPLICATION DETAILS
 ========================
@@ -48,11 +49,10 @@ Occupation: ${application?.employment?.occupation?? 'N/A'}
 Company: ${application?.employment?.company?? 'N/A'}
 Monthly Income: ${application?.employment?.monthlyIncome?? 'N/A'}
 
-${application?.staus && appointmentDetails ? `
+${application?.status && appointmentDate ? `
 APPOINTMENT DETAILS
 -----------------
-Date: ${appointmentDetails?.date?? 'N/A'}
-Time: ${appointmentDetails?.time?? 'N/A'}
+Date & time: ${formatDateTimeMeridian(appointmentDate) ?? 'N/A'}
 Status: Approved
 ` : ''}
     `;

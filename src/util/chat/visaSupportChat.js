@@ -27,7 +27,8 @@ export async function sendVisaSupportChat(messages) {
         return {
           ok: true,
           reply: data.reply,
-          engine: data.engine ?? "groq",
+          engine:
+            typeof data.engine === "string" ? data.engine : "local",
         };
       }
 
