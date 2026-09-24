@@ -1,2 +1,5 @@
 [functions.send-transactional-email]
 verify_jwt = true
+
+[functions.visa-support-chat]
+verify_jwt = false

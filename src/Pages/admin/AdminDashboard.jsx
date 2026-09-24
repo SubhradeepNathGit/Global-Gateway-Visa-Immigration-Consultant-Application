@@ -14,9 +14,7 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="mb-4 sm:mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-lg bg-blue-600/20 border border-blue-500/30">
-            <Globe className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
-          </div>
+        
           <div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
               Visa Immigration Insights Panel
