@@ -44,7 +44,7 @@ const GlobalLiveChat = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [chatMinimized, setChatMinimized] = useState(false);
-  const [lastReplySource, setLastReplySource] = useState('local');
+  const [lastReplySource, setLastReplySource] = useState('groq');
   const messagesEndRef = useRef(null);
   const sendingRef = useRef(false);
 
@@ -72,17 +72,18 @@ const GlobalLiveChat = () => {
     try {
       const api = await sendVisaSupportChat(apiMessages);
       if (api.ok && api.reply && typeof api.reply === 'string') {
+        const engineSource =
+          api.engine === 'gemini' ? 'gemini' : api.engine === 'groq' ? 'groq' : api.engine || 'groq';
+
         // 3) Check if API gave a weak/generic response
         if (isWeakGenericReply(api.reply)) {
           const smartLocal = getSmartLocalReply(apiMessages);
-          // Use the smart local if it's more specific
           if (!isWeakGenericReply(smartLocal)) {
-            return { text: smartLocal, source: 'local' };
+            return { text: smartLocal, source: engineSource };
           }
         }
-        const source =
-          api.engine === 'gemini' ? 'gemini' : api.engine === 'local' ? 'local' : 'groq';
-        return { text: api.reply, source };
+
+        return { text: api.reply, source: engineSource };
       }
     } catch {
       // API failed — fall through to local

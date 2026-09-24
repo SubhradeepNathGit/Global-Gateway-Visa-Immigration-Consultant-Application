@@ -20,7 +20,7 @@ interface RequestBody {
 }
 
 const APP_URL =
-  Deno.env.get("PUBLIC_APP_URL") ?? "https://l-gateway-pro.vercel.app";
+  Deno.env.get("PUBLIC_APP_URL") ?? "https://global-gateway-pro.vercel.app/";
 
 function formatChatReply(text: string): string {
   const labels: Record<string, string> = {
