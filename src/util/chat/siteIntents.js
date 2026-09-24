@@ -13,9 +13,9 @@ export const SORRY_NO_ANSWER =
 export const INTENTS = [
   {
     id: 'greeting',
-    keywords: ['hello', 'hi', 'hey', 'good morning', 'good evening', 'good afternoon', 'namaste', 'hola'],
+    keywords: ['hello', 'hi', 'hey', 'good morning', 'good evening', 'good afternoon', 'namaste', 'hola', 'yo', 'sup'],
     reply:
-      "Hello! I'm the Global Gateway assistant. Ask me about visa types, how to apply, courses, payments, your dashboard, or contact options.",
+      "Hi! Great to hear from you. I can help with visa types, applying on /country, fees, IELTS courses, payments, and your /dashboard. What country or visa are you interested in?",
   },
   {
     id: 'goodbye',

@@ -3,8 +3,12 @@ import {
   X, MessageCircle, ArrowLeft, ArrowRight, Headphones
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getBestEffortLocalReply } from '../util/chat/siteAssistantEngine';
 import { sendVisaSupportChat } from '../util/chat/visaSupportChat';
+import {
+  getSmartLocalReply,
+  isInstantLocalMessage,
+  lastUserText,
+} from '../util/chat/smartChatReply';
 
 const WELCOME_TEXT =
   "Hello! I'm your visa support assistant. How can I help you today?";
@@ -56,18 +60,23 @@ const GlobalLiveChat = () => {
 
   const requestAssistantReply = useCallback(async (historyMessages) => {
     const apiMessages = toApiMessages(historyMessages);
+    const latest = lastUserText(apiMessages);
 
-    const api = await sendVisaSupportChat(apiMessages);
-    if (api.ok && api.reply) {
-      const source =
-        api.engine === 'gemini' ? 'gemini' : api.engine === 'local' ? 'local' : 'groq';
-      return { text: api.reply, source };
+    if (isInstantLocalMessage(latest)) {
+      return { text: getSmartLocalReply(apiMessages), source: 'local' };
     }
 
-    return {
-      text: getBestEffortLocalReply(apiMessages),
-      source: 'local',
-    };
+    const api = await sendVisaSupportChat(apiMessages);
+    if (
+      api.ok &&
+      api.reply &&
+      (api.engine === 'groq' || api.engine === 'gemini')
+    ) {
+      return { text: api.reply, source: api.engine };
+    }
+
+    const smartLocal = getSmartLocalReply(apiMessages);
+    return { text: smartLocal, source: 'local' };
   }, []);
 
   const sendUserText = useCallback(
@@ -348,7 +357,7 @@ const GlobalLiveChat = () => {
                       ? 'Powered by Groq AI • Site-trained guide'
                       : lastReplySource === 'gemini'
                         ? 'Powered by Gemini AI • Site-trained guide'
-                        : 'Site guide • AI backup offline'}
+                        : 'Smart site guide • Visas, countries & how to apply'}
                   </p>
                 </div>
               </>

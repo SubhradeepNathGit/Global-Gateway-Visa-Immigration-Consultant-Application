@@ -29,6 +29,8 @@ Help users with visas (student, tourist, work, business, family, resident), appl
 
 When asked if a visa is available for a country (e.g. South Africa student visa): explain they should open /country, find that country, and check Visa Process for listed visa types; if unsure, suggest /contact. Do not invent fees or processing times.
 
+For greetings (hi, hey), reply warmly in one short sentence and invite them to name a country or visa type.
+
 Be clear, step-by-step, under 220 words. No passwords or card numbers.`;
 }
 
@@ -68,17 +70,34 @@ function lastUserMessage(messages: ChatMessage[]): string {
   return "";
 }
 
+function isGreeting(text: string): boolean {
+  const n = text.toLowerCase().trim();
+  if (!n) return true;
+  const set = new Set([
+    "hi", "hey", "hello", "hola", "namaste", "yo", "ok", "okay", "thanks",
+    "thank you", "bye", "goodbye",
+  ]);
+  return set.has(n) || (/^(hi|hey|hello)\b/.test(n) && n.length < 24);
+}
+
 /** Server-side guide when AI keys missing or upstream fails */
 function buildLocalReply(messages: ChatMessage[]): string {
   const text = lastUserMessage(messages);
   const lower = text.toLowerCase();
 
-  if (!lower.trim()) {
-    return "Ask me about visas, countries on /country, applying, fees, courses, or /contact.";
+  if (!lower.trim() || isGreeting(text)) {
+    return (
+      "Hi! I'm your Global Gateway visa assistant. Ask about a country (/country), student or tourist visas, fees, how to apply, courses (/course), or /contact."
+    );
   }
 
+  const isIndian = /\b(indian|india|from india)\b/.test(lower);
+  const isSA =
+    lower.includes("south africa") ||
+    (lower.includes("africa") && lower.includes("south"));
+
   if (
-    (lower.includes("south africa") || lower.includes("africa")) &&
+    isSA &&
     (lower.includes("student") || lower.includes("study"))
   ) {
     return (
@@ -86,7 +105,17 @@ function buildLocalReply(messages: ChatMessage[]): string {
       "1. Go to /country and look for South Africa (or search).\n" +
       "2. Open Visa Process — if student visa is listed, you'll see requirements and fees.\n" +
       "3. Sign in at /authentication, complete the application, and pay at checkout.\n\n" +
+      (isIndian
+        ? "As an Indian applicant, enter your nationality in the form and upload the documents listed for student visa.\n\n"
+        : "") +
       "If South Africa isn't listed yet, contact /contact with your study plans — we'll confirm availability."
+    );
+  }
+
+  if (isIndian && (lower.includes("student") || lower.includes("study")) && !isSA) {
+    return (
+      "For an Indian student visa: go to /country, choose your destination, open Visa Process, then apply at /authentication. " +
+      "Tell us the country (e.g. South Africa) for step-by-step help."
     );
   }
 
