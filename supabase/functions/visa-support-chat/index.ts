@@ -188,6 +188,20 @@ function buildLocalReply(messages: ChatMessage[]): string {
     );
   }
 
+  if (
+    /\b(know|tell|help|capabilities|services|offer|can i ask|features|do you do|can you do)\b/.test(lower)
+  ) {
+    return formatChatReply(
+      "I can provide complete guidance on all Global Gateway services:\n\n" +
+      "1. Visa Applications: Step-by-step guidance for Student, Tourist, Work, Family, Business & Resident visas.\n" +
+      "2. Country Requirements: Document checklists, eligibility criteria, and country policies.\n" +
+      "3. Coaching & IELTS: Course enrollment, Band 7+ prep, and practice materials.\n" +
+      "4. Embassy Appointments: How to schedule, view, or reschedule biometrics & interviews on your Dashboard.\n" +
+      "5. Fees & Payments: Fee breakdowns, payment methods, receipts, and refund policies.\n\n" +
+      "What specific country or visa service would you like to know about?"
+    );
+  }
+
   if (lower.includes("student") || lower.includes("study")) {
     return formatChatReply(
       "Student visas: Countries page → destination → Visa Process → Sign in → apply → pay → track on your dashboard.",
@@ -215,7 +229,12 @@ function buildLocalReply(messages: ChatMessage[]): string {
   }
 
   return formatChatReply(
-    "I can help with Global Gateway visas and the website — destinations, student or tourist visas, fees, apply steps, courses, or contact support.",
+    "Global Gateway Assistant Services:\n\n" +
+    "• Visa Applications — Student, Tourist, Work, Family, Resident visas\n" +
+    "• IELTS & Coaching — Band 7+ prep and interview practice\n" +
+    "• Dashboard & Tracking — Monitor application and appointment status\n" +
+    "• Customer Support — Contact us page or email needhelp@globalgateway.com\n\n" +
+    "Tell me what you'd like help with!"
   );
 }
 

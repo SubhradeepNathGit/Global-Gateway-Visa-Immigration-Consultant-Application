@@ -4,8 +4,8 @@ import { formatChatReply } from './chatReplyFormat';
 function normalize(text) {
   return String(text ?? '')
     .toLowerCase()
-    .replace(/[^\\w\\s]/g, ' ')
-    .replace(/\\s+/g, ' ')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -23,8 +23,8 @@ function keywordMatches(normalized, keyword) {
   if (!k) return false;
   // Short keywords use word-boundary matching to avoid false positives
   if (k.length <= 4) {
-    const escaped = k.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
-    return new RegExp(`\\\\b${escaped}\\\\b`, 'i').test(normalized);
+    const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`\\b${escaped}\\b`, 'i').test(normalized);
   }
   return normalized.includes(k);
 }
@@ -259,24 +259,19 @@ export function getSmartLocalReply(messages) {
 
   // 4) Broad visa-related topic detection
   if (
-    /\b(visa|passport|country|apply|student|tourist|work|course|ielts|payment|fee|dashboard|embassy|document|appointment|reschedule|refund|promo|cart|checkout)\b/.test(
+    /\b(visa|passport|country|apply|student|tourist|work|course|ielts|payment|fee|dashboard|embassy|document|appointment|reschedule|refund|promo|cart|checkout|service|know|tell|help|info|information)\b/.test(
       normalized,
     )
   ) {
-    return formatChatReply(
-      'I can help with that! Here are some things I know about:\n\n' +
-        '• Visa types & how to apply — ask about student, tourist, work, or business visas\n' +
-        '• Countries — ask about any specific destination\n' +
-        '• Courses — IELTS prep and coaching details\n' +
-        '• Fees & payments — pricing and payment methods\n' +
-        '• Your Dashboard — track applications and appointments\n\n' +
-        'Could you be more specific about what you need?',
-    );
+    const cap = INTENTS.find((i) => i.id === 'capabilities');
+    if (cap) return formatChatReply(cap.reply);
   }
 
-  // 5) Helpful default with examples
+  // 5) Helpful default with capabilities
+  const cap = INTENTS.find((i) => i.id === 'capabilities');
   return formatChatReply(
-    'I can help with visa services, applications, courses, fees, and more!\n\n' +
+    cap?.reply ??
+      'I can help with visa services, applications, courses, fees, and more!\n\n' +
       'Try asking something like:\n' +
       '• "What visa services do you offer?"\n' +
       '• "How to apply for a student visa?"\n' +
@@ -294,9 +289,11 @@ export function isWeakGenericReply(text) {
     t.includes('what country or visa are you interested') ||
     t.includes('try /country') ||
     t.includes('i can help with global gateway visas and the website') ||
+    t.includes('what would you like to know?') ||
+    t.includes('what would you like to know') ||
+    t.includes('visa services & applications') ||
+    t.includes('country-specific requirements') ||
     (t.includes('global gateway assistant') && t.length < 120) ||
-    // Detect when the reply is just rephrasing the greeting
-    (t.includes('how can i help') && t.length < 100) ||
-    (t.includes('what would you like') && !t.includes('step') && t.length < 100)
+    (t.includes('how can i help') && t.length < 100)
   );
 }
