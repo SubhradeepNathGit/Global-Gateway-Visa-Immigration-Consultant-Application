@@ -18,7 +18,12 @@ function scoreIntent(intent, normalizedUserText) {
     const k = normalize(kw);
     if (!k) continue;
     if (normalizedUserText.includes(k)) {
-      score += k.length > 8 ? 4 : k.length > 5 ? 3 : 2;
+      const wordCount = k.split(/\s+/).length;
+      if (wordCount >= 3) score += 8;
+      else if (wordCount === 2) score += 5;
+      else if (k.length > 8) score += 4;
+      else if (k.length > 5) score += 3;
+      else score += 2;
     }
   }
   return score;
@@ -101,8 +106,8 @@ export function getBestEffortLocalReply(messages) {
     (lower.includes('student') || lower.includes('study'))
   ) {
     return (
-      'For South Africa student visa: open /country, find South Africa, and check Visa Process for student visa options, fees, and documents. ' +
-      'If the country is not listed, contact /contact — we will confirm availability.'
+      'For South Africa student visa: open the Countries page, find South Africa, and check Visa Process for student visa options, fees, and documents. ' +
+      'If the country is not listed, contact us via the Contact us page — we will confirm availability.'
     );
   }
 
@@ -113,39 +118,35 @@ export function getBestEffortLocalReply(messages) {
     lower.includes('is there')
   ) {
     return (
-      'Check availability on /country — select the destination → Visa Process. ' +
-      'Listed visa types can be applied for online. Not listed? Use /contact with the country and visa type.'
+      'Check availability on the Countries page — select the destination → Visa Process. ' +
+      'Listed visa types can be applied for online. Not listed? Use the Contact us page with the country and visa type.'
     );
   }
 
   const visaHints = [
-    'visa',
-    'passport',
-    'country',
-    'apply',
-    'student',
-    'tourist',
-    'work',
-    'course',
-    'ielts',
-    'payment',
-    'fee',
-    'dashboard',
-    'login',
-    'embassy',
-    'document',
-    'refund',
+    'visa', 'passport', 'country', 'apply', 'student', 'tourist',
+    'work', 'course', 'ielts', 'payment', 'fee', 'dashboard',
+    'login', 'embassy', 'document', 'refund',
   ];
   if (visaHints.some((h) => lower.includes(h))) {
     return (
-      'On Global Gateway: browse /country for destinations and visa types, sign in at /authentication to apply, ' +
-      'and track status in /dashboard. For fees, see Visa Process before payment. Need more help? /contact.'
+      'I can help with that! Here\'s what I know:\n\n' +
+      '• Visa types & how to apply — visit the Countries page\n' +
+      '• Courses — check the Courses page for IELTS and coaching\n' +
+      '• Track applications — sign in and visit your Dashboard\n' +
+      '• Fees — shown on each country\'s Visa Process page\n\n' +
+      'Could you be more specific about what you need? For personal help, visit the Contact us page.'
     );
   }
 
   return (
-    'I can help with visas (/country), applying, fees, IELTS courses (/course), payments, and your dashboard. ' +
-    'Try asking about a specific country or visa type, or use /contact for personal support.'
+    'I can help with visa services, applications, courses, fees, and more!\n\n' +
+    'Try asking:\n' +
+    '• "What visa services do you offer?"\n' +
+    '• "How to apply for a student visa?"\n' +
+    '• "Tell me about IELTS courses"\n' +
+    '• "How much does it cost?"\n\n' +
+    'Or visit the Contact us page for personalized support.'
   );
 }
 

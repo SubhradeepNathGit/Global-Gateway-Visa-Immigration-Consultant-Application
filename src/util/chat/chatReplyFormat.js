@@ -1,7 +1,7 @@
 const PATH_LABELS = {
   country: 'Countries page',
   authentication: 'Sign in page',
-  dashboard: 'your dashboard',
+  dashboard: 'your Dashboard',
   contact: 'Contact us page',
   course: 'Courses page',
   about: 'About page',
@@ -14,6 +14,7 @@ export function formatChatReply(text) {
   if (text == null) return '';
   let t = String(text);
 
+  // Strip markdown formatting
   t = t.replace(/\*\*([^*]+)\*\*/g, '$1');
   t = t.replace(/\*([^*]+)\*/g, '$1');
   t = t.replace(/__([^_]+)__/g, '$1');
@@ -21,6 +22,7 @@ export function formatChatReply(text) {
   t = t.replace(/^#+\s+/gm, '');
   t = t.replace(/`([^`]+)`/g, '$1');
 
+  // Replace /paths with human-readable labels
   t = t.replace(/\/([a-z][a-z0-9-]*)/gi, (_, segment) => {
     const key = segment.toLowerCase();
     const label = PATH_LABELS[key];

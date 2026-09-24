@@ -3,21 +3,13 @@ import {
   X, MessageCircle, ArrowLeft, ArrowRight, Headphones
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getSmartLocalReply, isPureGreetingOnly, isWeakGenericReply } from '../util/chat/smartChatReply';
 import { sendVisaSupportChat } from '../util/chat/visaSupportChat';
-import { formatChatReply } from '../util/chat/chatReplyFormat';
-import {
-  getSmartLocalReply,
-  isPureGreetingOnly,
-  isWeakGenericReply,
-  lastUserText,
-} from '../util/chat/smartChatReply';
 
 const WELCOME_TEXT =
   "Hello! I'm your visa support assistant. How can I help you today?";
 
-/* Navbar is fixed with py-4 (~16px each) + content ≈ 60px.
-   We use a CSS custom property so it's easy to tweak in one place. */
-const NAVBAR_HEIGHT = 60; // px – adjust if navbar height changes
+const NAVBAR_HEIGHT = 60;
 
 const quickReplies = [
   'What visa services do you offer?',
@@ -60,25 +52,47 @@ const GlobalLiveChat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  /**
+   * Smart reply chain:
+   * 1. Pure greetings / thanks / bye → instant local (no API)
+   * 2. Try Supabase edge function (Gemini/Groq AI)
+   * 3. If API reply is weak/generic → replace with smart local
+   * 4. If API fails entirely → smart local fallback
+   */
   const requestAssistantReply = useCallback(async (historyMessages) => {
     const apiMessages = toApiMessages(historyMessages);
-    const latest = lastUserText(apiMessages);
+    const lastMsg = apiMessages[apiMessages.length - 1]?.content ?? '';
 
-    const api = await sendVisaSupportChat(apiMessages);
-    const smartLocal = getSmartLocalReply(apiMessages);
+    // 1) Instant local for trivial messages (greetings, thanks, bye)
+    if (isPureGreetingOnly(lastMsg)) {
+      return { text: getSmartLocalReply(apiMessages), source: 'local' };
+    }
 
-    if (api.ok && api.reply && (api.engine === 'groq' || api.engine === 'gemini')) {
-      const fromApi = formatChatReply(api.reply);
-      if (fromApi && !isWeakGenericReply(fromApi)) {
-        return { text: fromApi, source: api.engine };
+    // 2) Try API first for substantive questions
+    try {
+      const api = await sendVisaSupportChat(apiMessages);
+      if (api.ok && api.reply && typeof api.reply === 'string') {
+        // 3) Check if API gave a weak/generic response
+        if (isWeakGenericReply(api.reply)) {
+          const smartLocal = getSmartLocalReply(apiMessages);
+          // Use the smart local if it's more specific
+          if (!isWeakGenericReply(smartLocal)) {
+            return { text: smartLocal, source: 'local' };
+          }
+        }
+        const source =
+          api.engine === 'gemini' ? 'gemini' : api.engine === 'local' ? 'local' : 'groq';
+        return { text: api.reply, source };
       }
+    } catch {
+      // API failed — fall through to local
     }
 
-    if (isPureGreetingOnly(latest)) {
-      return { text: smartLocal, source: 'local' };
-    }
-
-    return { text: smartLocal, source: 'local' };
+    // 4) Smart local fallback
+    return {
+      text: getSmartLocalReply(apiMessages),
+      source: 'local',
+    };
   }, []);
 
   const sendUserText = useCallback(
@@ -116,7 +130,7 @@ const GlobalLiveChat = () => {
       } catch {
         const agentMessage = {
           id: nextId(),
-          text: 'Something went wrong. Please try again or visit /contact for help.',
+          text: 'Something went wrong. Please try again or visit the Contact us page for help.',
           sender: 'agent',
           timestamp: new Date().toISOString(),
         };
@@ -176,7 +190,7 @@ const GlobalLiveChat = () => {
               isolation: 'isolate',
               WebkitTransform: 'translate3d(0, 0, 0)',
               transform: 'translate3d(0, 0, 0)',
-              WebkitBackfaceVisibility: 'hidden',
+              WebkitBackfropVisibility: 'hidden',
               backfaceVisibility: 'hidden',
               border: 'none',
               outline: 'none',
