@@ -8,6 +8,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import getSweetAlert from '../../../../util/alert/sweetAlert';
 import { useDispatch } from 'react-redux';
 import { addNotification } from '../../../../Redux/Slice/notificationSlice';
+import { EmailEvents } from '../../../../util/email/emailEvents';
+import { sendTransactionalEmailAsync } from '../../../../util/email/sendTransactionalEmail';
 
 const StatusCard = ({ application, setShowRejectModal, setShowAppointmentModal }) => {
 
@@ -60,6 +62,10 @@ const StatusCard = ({ application, setShowRejectModal, setShowAppointmentModal }
                             // console.log('Response after adding notification', res);
 
                             if (res.meta.requestStatus === "fulfilled") {
+                                sendTransactionalEmailAsync({
+                                    eventType: EmailEvents.VISA_APPROVED,
+                                    applicationId: application?.id,
+                                });
 
                                 queryClient.invalidateQueries(["application", application?.id]);
                                 hotToast(`Application has approved successfully!`, "success");

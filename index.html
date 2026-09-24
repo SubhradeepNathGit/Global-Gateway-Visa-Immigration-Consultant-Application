@@ -9,9 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Preload critical hero & loader images for jitter-free instant rendering -->
+    <link rel="preload" as="image" href="/Slider-front1.jpg" fetchpriority="high" />
     <link rel="preload" as="image" href="/Slider1.jpg" fetchpriority="high" />
     <link rel="preload" as="image" href="/Slider7.jpg" fetchpriority="high" />
     <link rel="preload" as="image" href="/Slider2.jpg" />
+    
+    <!-- Preload auth preview posters and prefetch auth videos for smooth instant start -->
+    <link rel="preload" as="image" href="/signup-preview.png" />
+    <link rel="preload" as="image" href="/registration-preview.png" />
+    <link rel="prefetch" href="/signup.mp4" as="video" type="video/mp4" />
+    <link rel="prefetch" href="/registration.mp4" as="video" type="video/mp4" />
     
     <title>Global Gateway</title>
     <script>

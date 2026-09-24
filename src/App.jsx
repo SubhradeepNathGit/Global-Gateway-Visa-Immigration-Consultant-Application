@@ -9,6 +9,7 @@ import LoadingAnimation from './Components/Loading';
 import { useDispatch } from 'react-redux';
 import { stopLoading } from './Redux/Slice/loadingSlice';
 import { checkLoggedInUser, listenAuthChanges } from './Redux/Slice/auth/checkAuthSlice';
+import AuthVideoPreloader from './Components/Auth/AuthVideoPreloader';
 
 function App() {
   const dispatch = useDispatch();
@@ -79,9 +80,13 @@ function App() {
 
       // 2. Full download & GPU decode of the critical hero banner images
       const bannerImagesPromise = Promise.all([
+        preloadAndDecode('/Slider-front1.jpg'),
         preloadAndDecode('/Slider1.jpg'),
         preloadAndDecode('/Slider7.jpg'),
         preloadAndDecode('/Slider2.jpg'),
+        preloadAndDecode('/Slider3.jpg'),
+        preloadAndDecode('/Slider6.jpg'),
+        preloadAndDecode('/Slider-front.jpg'),
       ]);
 
       // 3. Safety ceiling (4.5s) to guarantee no infinite hang on offline/slow 2G
@@ -101,8 +106,13 @@ function App() {
         isCancelled = true;
       };
     } else {
-      // Not on home — kill loading state immediately
+      // Not on home — kill loading state immediately and idle-warm the hero image
       dispatch(stopLoading());
+      const idleImg = new Image();
+      idleImg.src = '/Slider-front1.jpg';
+      if ('decode' in idleImg) {
+        idleImg.decode().catch(() => {});
+      }
     }
   }, [dispatch, showInitialLoader]);
 
@@ -112,6 +122,9 @@ function App() {
       <AnimatePresence mode="wait">
         {showInitialLoader && <LoadingAnimation alwaysShow={true} />}
       </AnimatePresence>
+
+      {/* Background preloader for auth videos & posters */}
+      <AuthVideoPreloader />
 
       {/* APP UI rendered beneath for instant, zero-flicker transition */}
       <ToastContainer />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
@@ -15,10 +15,25 @@ import { updateLastSignInAt } from '../../../Redux/Slice/userSlice';
 
 const AdminLoginForm = () => {
     const [showPassword, setShowPassword] = useState(false);
+    const [videoReady, setVideoReady] = useState(false);
+    const videoRef = useRef(null);
     const dispatch = useDispatch();
     const { isUserAuthLoading } = useSelector(state => state.auth);
     const { register, handleSubmit, formState: { errors } } = useForm();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.muted = true;
+            if (videoRef.current.readyState >= 2) {
+                setVideoReady(true);
+            }
+            const p = videoRef.current.play();
+            if (p !== undefined) {
+                p.then(() => setVideoReady(true)).catch(() => {});
+            }
+        }
+    }, []);
 
     // Prevent back navigation from leaving the admin login page
     useEffect(() => {
@@ -63,18 +78,31 @@ const AdminLoginForm = () => {
             <div className="w-full min-h-[100dvh] md:h-screen flex flex-col md:flex-row shadow-2xl md:overflow-hidden">
                 
                 {/* LEFT VIDEO SECTION — desktop only */}
-                <div className="hidden md:block md:w-1/2 relative bg-black/80 md:h-full">
+                <div className="hidden md:block md:w-1/2 relative bg-black/80 md:h-full overflow-hidden select-none">
+                    {/* Preloaded Poster Underlay */}
+                    <img 
+                        src="/admin1.png" 
+                        alt="" 
+                        aria-hidden="true"
+                        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+                    />
+
                     <video 
+                        ref={videoRef}
                         autoPlay loop muted playsInline
                         preload="auto"
                         poster="/admin1.png"
-                        className="absolute top-0 left-0 w-full h-full object-cover"
+                        onCanPlay={() => setVideoReady(true)}
+                        onPlaying={() => setVideoReady(true)}
+                        className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out will-change-[opacity] ${
+                            videoReady ? 'opacity-100' : 'opacity-0'
+                        }`}
                     >
                         <source src="/admin-signin.mp4" type="video/mp4" />
                     </video>
 
                     {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-black/75 via-black/50 to-transparent z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-black/85 via-black/50 to-transparent z-10 pointer-events-none" />
 
                     {/* Brand name — top left of left panel */}
                     <div className="absolute top-8 left-8 z-20 flex items-center gap-2">

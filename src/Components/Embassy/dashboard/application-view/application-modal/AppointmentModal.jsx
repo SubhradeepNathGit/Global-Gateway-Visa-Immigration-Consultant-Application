@@ -14,6 +14,8 @@ import hotToast from '../../../../../util/alert/hot-toast';
 import { fetchAppointmentReasons } from '../../../../../Redux/Slice/appointmentReasonSlice';
 import { useEmbassiesAddress } from '../../../../../tanstack/query/getEmbassyAddress';
 import { addNotification } from '../../../../../Redux/Slice/notificationSlice';
+import { EmailEvents } from '../../../../../util/email/emailEvents';
+import { sendTransactionalEmailAsync } from '../../../../../util/email/sendTransactionalEmail';
 
 const AppointmentModal = ({ application, visaDetails, setShowAppointmentModal, currentCountry, setSelectedDate, setAppointmentSet, setSelectedTime, selectedDate, selectedTime, currentMonth, setCurrentMonth, embassyId, country_id }) => {
     const dispatch = useDispatch();
@@ -160,6 +162,19 @@ const AppointmentModal = ({ application, visaDetails, setShowAppointmentModal, c
                             title: `Visa appointment for ${application?.destinationCountry || 'your visa application'} has been ${existingAppointmentDate ? 're-' : ''}scheduled`
                         })).catch(err => {
                             console.warn('Notification error (non-fatal):', err);
+                        });
+
+                        const newAppointmentIso = combineDateAndTime(selectedDate, selectedTime);
+                        sendTransactionalEmailAsync({
+                            eventType: existingAppointmentDate
+                                ? EmailEvents.APPOINTMENT_RESCHEDULED
+                                : EmailEvents.APPOINTMENT_SCHEDULED,
+                            applicationId: application?.id,
+                            meta: {
+                                appointmentDate: newAppointmentIso,
+                                previousAppointmentDate: existingAppointmentDate ?? null,
+                                embassyLocation: appointmentLocatioin,
+                            },
                         });
                     } else {
                         getSweetAlert('Oops...', res.payload || 'Failed to update appointment!', 'error');

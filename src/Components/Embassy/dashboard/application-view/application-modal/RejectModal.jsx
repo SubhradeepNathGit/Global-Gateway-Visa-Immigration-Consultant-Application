@@ -7,6 +7,8 @@ import getSweetAlert from '../../../../../util/alert/sweetAlert';
 import hotToast from '../../../../../util/alert/hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { addNotification } from '../../../../../Redux/Slice/notificationSlice';
+import { EmailEvents } from '../../../../../util/email/emailEvents';
+import { sendTransactionalEmailAsync } from '../../../../../util/email/sendTransactionalEmail';
 
 const RejectModal = ({ application, setShowRejectModal }) => {
 
@@ -38,6 +40,11 @@ const RejectModal = ({ application, setShowRejectModal }) => {
                             // console.log('Response after adding notification', res);
 
                             if (res.meta.requestStatus === "fulfilled") {
+                                sendTransactionalEmailAsync({
+                                    eventType: EmailEvents.VISA_REJECTED,
+                                    applicationId: application?.id,
+                                    meta: { rejectionReason: data?.reason },
+                                });
 
                                 queryClient.invalidateQueries(["application", application?.id]);
                                 hotToast(`Application rejected successfully!`, "success");

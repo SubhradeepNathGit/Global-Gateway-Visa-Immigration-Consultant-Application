@@ -26,6 +26,31 @@ const AuthForm = () => {
   const [forgotPasswordTimer, setForgotPasswordTimer] = useState(0);
   const fileInputRef = useRef(null);
 
+  // Smooth dual-video playback & readiness tracking
+  const loginVideoRef = useRef(null);
+  const registerVideoRef = useRef(null);
+  const [loginVideoReady, setLoginVideoReady] = useState(false);
+  const [registerVideoReady, setRegisterVideoReady] = useState(false);
+
+  useEffect(() => {
+    const playSafe = (videoEl, setReady) => {
+      if (!videoEl) return;
+      videoEl.muted = true;
+      if (videoEl.readyState >= 2) {
+        setReady(true);
+      }
+      const playPromise = videoEl.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setReady(true))
+          .catch(() => {});
+      }
+    };
+
+    playSafe(loginVideoRef.current, setLoginVideoReady);
+    playSafe(registerVideoRef.current, setRegisterVideoReady);
+  }, []);
+
   const dispatch = useDispatch();
   const { isUserAuthLoading } = useSelector(state => state.auth);
 
@@ -247,46 +272,101 @@ const AuthForm = () => {
       <div className="w-full min-h-[100dvh] md:h-screen flex flex-col md:flex-row shadow-2xl md:overflow-hidden">
 
         {/* LEFT VIDEO SECTION — desktop only */}
-        <div className="hidden md:block md:w-1/2 relative bg-black/80 md:h-full">
+        <div className="hidden md:block md:w-1/2 relative bg-black md:h-full overflow-hidden select-none">
+          {/* Preloaded High-Resolution Posters Underlay: Prevents any white/black flash */}
+          <img
+            src="/signup-preview.png"
+            alt=""
+            aria-hidden="true"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out pointer-events-none ${
+              isLogin ? 'opacity-100 z-[1]' : 'opacity-0 z-0'
+            }`}
+          />
+          <img
+            src="/registration-preview.png"
+            alt=""
+            aria-hidden="true"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out pointer-events-none ${
+              !isLogin ? 'opacity-100 z-[1]' : 'opacity-0 z-0'
+            }`}
+          />
+
+          {/* Login Video: /signup.mp4 */}
           <video
-            key={isLogin ? 'login-video' : 'register-video'}
-            autoPlay loop muted playsInline
+            ref={loginVideoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
             preload="auto"
-            poster={isLogin ? "/signup-preview.png" : "/registration-preview.png"}
-            className="absolute top-0 left-0 w-full h-full object-cover"
+            poster="/signup-preview.png"
+            onCanPlay={() => setLoginVideoReady(true)}
+            onPlaying={() => setLoginVideoReady(true)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out will-change-[opacity] ${
+              isLogin && loginVideoReady ? 'opacity-100 z-[2]' : 'opacity-0 z-[1] pointer-events-none'
+            }`}
           >
-            <source src={isLogin ? "/signup.mp4" : "/registration.mp4"} type="video/mp4" />
+            <source src="/signup.mp4" type="video/mp4" />
           </video>
 
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-black/75 via-black/50 to-transparent z-10" />
+          {/* Registration Video: /registration.mp4 */}
+          <video
+            ref={registerVideoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            poster="/registration-preview.png"
+            onCanPlay={() => setRegisterVideoReady(true)}
+            onPlaying={() => setRegisterVideoReady(true)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out will-change-[opacity] ${
+              !isLogin && registerVideoReady ? 'opacity-100 z-[2]' : 'opacity-0 z-[1] pointer-events-none'
+            }`}
+          >
+            <source src="/registration.mp4" type="video/mp4" />
+          </video>
+
+          {/* Premium Gradient Overlays for contrast & readability */}
+          <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-black/85 via-black/50 to-transparent z-[3] pointer-events-none" />
+          <div className="absolute inset-0 bg-black/20 z-[3] pointer-events-none" />
 
           {/* Brand name — top left of left panel */}
           <div className="absolute top-8 left-8 z-20 flex items-center gap-2">
-            <FlightTakeoffIcon className="text-white text-[30px]" />
-            <span className="text-white font-bold text-[22px] tracking-wide">Global Gateway</span>
+            <FlightTakeoffIcon className="text-white text-[30px] drop-shadow" />
+            <span className="text-white font-bold text-[22px] tracking-wide drop-shadow-md">Global Gateway</span>
           </div>
 
-          {/* Left content — centered */}
+          {/* Left content — centered with cinematic fade */}
           <div className="relative z-10 h-full flex flex-col justify-center items-center px-8 md:px-12 py-12 md:py-0 text-center">
-            <div className="max-w-md">
-              <h2 className="text-3xl md:text-4xl lg:text-4xl font-bold mb-4 tracking-tight text-white/50 leading-tight">
-                {isLogin ? 'Welcome Back' : 'Hello, Traveller!'}
-              </h2>
-
-              <p className="text-sm md:text-base mb-6 -mt-2 text-white/70 leading-relaxed font-medium">
-                {isLogin
-                  ? 'Sign in to continue your journey with us'
-                  : 'Enter your details to join Global Gateway '}
-              </p>
-
-              <button
-                onClick={handleToggle}
-                className="px-30 py-3 border-2 border-white/50 text-white rounded-full hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-bold text-sm tracking-widest uppercase backdrop-blur-sm"
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={isLogin ? 'login-text' : 'signup-text'}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.35, ease: 'easeInOut' }}
+                className="max-w-md flex flex-col items-center"
               >
-                {isLogin ? 'Sign Up' : 'Sign In'}
-              </button>
-            </div>
+                <h2 className="text-3xl md:text-4xl lg:text-4xl font-bold mb-4 tracking-tight text-white leading-tight drop-shadow">
+                  {isLogin ? 'Welcome Back' : 'Hello, Traveller!'}
+                </h2>
+
+                <p className="text-sm md:text-base mb-6 -mt-2 text-white/80 leading-relaxed font-medium drop-shadow">
+                  {isLogin
+                    ? 'Sign in to continue your journey with us'
+                    : 'Enter your details to join Global Gateway '}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={handleToggle}
+                  className="px-10 py-3 border-2 border-white/60 text-white rounded-full hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-bold text-sm tracking-widest uppercase backdrop-blur-sm cursor-pointer shadow-lg hover:shadow-white/20 active:scale-95"
+                >
+                  {isLogin ? 'Sign Up' : 'Sign In'}
+                </button>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
 

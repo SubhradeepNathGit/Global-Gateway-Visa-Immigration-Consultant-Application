@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import { useForm } from "react-hook-form";
@@ -28,6 +28,31 @@ const EmbassyAuth = () => {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [forgotPasswordTimer, setForgotPasswordTimer] = useState(0);
   const [showForgotPasswordSuccess, setShowForgotPasswordSuccess] = useState(false);
+
+  // Smooth dual-video playback & readiness tracking
+  const signinVideoRef = useRef(null);
+  const signupVideoRef = useRef(null);
+  const [signinVideoReady, setSigninVideoReady] = useState(false);
+  const [signupVideoReady, setSignupVideoReady] = useState(false);
+
+  useEffect(() => {
+    const playSafe = (videoEl, setReady) => {
+      if (!videoEl) return;
+      videoEl.muted = true;
+      if (videoEl.readyState >= 2) {
+        setReady(true);
+      }
+      const playPromise = videoEl.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setReady(true))
+          .catch(() => {});
+      }
+    };
+
+    playSafe(signinVideoRef.current, setSigninVideoReady);
+    playSafe(signupVideoRef.current, setSignupVideoReady);
+  }, []);
 
   // Prevent back navigation from leaving the embassy login page
   useEffect(() => {
@@ -253,47 +278,101 @@ const EmbassyAuth = () => {
       <div className="w-full min-h-[100dvh] md:h-screen flex flex-col md:flex-row-reverse shadow-2xl md:overflow-hidden relative">
         {/* Brand name — desktop */}
         <div className="hidden md:flex absolute top-10 left-10 z-30 items-center gap-3">
-          <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20">
+          <div className=" h-10 flex items-center justify-center">
             <FlightTakeoffIcon className="text-white text-[24px]" />
           </div>
           <span className="text-white font-bold text-xl tracking-wide">Global Gateway</span>
         </div>
 
         {/* VIDEO SECTION — desktop only */}
-        <div className="hidden md:block md:w-1/2 relative bg-black/80 md:h-full border-l border-white/10">
+        <div className="hidden md:block md:w-1/2 relative bg-black/80 md:h-full border-l border-white/10 overflow-hidden select-none">
+          {/* Preloaded High-Resolution Posters Underlay */}
+          <img
+            src="/embassy2.png"
+            alt=""
+            aria-hidden="true"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out pointer-events-none ${
+              !isSignup ? 'opacity-100 z-[1]' : 'opacity-0 z-0'
+            }`}
+          />
+          <img
+            src="/embassy1.png"
+            alt=""
+            aria-hidden="true"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out pointer-events-none ${
+              isSignup ? 'opacity-100 z-[1]' : 'opacity-0 z-0'
+            }`}
+          />
+
+          {/* Signin Video */}
           <video
-            key={isSignup ? 'embassy-signup' : 'embassy-login'}
-            autoPlay loop muted playsInline
+            ref={signinVideoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
             preload="auto"
-            poster={isSignup ? "/embassy1.png" : "/embassy2.png"}
-            className="absolute top-0 left-0 w-full h-full object-cover"
+            poster="/embassy2.png"
+            onCanPlay={() => setSigninVideoReady(true)}
+            onPlaying={() => setSigninVideoReady(true)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out will-change-[opacity] ${
+              !isSignup && signinVideoReady ? 'opacity-100 z-[2]' : 'opacity-0 z-[1] pointer-events-none'
+            }`}
           >
-            <source src={isSignup ? "/embassy-signin.mp4" : "/embassy-signup.mp4"} type="video/mp4" />
+            <source src="/embassy-signup.mp4" type="video/mp4" />
+          </video>
+
+          {/* Signup Video */}
+          <video
+            ref={signupVideoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            poster="/embassy1.png"
+            onCanPlay={() => setSignupVideoReady(true)}
+            onPlaying={() => setSignupVideoReady(true)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out will-change-[opacity] ${
+              isSignup && signupVideoReady ? 'opacity-100 z-[2]' : 'opacity-0 z-[1] pointer-events-none'
+            }`}
+          >
+            <source src="/embassy-signin.mp4" type="video/mp4" />
           </video>
 
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-l from-black/75 via-black/50 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-l from-black/80 via-black/50 to-transparent z-[3] pointer-events-none" />
 
           {/* Left content — centered */}
           <div className="relative z-10 h-full flex flex-col justify-center items-center px-8 md:px-12 py-12 md:py-0 text-center">
-            <div className="max-w-md">
-              <h2 className="text-3xl md:text-4xl lg:text-4xl font-bold mb-4 tracking-tight text-white/50 leading-tight">
-                Embassy Access
-              </h2>
-
-              <p className="text-sm md:text-base mb-6 -mt-2 text-white/70 leading-relaxed font-medium">
-                {showOtp ? 'Verify your identity to continue' : showForgotPassword ? 'Reset your access' : isSignup
-                  ? "Register your embassy for official diplomatic visa processing"
-                  : "Secure portal for diplomatic visa operations"}
-              </p>
-
-              <button
-                onClick={handleToggle}
-                className="px-30 py-3 border-2 border-white/50 text-white rounded-full hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-bold text-sm tracking-widest uppercase backdrop-blur-sm"
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={isSignup ? 'embassy-signup-text' : 'embassy-login-text'}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.35, ease: 'easeInOut' }}
+                className="max-w-md flex flex-col items-center"
               >
-                {isSignup ? 'Sign In' : 'Register Embassy'}
-              </button>
-            </div>
+                <h2 className="text-3xl md:text-4xl lg:text-4xl font-bold mb-4 tracking-tight text-white leading-tight drop-shadow">
+                  Embassy Access
+                </h2>
+
+                <p className="text-sm md:text-base mb-6 -mt-2 text-white/80 leading-relaxed font-medium drop-shadow">
+                  {showOtp ? 'Verify your identity to continue' : showForgotPassword ? 'Reset your access' : isSignup
+                    ? "Register your embassy for official diplomatic visa processing"
+                    : "Secure portal for diplomatic visa operations"}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={handleToggle}
+                  className="px-10 py-3 border-2 border-white/60 text-white rounded-full hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-bold text-sm tracking-widest uppercase backdrop-blur-sm cursor-pointer shadow-lg hover:shadow-white/20 active:scale-95"
+                >
+                  {isSignup ? 'Sign In' : 'Register Embassy'}
+                </button>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* Regulatory Notice — full-width bottom of video panel */}

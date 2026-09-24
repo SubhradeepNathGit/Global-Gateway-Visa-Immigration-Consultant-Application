@@ -17,6 +17,8 @@ import { addOrder } from "../../../../Redux/Slice/orderSlice";
 import { deleteCart } from "../../../../Redux/Slice/cartSlice";
 import { updateCoursePurchaseStatus } from "../../../../Redux/Slice/userSlice";
 import { addCertificate } from "../../../../Redux/Slice/certificateSlice";
+import { EmailEvents } from "../../../../util/email/emailEvents";
+import { sendTransactionalEmailAsync } from "../../../../util/email/sendTransactionalEmail";
 
 const LottieAnimation = ({ animationData, isSuccess }) => {
     if (!animationData) return null;
@@ -173,6 +175,10 @@ export default function PaymentStatus() {
                                                                                         // console.log('Response after adding notification', res);
 
                                                                                         if (res.meta.requestStatus === "fulfilled") {
+                                                                                            sendTransactionalEmailAsync({
+                                                                                                eventType: EmailEvents.VISA_APPLICATION_SUBMITTED,
+                                                                                                applicationId: personalInfoData?.application_id,
+                                                                                            });
 
                                                                                             setIsLottieTransitioning(true);
                                                                                             setTimeout(() => {

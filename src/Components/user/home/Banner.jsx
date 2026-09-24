@@ -87,6 +87,17 @@ const buttonVariants = {
   },
 };
 
+// Module-level persistent cache: keeps GPU texture resident across route navigations
+if (typeof window !== 'undefined') {
+  bannerData.forEach((item) => {
+    const img = new Image();
+    img.src = item.image;
+    if ('decode' in img) {
+      img.decode().catch(() => {});
+    }
+  });
+}
+
 const Banner = () => {
   const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -95,10 +106,10 @@ const Banner = () => {
 
   useEffect(() => {
     if (!isAppLoading) {
-      // Coordinate entrance smoothly right as the loader begins its fade-out
+      // Coordinate entrance smoothly
       const timer = setTimeout(() => {
         setIsReady(true);
-      }, 120);
+      }, 50);
       return () => clearTimeout(timer);
     }
   }, [isAppLoading]);
@@ -109,6 +120,20 @@ const Banner = () => {
 
   return (
     <div className="w-screen h-screen overflow-hidden relative select-none bg-black">
+      {/* INSTANT HERO BACKDROP:
+          Guarantees 0ms black screen when returning to Home from any page.
+          Renders /Slider-front1.jpg immediately on frame 0 before Swiper mounts. */}
+      <img
+        src="/Slider-front1.jpg"
+        alt=""
+        aria-hidden="true"
+        fetchPriority="high"
+        decoding="sync"
+        className={`absolute inset-0 w-full h-full object-cover z-0 pointer-events-none transition-opacity duration-1000 ${
+          activeIndex === 0 ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+
       {/* Top Scrim for Ultimate Navbar Legibility & Luxury Feel */}
       <div 
         className="absolute top-0 left-0 right-0 h-44 md:h-56 z-20 pointer-events-none"
@@ -130,28 +155,33 @@ const Banner = () => {
             bulletClass: 'swiper-pagination-bullet !bg-white/40 !w-2.5 !h-2.5 !transition-all !duration-500',
             bulletActiveClass: 'swiper-pagination-bullet-active !bg-[#ff3c3c] !w-9 !rounded-full !shadow-[0_0_12px_rgba(255,60,60,0.6)]'
         }}
-        className="w-full h-full bg-black"
+        className="relative z-10 w-full h-full bg-transparent"
       >
         {bannerData.map((item, index) => (
           <SwiperSlide key={index}>
-            <div className="h-screen w-screen flex flex-col justify-center items-center text-white text-center px-4 relative overflow-hidden bg-black">
+            <div className="h-screen w-screen flex flex-col justify-center items-center text-white text-center px-4 relative overflow-hidden bg-transparent">
               
               {/* Original Photo Background - Clean & Vibrant */}
               <motion.div
                 initial={{ scale: 1 }}
                 animate={(isReady && activeIndex === index) ? { scale: 1.05 } : { scale: 1 }}
                 transition={{ duration: 7, ease: "easeOut" }}
-                className="absolute inset-0 z-0 pointer-events-none"
-                style={{
-                  backgroundImage: `url(${item.image})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  willChange: 'transform',
-                  transform: 'translateZ(0)',
-                  backfaceVisibility: 'hidden',
-                  WebkitBackfaceVisibility: 'hidden',
-                }}
-              />
+                className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
+              >
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  fetchPriority={index === 0 ? "high" : "auto"}
+                  decoding={index === 0 ? "sync" : "async"}
+                  className="w-full h-full object-cover select-none pointer-events-none"
+                  style={{
+                    willChange: 'transform',
+                    transform: 'translateZ(0)',
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                  }}
+                />
+              </motion.div>
 
               {/* Subtitle (Eyebrow Heading) */}
               <motion.div

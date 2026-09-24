@@ -1,7 +1,8 @@
 import React, { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-/* ---------- Eagerly loaded pages (instant navigation, no white flash) ---------- */
+/* ---------- Eagerly loaded pages (instant navigation, no white flash, no black flash) ---------- */
+import Home from "../Pages/user/home/Home";
 import AuthForm from "../Pages/user/auth/Authentication";
 import AdminLoginForm from "../Pages/admin/auth/AdminLoginForm";
 import EmbassyAuth from "../Pages/embassy/auth/Auth";
@@ -17,7 +18,6 @@ import ProtectedRoute from "../Components/Auth/ProtectedRoute";
 import DashboardSkeleton from "../Components/DashboardSkeleton";
 
 /* ---------- User Pages ---------- */
-const Home = lazy(() => import("../Pages/user/home/Home"));
 const AboutSection = lazy(() => import("../Pages/user/about/AboutPage"));
 const CountryGrid = lazy(() => import("../Pages/user/countries/Country"));
 const CountryDetails = lazy(() => import("../Pages/user/countries/country-details/CountryDetails"));

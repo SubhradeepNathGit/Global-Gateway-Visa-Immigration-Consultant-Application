@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import NotificationDrawer from '../../Components/user/common/NotificationDrawer';
 import { fetchNotifications } from '../../Redux/Slice/notificationSlice';
 import { fetchCartItems, getOrCreateCart } from '../../Redux/Slice/cartSlice';
+import { warmUpAuthMedia } from '../../Components/Auth/AuthVideoPreloader';
 
 const navLinks = [
   { label: 'Home', to: '/' },
@@ -278,6 +279,8 @@ const Navbar = () => {
               ) : (
                 <RouterLink
                   to="/authentication"
+                  onMouseEnter={warmUpAuthMedia}
+                  onTouchStart={warmUpAuthMedia}
                   className="text-white font-medium hover:bg-white/10 px-4 py-2 rounded transition-colors"
                 >
                   Get Started
@@ -417,6 +420,8 @@ const Navbar = () => {
             ) : (
               <RouterLink
                 to="/authentication"
+                onMouseEnter={warmUpAuthMedia}
+                onTouchStart={warmUpAuthMedia}
                 onClick={handleDrawerToggle}
                 className="block w-full mt-8 bg-[#e53935] text-white font-semibold py-[9.6px] rounded-[10px] shadow-[0_4px_14px_rgba(229,57,53,0.3)] hover:bg-[#c62828] hover:shadow-[0_6px_18px_rgba(229,57,53,0.4)] transition-all text-center"
               >
