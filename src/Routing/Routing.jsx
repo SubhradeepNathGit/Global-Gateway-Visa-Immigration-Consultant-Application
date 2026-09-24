@@ -1,11 +1,12 @@
 import React, { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-/* ---------- Eagerly loaded pages (instant navigation, no white flash, no black flash) ---------- */
+/* ---------- Eagerly loaded pages (instant navigation, no chunk load errors) ---------- */
 import Home from "../Pages/user/home/Home";
 import AuthForm from "../Pages/user/auth/Authentication";
 import AdminLoginForm from "../Pages/admin/auth/AdminLoginForm";
 import EmbassyAuth from "../Pages/embassy/auth/Auth";
+import Cart from "../Pages/user/cart/Cart";
 
 /* ---------- Layouts ---------- */
 import UserLayout from "../layout/user";
@@ -17,61 +18,84 @@ import ScrollToTop from "../Components/ScrollToTop";
 import ProtectedRoute from "../Components/Auth/ProtectedRoute";
 import DashboardSkeleton from "../Components/DashboardSkeleton";
 
+/**
+ * Safe lazy loader that handles stale build chunks gracefully.
+ * If a deployment updates chunk hashes and a user has an old page open,
+ * it auto-reloads once to fetch the latest production bundle.
+ */
+const safeLazy = (importFn) =>
+  lazy(async () => {
+    const isReloaded = JSON.parse(
+      sessionStorage.getItem("chunk_reload_attempted") || "false"
+    );
+    try {
+      const comp = await importFn();
+      sessionStorage.removeItem("chunk_reload_attempted");
+      return comp;
+    } catch (error) {
+      if (!isReloaded) {
+        sessionStorage.setItem("chunk_reload_attempted", "true");
+        window.location.reload();
+        return new Promise(() => {}); // Wait for browser reload
+      }
+      sessionStorage.removeItem("chunk_reload_attempted");
+      throw error;
+    }
+  });
+
 /* ---------- User Pages ---------- */
-const AboutSection = lazy(() => import("../Pages/user/about/AboutPage"));
-const CountryGrid = lazy(() => import("../Pages/user/countries/Country"));
-const CountryDetails = lazy(() => import("../Pages/user/countries/country-details/CountryDetails"));
-const ContactUs = lazy(() => import("../Pages/user/get-in-touch/ContactUs"));
-const Dashboard = lazy(() => import("../Pages/user/dashboard/Dashboard"));
-const VisaProcess = lazy(() => import("../Pages/user/apply-visa/process/VisaProcess"));
-const VisaPolicies = lazy(() => import("../Pages/user/apply-visa/policy/VisaPolicy"));
-const VisaApplicationForm = lazy(() => import("../Pages/user/apply-visa/application-form/VisaApplicationForm"));
-const PaymentPreview = lazy(() => import("../Pages/user/payment/PaymentPreview"));
-const PaymentStatus = lazy(() => import("../Pages/user/payment/status/PaymentStatus"));
-const Courselist = lazy(() => import("../Pages/user/course/Courselist"));
-const CourseDetails = lazy(() => import("../Pages/user/course/course-details/CourseDetails"));
-const PaymentInterfaceCourse = lazy(() => import("../Pages/user/cart/payment/PaymentInterfaceCourse"));
-const Cart = lazy(() => import("../Pages/user/cart/Cart"));
+const AboutSection = safeLazy(() => import("../Pages/user/about/AboutPage"));
+const CountryGrid = safeLazy(() => import("../Pages/user/countries/Country"));
+const CountryDetails = safeLazy(() => import("../Pages/user/countries/country-details/CountryDetails"));
+const ContactUs = safeLazy(() => import("../Pages/user/get-in-touch/ContactUs"));
+const Dashboard = safeLazy(() => import("../Pages/user/dashboard/Dashboard"));
+const VisaProcess = safeLazy(() => import("../Pages/user/apply-visa/process/VisaProcess"));
+const VisaPolicies = safeLazy(() => import("../Pages/user/apply-visa/policy/VisaPolicy"));
+const VisaApplicationForm = safeLazy(() => import("../Pages/user/apply-visa/application-form/VisaApplicationForm"));
+const PaymentPreview = safeLazy(() => import("../Pages/user/payment/PaymentPreview"));
+const PaymentStatus = safeLazy(() => import("../Pages/user/payment/status/PaymentStatus"));
+const Courselist = safeLazy(() => import("../Pages/user/course/Courselist"));
+const CourseDetails = safeLazy(() => import("../Pages/user/course/course-details/CourseDetails"));
+const PaymentInterfaceCourse = safeLazy(() => import("../Pages/user/cart/payment/PaymentInterfaceCourse"));
 
 /* ---------- Auth ---------- */
-// AuthForm is eagerly imported above for instant load on "Get Started" click
-const ResetPassword = lazy(() => import("../Pages/user/auth/ResetPassword"));
-const EmailVerification = lazy(() => import("../Pages/verification/EmailVerificationPage"));
+const ResetPassword = safeLazy(() => import("../Pages/user/auth/ResetPassword"));
+const EmailVerification = safeLazy(() => import("../Pages/verification/EmailVerificationPage"));
 
 /* ---------- Admin Pages ---------- */
-const AdminDashboard = lazy(() => import("../Pages/admin/AdminDashboard"));
-const Users = lazy(() => import("../Pages/admin/Users"));
-const Payments = lazy(() => import("../Pages/admin/Payments"));
-const Settings = lazy(() => import("../Pages/admin/Settings"));
-const Analytics = lazy(() => import("../Pages/admin/Analytics"));
-const ContactMessages = lazy(() => import("../Pages/admin/UserContact"));
-const CountryManagement = lazy(() => import("../Pages/admin/ManageCountry"));
-const EmbassyManage = lazy(() => import("../Pages/admin/ManageEmbassy"));
-const ViewApplications = lazy(() => import("../Pages/admin/ViewApplications"));
-const CourseManage = lazy(() => import("../Pages/admin/CourseManage"));
-const AddAdmin = lazy(() => import("../Pages/admin/ManageAdmin"));
-const VisaManage = lazy(() => import("../Pages/admin/ManageVisa"));
-const ManageCharges = lazy(() => import("../Pages/admin/ManageCharges"));
-const AdminProfile = lazy(() => import("../Pages/admin/AdminProfile"));
+const AdminDashboard = safeLazy(() => import("../Pages/admin/AdminDashboard"));
+const Users = safeLazy(() => import("../Pages/admin/Users"));
+const Payments = safeLazy(() => import("../Pages/admin/Payments"));
+const Settings = safeLazy(() => import("../Pages/admin/Settings"));
+const Analytics = safeLazy(() => import("../Pages/admin/Analytics"));
+const ContactMessages = safeLazy(() => import("../Pages/admin/UserContact"));
+const CountryManagement = safeLazy(() => import("../Pages/admin/ManageCountry"));
+const EmbassyManage = safeLazy(() => import("../Pages/admin/ManageEmbassy"));
+const ViewApplications = safeLazy(() => import("../Pages/admin/ViewApplications"));
+const CourseManage = safeLazy(() => import("../Pages/admin/CourseManage"));
+const AddAdmin = safeLazy(() => import("../Pages/admin/ManageAdmin"));
+const VisaManage = safeLazy(() => import("../Pages/admin/ManageVisa"));
+const ManageCharges = safeLazy(() => import("../Pages/admin/ManageCharges"));
+const AdminProfile = safeLazy(() => import("../Pages/admin/AdminProfile"));
 
 /* ---------- Embassy ---------- */
-const EmbassyDashboard = lazy(() => import("../Pages/embassy/Dashboard/EmbassyDashboard"));
-const EmbassyProfile = lazy(() => import("../Pages/embassy/Dashboard/Profile"));
-const AddEmbassy = lazy(() => import("../Pages/embassy/Dashboard/AddEmbassy"));
-const EmbassyApplications = lazy(() => import("../Pages/embassy/Dashboard/Applications/Applications"));
-const EmbassyApplicationView = lazy(() => import("../Pages/embassy/Dashboard/Applications/ApplicationView"));
-const VisaPolicyManage = lazy(() => import("../Pages/embassy/Dashboard/VisaPolicyManage"));
-const EmbassyAnalytics = lazy(() => import("../Pages/embassy/Dashboard/EmbassyAnalytics"));
-const Review = lazy(() => import("../Pages/embassy/status/Review"));
-const Rejected = lazy(() => import("../Pages/embassy/status/Rejected"));
-const Approved = lazy(() => import("../Pages/embassy/status/Approved"));
-const CountrySetup = lazy(() => import("../Pages/embassy/requirement-form/CountrySetup"));
-const ContactSetup = lazy(() => import("../Pages/embassy/requirement-form/ContactSetup"));
+const EmbassyDashboard = safeLazy(() => import("../Pages/embassy/Dashboard/EmbassyDashboard"));
+const EmbassyProfile = safeLazy(() => import("../Pages/embassy/Dashboard/Profile"));
+const AddEmbassy = safeLazy(() => import("../Pages/embassy/Dashboard/AddEmbassy"));
+const EmbassyApplications = safeLazy(() => import("../Pages/embassy/Dashboard/Applications/Applications"));
+const EmbassyApplicationView = safeLazy(() => import("../Pages/embassy/Dashboard/Applications/ApplicationView"));
+const VisaPolicyManage = safeLazy(() => import("../Pages/embassy/Dashboard/VisaPolicyManage"));
+const EmbassyAnalytics = safeLazy(() => import("../Pages/embassy/Dashboard/EmbassyAnalytics"));
+const Review = safeLazy(() => import("../Pages/embassy/status/Review"));
+const Rejected = safeLazy(() => import("../Pages/embassy/status/Rejected"));
+const Approved = safeLazy(() => import("../Pages/embassy/status/Approved"));
+const CountrySetup = safeLazy(() => import("../Pages/embassy/requirement-form/CountrySetup"));
+const ContactSetup = safeLazy(() => import("../Pages/embassy/requirement-form/ContactSetup"));
 
 /* ---------- Misc ---------- */
-const Error_404 = lazy(() => import("../Pages/Error_404"));
-const AdminNotifications = lazy(() => import("../Pages/admin/AdminNotifications"));
-const EmbassyNotifications = lazy(() => import("../Pages/embassy/Dashboard/EmbassyNotifications"));
+const Error_404 = safeLazy(() => import("../Pages/Error_404"));
+const AdminNotifications = safeLazy(() => import("../Pages/admin/AdminNotifications"));
+const EmbassyNotifications = safeLazy(() => import("../Pages/embassy/Dashboard/EmbassyNotifications"));
 
 const Routing = () => {
     return (
