@@ -305,9 +305,6 @@ async function callGemini(
     temperature: 0.55,
     maxOutputTokens: 900,
   };
-  if (model.includes("2.5")) {
-    generationConfig.thinkingConfig = { thinkingBudget: 0 };
-  }
 
   const res = await fetch(url, {
     method: "POST",
@@ -356,9 +353,8 @@ async function tryGroq(messages: ChatMessage[]): Promise<string | null> {
   const models = [
     configured,
     "llama-3.3-70b-versatile",
-    "llama-3.1-70b-versatile",
     "llama-3.1-8b-instant",
-  ].filter((m): m is string => Boolean(m))
+  ].filter((m): m is string => Boolean(m) && !m.startsWith("eff838"))
     .filter((m, i, a) => a.indexOf(m) === i);
 
   for (const model of models) {
@@ -378,10 +374,10 @@ async function tryGemini(messages: ChatMessage[]): Promise<string | null> {
   const configured = Deno.env.get("GEMINI_MODEL")?.trim();
   const models = [
     configured,
-    "gemini-2.5-flash",
     "gemini-2.0-flash",
     "gemini-1.5-flash",
-  ].filter((m): m is string => Boolean(m))
+    "gemini-1.5-pro",
+  ].filter((m): m is string => Boolean(m) && !m.startsWith("3e4d28"))
     .filter((m, i, a) => a.indexOf(m) === i);
 
   for (const model of models) {
