@@ -4,8 +4,11 @@ import { buildWebsiteKnowledgePrompt } from "./websiteKnowledgeForAi";
 const INVOKE_TIMEOUT_MS = 20000;
 
 async function callDirectGemini(apiKey, messages) {
-  const model = import.meta.env.VITE_GEMINI_MODEL || "gemini-2.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+  const model = import.meta.env.VITE_GEMINI_MODEL || "gemini-1.5-flash";
+  const endpoints = [
+    `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+  ];
 
   const contents = messages.map((m) => ({
     role: m.role === "assistant" ? "model" : "user",
@@ -16,34 +19,42 @@ async function callDirectGemini(apiKey, messages) {
     parts: [{ text: buildWebsiteKnowledgePrompt() }],
   };
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
-    },
-    body: JSON.stringify({
-      systemInstruction,
-      contents,
-      generationConfig: {
-        temperature: 0.55,
-        maxOutputTokens: 900,
-      },
-    }),
-  });
+  let lastErr = "";
+  for (const url of endpoints) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          systemInstruction,
+          contents,
+          generationConfig: {
+            temperature: 0.55,
+            maxOutputTokens: 900,
+          },
+        }),
+      });
 
-  if (!response.ok) {
-    throw new Error(`Gemini status ${response.status}`);
-  }
+      if (!response.ok) {
+        lastErr = `Gemini status ${response.status}`;
+        continue;
+      }
 
-  const data = await response.json();
-  const parts = data?.candidates?.[0]?.content?.parts ?? [];
-  for (const part of parts) {
-    if (typeof part?.text === "string" && part.text.trim()) {
-      return part.text.trim();
+      const data = await response.json();
+      const parts = data?.candidates?.[0]?.content?.parts ?? [];
+      for (const part of parts) {
+        if (typeof part?.text === "string" && part.text.trim()) {
+          return part.text.trim();
+        }
+      }
+    } catch (e) {
+      lastErr = e?.message || String(e);
     }
   }
-  throw new Error("Empty Gemini response");
+  throw new Error(lastErr || "Empty Gemini response");
 }
 
 async function callDirectGroq(apiKey, messages) {

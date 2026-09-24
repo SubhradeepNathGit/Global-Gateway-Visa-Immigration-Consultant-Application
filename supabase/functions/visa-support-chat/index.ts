@@ -298,39 +298,47 @@ async function callGemini(
   model: string,
   messages: ChatMessage[],
 ): Promise<string> {
-  const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+  const endpoints = [
+    `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+  ];
 
-  const generationConfig: Record<string, unknown> = {
-    temperature: 0.55,
-    maxOutputTokens: 900,
-  };
+  let lastGeminiErr = "";
+  for (const url of endpoints) {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: buildSystemPrompt() }] },
+          contents: toGeminiContents(messages),
+          generationConfig: {
+            temperature: 0.55,
+            maxOutputTokens: 900,
+          },
+        }),
+      });
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
-    },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: buildSystemPrompt() }] },
-      contents: toGeminiContents(messages),
-      generationConfig,
-    }),
-  });
+      if (!res.ok) {
+        lastGeminiErr = parseApiError(await res.text());
+        continue;
+      }
 
-  if (!res.ok) {
-    throw new Error(parseApiError(await res.text()));
-  }
-
-  const data = await res.json();
-  const parts = data?.candidates?.[0]?.content?.parts ?? [];
-  for (const part of parts) {
-    if (typeof part?.text === "string" && part.text.trim()) {
-      return formatChatReply(part.text.trim());
+      const data = await res.json();
+      const parts = data?.candidates?.[0]?.content?.parts ?? [];
+      for (const part of parts) {
+        if (typeof part?.text === "string" && part.text.trim()) {
+          return formatChatReply(part.text.trim());
+        }
+      }
+    } catch (err: any) {
+      lastGeminiErr = err?.message || String(err);
     }
   }
-  throw new Error("Empty Gemini response");
+  throw new Error(lastGeminiErr || "Gemini call failed");
 }
 
 function isRateLimited(key: string): boolean {
@@ -358,7 +366,10 @@ async function tryGroq(messages: ChatMessage[]): Promise<string | null> {
   const models = [
     configured,
     "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
+    "llama3-70b-8192",
+    "llama3-8b-8192",
+    "mixtral-8x7b-32768",
+    "gemma2-9b-it",
   ].filter((m): m is string => Boolean(m) && !m.startsWith("eff838"))
     .filter((m, i, a) => a.indexOf(m) === i);
 
@@ -383,9 +394,11 @@ async function tryGemini(messages: ChatMessage[]): Promise<string | null> {
   const configured = Deno.env.get("GEMINI_MODEL")?.trim();
   const models = [
     configured,
-    "gemini-2.0-flash",
+    "gemini-1.5-flash-latest",
     "gemini-1.5-flash",
+    "gemini-1.5-pro-latest",
     "gemini-1.5-pro",
+    "gemini-2.0-flash-exp",
   ].filter((m): m is string => Boolean(m) && !m.startsWith("3e4d28"))
     .filter((m, i, a) => a.indexOf(m) === i);
 
@@ -394,7 +407,6 @@ async function tryGemini(messages: ChatMessage[]): Promise<string | null> {
       return await callGemini(apiKey, model, messages);
     } catch (e: any) {
       lastError += ` | Gemini (${model}): ${e?.message || String(e)}`;
-      console.warn("[visa-support-chat] Gemini failed", model, e);
     }
   }
   return null;
