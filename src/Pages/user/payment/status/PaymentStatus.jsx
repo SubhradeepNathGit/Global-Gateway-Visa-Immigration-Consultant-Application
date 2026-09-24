@@ -19,6 +19,10 @@ import { updateCoursePurchaseStatus } from "../../../../Redux/Slice/userSlice";
 import { addCertificate } from "../../../../Redux/Slice/certificateSlice";
 import { EmailEvents } from "../../../../util/email/emailEvents";
 import { sendTransactionalEmailAsync } from "../../../../util/email/sendTransactionalEmail";
+import {
+    triggerTransactionReceiptEmail,
+    triggerTransactionFailedEmail,
+} from "../../../../util/email/triggerTransactionReceiptEmail";
 
 const LottieAnimation = ({ animationData, isSuccess }) => {
     if (!animationData) return null;
@@ -43,6 +47,19 @@ export default function PaymentStatus() {
     const dispatch = useDispatch();
     const { type, paymentDetails, personalInfoData, passportData, visaData, visaSpecification, country_id,
         subtotal, total, discountAmount, discount, cartItems, cartId } = location.state || {};
+
+    const getTransactionEmailPayload = () => ({
+        type,
+        paymentDetails,
+        personalInfoData,
+        subtotal,
+        total,
+        discountAmount,
+        discount,
+        visaData,
+        visaSpecification,
+        cartItems,
+    });
 
     const currentDate = new Date().toLocaleDateString('en-US', {
         year: 'numeric',
@@ -154,6 +171,8 @@ export default function PaymentStatus() {
                                             // console.log('Response after adding payment data in application table', res);
 
                                             if (res.meta.requestStatus === "fulfilled") {
+                                                triggerTransactionReceiptEmail(getTransactionEmailPayload());
+
                                                 dispatch(saveStepProgress({ applicationId: personalInfoData?.application_id, ...application_obj }))
                                                     .then(res => {
                                                         // console.log('Response after updating application complitation status', res);
@@ -179,7 +198,6 @@ export default function PaymentStatus() {
                                                                                                 eventType: EmailEvents.VISA_APPLICATION_SUBMITTED,
                                                                                                 applicationId: personalInfoData?.application_id,
                                                                                             });
-
                                                                                             setIsLottieTransitioning(true);
                                                                                             setTimeout(() => {
                                                                                                 setPaymentStage('success');
@@ -242,6 +260,7 @@ export default function PaymentStatus() {
                                             console.log('Response after adding order details', res);
 
                                             if (res.meta.requestStatus === "fulfilled") {
+                                                triggerTransactionReceiptEmail(getTransactionEmailPayload());
 
                                                 dispatch(addCertificate({ userId: personalInfoData?.id, courses: orderObj?.items }))
                                                     .then(res => {
@@ -352,6 +371,8 @@ export default function PaymentStatus() {
                 // console.log('Response after adding transaction details', res);
 
                 if (res.meta.requestStatus === "fulfilled") {
+                    triggerTransactionFailedEmail(getTransactionEmailPayload());
+
                     if (type == 'visa') {
                         dispatch(saveStepPayment({ applicationId: personalInfoData?.application_id, payload: { ...application_payment_obj, status: 'failed' } }))
                             .then(res => {

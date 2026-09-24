@@ -2,6 +2,8 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import supabase from "../../util/Supabase/supabase";
 
 // Save Transaction slice
+// Receipt / failed-payment emails: triggered from PaymentStatus after each saveTransaction
+// (visa: after application_payment; course: after order; failed: immediately).
 export const saveTransaction = createAsyncThunk("transactionSlice/saveTransaction",
   async (payload, { rejectWithValue }) => {
     // console.log('Received payment data in slice', payload);

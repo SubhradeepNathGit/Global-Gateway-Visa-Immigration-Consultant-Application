@@ -9,6 +9,9 @@ const corsHeaders = {
 
 type EmailEventType =
   | "visa_application_submitted"
+  | "visa_payment_receipt"
+  | "course_payment_receipt"
+  | "payment_failed"
   | "appointment_scheduled"
   | "appointment_rescheduled"
   | "visa_approved"
@@ -16,8 +19,27 @@ type EmailEventType =
 
 interface RequestBody {
   eventType: EmailEventType;
-  applicationId: string;
+  applicationId?: string;
+  userId?: string;
   meta?: Record<string, unknown>;
+}
+
+interface ReceiptLineItem {
+  label: string;
+  value: string;
+}
+
+interface TransactionReceiptCtx {
+  applicantName: string;
+  headline: string;
+  transactionId: string;
+  status: string;
+  paymentMethod: string;
+  paymentDetail?: string | null;
+  amount: number;
+  currency: string;
+  paidAt: string;
+  lineItems: ReceiptLineItem[];
 }
 
 const BRAND = "Global Gateway";
@@ -53,6 +75,14 @@ function layout(content: string) {
 </html>`;
 }
 
+function formatInr(amount: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
 function formatDateTime(iso: string | null | undefined) {
   if (!iso) return "N/A";
   try {
@@ -64,6 +94,44 @@ function formatDateTime(iso: string | null | undefined) {
   } catch {
     return iso;
   }
+}
+
+function receiptDetailsTable(ctx: TransactionReceiptCtx) {
+  const rows = [
+    ["Transaction ID", ctx.transactionId],
+    ["Status", ctx.status],
+    ["Payment method", ctx.paymentMethod],
+    ...(ctx.paymentDetail ? [["Payment details", ctx.paymentDetail]] : []),
+    ["Amount paid", formatInr(ctx.amount)],
+    ["Paid on", formatDateTime(ctx.paidAt)],
+    ...ctx.lineItems.map((item) => [item.label, item.value]),
+  ];
+
+  const tr = rows
+    .map(
+      ([label, value]) =>
+        `<tr>
+          <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;color:#64748b;font-size:13px;width:42%;">${escapeHtml(String(label))}</td>
+          <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;color:#0f172a;font-size:13px;font-weight:600;">${escapeHtml(String(value))}</td>
+        </tr>`,
+    )
+    .join("");
+
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-top:16px;">${tr}</table>`;
+}
+
+function buildTransactionReceiptEmail(ctx: TransactionReceiptCtx) {
+  const dashboardLink = `${APP_URL}/dashboard`;
+  return {
+    subject: `Payment receipt — ${ctx.transactionId}`,
+    html: layout(`
+      <p>Hello ${escapeHtml(ctx.applicantName)},</p>
+      <p>${escapeHtml(ctx.headline)}</p>
+      ${receiptDetailsTable(ctx)}
+      <p style="margin-top:20px;font-size:13px;color:#64748b;">Keep this email for your records. If you have questions, contact support from your dashboard.</p>
+      <p style="margin-top:20px;"><a href="${dashboardLink}" style="background:#0f172a;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;display:inline-block;">View dashboard</a></p>
+    `),
+  };
 }
 
 function buildEmail(
@@ -305,7 +373,10 @@ async function authorizeEvent(
 
   if (roleInfo.role === "admin") return true;
 
-  if (eventType === "visa_application_submitted") {
+  if (
+    eventType === "visa_application_submitted" ||
+    eventType === "visa_payment_receipt"
+  ) {
     return application.user_id === caller.id;
   }
 
@@ -321,6 +392,258 @@ async function authorizeEvent(
   }
 
   return false;
+}
+
+async function loadUserEmail(
+  admin: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  const { data: userRow } = await admin
+    .from("users")
+    .select("email, name")
+    .eq("id", userId)
+    .maybeSingle();
+  return userRow;
+}
+
+async function handlePaymentReceipt(
+  admin: ReturnType<typeof createClient>,
+  caller: User,
+  body: RequestBody,
+) {
+  const meta = body.meta ?? {};
+  const transactionId = String(meta.transactionId ?? "");
+  const isFailure = body.eventType === "payment_failed";
+  const txnFor = String(meta.txnFor ?? "");
+
+  if (!transactionId) {
+    return new Response(JSON.stringify({ error: "transactionId is required" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const { data: txn, error: txnErr } = await admin
+    .from("transaction_details")
+    .select("*")
+    .eq("transaction_id", transactionId)
+    .maybeSingle();
+
+  if (txnErr || !txn) {
+    return new Response(JSON.stringify({ error: "Transaction not found" }), {
+      status: 404,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const lineItems = Array.isArray(meta.lineItems)
+    ? (meta.lineItems as ReceiptLineItem[])
+    : [];
+
+  let applicantName = "Customer";
+  let recipientEmail: string | undefined;
+  let headline = isFailure
+    ? "Your payment could not be completed."
+    : "Thank you for your payment.";
+
+  if (isFailure) {
+    if (txnFor === "visa" && body.applicationId) {
+      const { data: application } = await admin
+        .from("applications")
+        .select(
+          `user_id, application_personal_info ( first_name, last_name, email )`,
+        )
+        .eq("id", body.applicationId)
+        .maybeSingle();
+
+      if (!application || application.user_id !== caller.id) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const personal = Array.isArray(application.application_personal_info)
+        ? application.application_personal_info[0]
+        : application.application_personal_info;
+
+      applicantName =
+        [personal?.first_name, personal?.last_name].filter(Boolean).join(" ") ||
+        "Applicant";
+      recipientEmail = personal?.email as string | undefined;
+      if (!recipientEmail) {
+        const userRow = await loadUserEmail(admin, caller.id);
+        recipientEmail = userRow?.email;
+      }
+      headline =
+        "Your visa application payment was not completed. You can retry from your dashboard.";
+    } else if (txnFor === "course") {
+      const targetUserId = body.userId ?? caller.id;
+      if (targetUserId !== caller.id) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const userRow = await loadUserEmail(admin, caller.id);
+      recipientEmail = userRow?.email;
+      applicantName = userRow?.name || "Customer";
+      headline =
+        "Your course purchase payment was not completed. You can retry checkout anytime.";
+    } else {
+      return new Response(JSON.stringify({ error: "Invalid failed payment context" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  } else if (body.eventType === "visa_payment_receipt") {
+    if (!body.applicationId) {
+      return new Response(JSON.stringify({ error: "applicationId is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: application, error: appError } = await admin
+      .from("applications")
+      .select(
+        `id, user_id, country_id,
+        application_personal_info ( first_name, last_name, email ),
+        countries ( name )`,
+      )
+      .eq("id", body.applicationId)
+      .maybeSingle();
+
+    if (appError || !application) {
+      return new Response(JSON.stringify({ error: "Application not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const allowed = await authorizeEvent(
+      admin,
+      caller,
+      body.eventType,
+      application,
+    );
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: paymentLink } = await admin
+      .from("application_payment")
+      .select("application_id")
+      .eq("transaction_id", transactionId)
+      .maybeSingle();
+
+    if (paymentLink?.application_id !== body.applicationId) {
+      return new Response(JSON.stringify({ error: "Transaction mismatch" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const personal = Array.isArray(application.application_personal_info)
+      ? application.application_personal_info[0]
+      : application.application_personal_info;
+
+    let country = Array.isArray(application.countries)
+      ? application.countries[0]
+      : application.countries;
+
+    applicantName =
+      [personal?.first_name, personal?.last_name].filter(Boolean).join(" ") ||
+      "Applicant";
+    recipientEmail = personal?.email as string | undefined;
+
+    if (!recipientEmail) {
+      const userRow = await loadUserEmail(admin, application.user_id);
+      recipientEmail = userRow?.email;
+      if (!applicantName && userRow?.name) applicantName = userRow.name;
+    }
+
+    const countryName = (country?.name as string) || "visa application";
+    headline = `Your visa booking payment for ${countryName} was successful.`;
+  } else if (body.eventType === "course_payment_receipt") {
+    const targetUserId = body.userId ?? caller.id;
+    if (targetUserId !== caller.id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: order } = await admin
+      .from("orders")
+      .select("user_id, id")
+      .eq("transaction_id", transactionId)
+      .maybeSingle();
+
+    if (!order || order.user_id !== caller.id) {
+      return new Response(JSON.stringify({ error: "Order not found for transaction" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userRow = await loadUserEmail(admin, caller.id);
+    recipientEmail = userRow?.email;
+    applicantName = userRow?.name || "Customer";
+    headline = "Your course purchase payment was successful.";
+  } else {
+    return new Response(JSON.stringify({ error: "Unsupported receipt type" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  if (!recipientEmail) {
+    return new Response(JSON.stringify({ error: "Recipient email not found" }), {
+      status: 422,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const amount = Number(txn.amount ?? meta.amount ?? 0);
+  const paymentMethod = String(
+    txn.payment_method ?? meta.paymentMethod ?? "N/A",
+  );
+
+  let paymentDetail: string | null = null;
+  if (txn.upi_id) paymentDetail = `UPI: ${txn.upi_id}`;
+  else if (txn.masked_card) {
+    paymentDetail = `${txn.card_type ?? "Card"} ${txn.masked_card}`;
+    if (txn.card_holder_name) paymentDetail += ` · ${txn.card_holder_name}`;
+  } else if (meta.paymentDetail) {
+    paymentDetail = String(meta.paymentDetail);
+  }
+
+  const receiptCtx: TransactionReceiptCtx = {
+    applicantName,
+    headline,
+    transactionId,
+    status: String(
+      isFailure ? "failed" : (txn.status ?? meta.status ?? "success"),
+    ),
+    paymentMethod,
+    paymentDetail,
+    amount,
+    currency: String(meta.currency ?? "INR"),
+    paidAt: String(meta.paidAt ?? new Date().toISOString()),
+    lineItems,
+  };
+
+  const { subject, html } = buildTransactionReceiptEmail(receiptCtx);
+  const result = await sendEmail([recipientEmail], subject, html);
+
+  return new Response(JSON.stringify({ success: true, result }), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 }
 
 Deno.serve(async (req) => {
@@ -357,17 +680,32 @@ Deno.serve(async (req) => {
     }
 
     const body = (await req.json()) as RequestBody;
-    if (!body?.eventType || !body?.applicationId) {
+    if (!body?.eventType) {
+      return new Response(JSON.stringify({ error: "eventType is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const admin = createClient(supabaseUrl, serviceKey);
+
+    if (
+      body.eventType === "visa_payment_receipt" ||
+      body.eventType === "course_payment_receipt" ||
+      body.eventType === "payment_failed"
+    ) {
+      return await handlePaymentReceipt(admin, user, body);
+    }
+
+    if (!body.applicationId) {
       return new Response(
-        JSON.stringify({ error: "eventType and applicationId are required" }),
+        JSON.stringify({ error: "applicationId is required" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
     }
-
-    const admin = createClient(supabaseUrl, serviceKey);
 
     const { data: application, error: appError } = await admin
       .from("applications")
