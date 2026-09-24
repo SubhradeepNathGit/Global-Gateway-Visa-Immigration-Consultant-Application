@@ -158,18 +158,35 @@ const GlobalLiveChat = () => {
     <>
       {!showChat && (
         <motion.button
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          whileHover={{ scale: 1.06, y: -3 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setShowChat(true)}
-          className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-[#FF5252] to-[#E63946] text-white rounded-full shadow-2xl flex items-center justify-center z-40 hover:shadow-3xl transition-all cursor-pointer"
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-3.5 px-4.5 py-3 rounded-full cursor-pointer group transition-all duration-400"
+          style={{
+            background:
+              'linear-gradient(135deg, rgba(255, 255, 255, 0.90) 0%, rgba(255, 255, 255, 0.65) 100%)',
+            backdropFilter: 'blur(24px) saturate(190%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(190%)',
+            border: '1px solid rgba(255, 255, 255, 0.85)',
+           
+          }}
           aria-label="Open visa support chat"
         >
-          <MessageCircle className="w-7 h-7" />
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-            <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-          </span>
+          <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-[#ef4444] to-[#dc2626] text-white  transition-transform duration-300 group-hover:scale-108">
+            <Headphones className="w-4 h-4 text-white" />
+          
+          </div>
+          <div className="flex flex-col text-left pr-1.5">
+            <span className="text-xs font-bold text-[#0f172a] leading-tight tracking-wide">
+              Visa Support
+            </span>
+            <span className="text-[10.5px] font-semibold text-[#64748b] leading-none flex items-center gap-1.5 mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Online 24/7
+            </span>
+          </div>
         </motion.button>
       )}
 
@@ -185,8 +202,8 @@ const GlobalLiveChat = () => {
               bottom: '24px',
               background:
                 'linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.52) 100%)',
-              backdropFilter: 'blur(20px) saturate(180%) contrast(95%)',
-              WebkitBackdropFilter: 'blur(20px) saturate(180%) contrast(95%)',
+              backdropFilter: 'blur(10px) saturate(180%) contrast(95%)',
+              WebkitBackdropFilter: 'blur(10px) saturate(180%) contrast(95%)',
               isolation: 'isolate',
               WebkitTransform: 'translate3d(0, 0, 0)',
               transform: 'translate3d(0, 0, 0)',
