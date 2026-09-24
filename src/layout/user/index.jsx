@@ -33,10 +33,14 @@ const UserLayout = () => {
   const isHome = pathname === '/' || pathname === '';
 
   return (
-    <div className={`min-h-screen ${isHome ? 'bg-black' : 'bg-white'} text-gray-900 flex flex-col`}>
+    <div
+      className={`min-h-screen ${isHome ? 'bg-transparent' : 'bg-white'} text-gray-900 flex flex-col relative`}
+    >
       {!hideNavbar && !hideBoth && <Navbar />}
 
-      <div className={`flex-1 min-w-0 overflow-x-hidden ${isHome ? 'bg-black' : 'bg-white'}`}>
+      <div
+        className={`flex-1 min-w-0 overflow-x-hidden ${isHome ? 'bg-transparent' : 'bg-white'}`}
+      >
         <Outlet />
       </div>
       <GlobalLiveChat />

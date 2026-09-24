@@ -11,6 +11,7 @@ import toastifyAlert from '../../../util/alert/toastify';
 import { useNavigate } from 'react-router-dom';
 import { updateLastSignInAt } from '../../../Redux/Slice/userSlice';
 import { setIsVerifying } from '../../../Redux/Slice/auth/checkAuthSlice';
+import { warmHeroBannerImages } from '../../../util/heroBannerPreload';
 
 const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -31,6 +32,10 @@ const AuthForm = () => {
   const registerVideoRef = useRef(null);
   const [loginVideoReady, setLoginVideoReady] = useState(false);
   const [registerVideoReady, setRegisterVideoReady] = useState(false);
+
+  useEffect(() => {
+    void warmHeroBannerImages();
+  }, []);
 
   useEffect(() => {
     const playSafe = (videoEl, setReady) => {

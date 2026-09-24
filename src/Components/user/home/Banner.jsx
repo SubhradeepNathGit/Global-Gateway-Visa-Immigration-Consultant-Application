@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectFade, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -7,6 +7,7 @@ import 'swiper/css/pagination';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useSelector } from 'react-redux';
+import { HERO_FALLBACK_SRC, warmHeroBannerImages } from '../../../util/heroBannerPreload';
 
 const bannerData = [
   {
@@ -87,22 +88,16 @@ const buttonVariants = {
   },
 };
 
-// Module-level persistent cache: keeps GPU texture resident across route navigations
-if (typeof window !== 'undefined') {
-  bannerData.forEach((item) => {
-    const img = new Image();
-    img.src = item.image;
-    if ('decode' in img) {
-      img.decode().catch(() => {});
-    }
-  });
-}
-
 const Banner = () => {
   const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [swiperReady, setSwiperReady] = useState(false);
   const isAppLoading = useSelector((state) => state.loading?.isLoading ?? false);
   const [isReady, setIsReady] = useState(!isAppLoading);
+
+  useLayoutEffect(() => {
+    void warmHeroBannerImages();
+  }, []);
 
   useEffect(() => {
     if (!isAppLoading) {
@@ -119,19 +114,23 @@ const Banner = () => {
   };
 
   return (
-    <div className="w-screen h-screen overflow-hidden relative select-none bg-black">
-      {/* INSTANT HERO BACKDROP:
-          Guarantees 0ms black screen when returning to Home from any page.
-          Renders /Slider-front1.jpg immediately on frame 0 before Swiper mounts. */}
+    <div
+      className="w-screen h-screen overflow-hidden relative select-none"
+      style={{
+        backgroundImage: `url(${HERO_FALLBACK_SRC})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Always visible under Swiper — loop init can start on a non-zero slide before its <img> paints. */}
       <img
-        src="/Slider-front1.jpg"
+        src={HERO_FALLBACK_SRC}
         alt=""
         aria-hidden="true"
         fetchPriority="high"
         decoding="sync"
-        className={`absolute inset-0 w-full h-full object-cover z-0 pointer-events-none transition-opacity duration-1000 ${
-          activeIndex === 0 ? 'opacity-100' : 'opacity-0'
-        }`}
+        loading="eager"
+        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
       />
 
       {/* Top Scrim for Ultimate Navbar Legibility & Luxury Feel */}
@@ -148,6 +147,7 @@ const Banner = () => {
         fadeEffect={{ crossFade: true }}
         speed={1000}
         loop={true}
+        onSwiper={() => setSwiperReady(true)}
         onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
         autoplay={{ delay: 6000, disableOnInteraction: false }}
         pagination={{
@@ -155,7 +155,10 @@ const Banner = () => {
             bulletClass: 'swiper-pagination-bullet !bg-white/40 !w-2.5 !h-2.5 !transition-all !duration-500',
             bulletActiveClass: 'swiper-pagination-bullet-active !bg-[#ff3c3c] !w-9 !rounded-full !shadow-[0_0_12px_rgba(255,60,60,0.6)]'
         }}
-        className="relative z-10 w-full h-full bg-transparent"
+        className={`home-hero-swiper relative z-10 w-full h-full bg-transparent ${
+          swiperReady ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{ transition: swiperReady ? 'opacity 0.2s ease-out' : 'none' }}
       >
         {bannerData.map((item, index) => (
           <SwiperSlide key={index}>
@@ -257,6 +260,12 @@ const Banner = () => {
             width: 36px !important;
             border-radius: 5px !important;
             box-shadow: 0 0 12px rgba(255, 60, 60, 0.6) !important;
+          }
+          .home-hero-swiper .swiper-slide {
+            background: transparent !important;
+          }
+          .home-hero-swiper .swiper-wrapper {
+            background: transparent !important;
           }
         `}
       </style>

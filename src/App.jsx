@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import './App.css';
@@ -10,6 +10,8 @@ import { useDispatch } from 'react-redux';
 import { stopLoading } from './Redux/Slice/loadingSlice';
 import { checkLoggedInUser, listenAuthChanges } from './Redux/Slice/auth/checkAuthSlice';
 import AuthVideoPreloader from './Components/Auth/AuthVideoPreloader';
+import { warmHeroBannerImages, HERO_FALLBACK_SRC } from './util/heroBannerPreload';
+import PersistentHeroBackdrop from './Components/user/home/PersistentHeroBackdrop';
 
 function App() {
   const dispatch = useDispatch();
@@ -21,12 +23,15 @@ function App() {
     return pathname === '/' || pathname === '';
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const p = location.pathname;
+    const isHome = p === '/' || p === '';
     let targetBg = '#ffffff';
+    let targetBgImage = '';
 
-    if (p === '/' || p === '') {
-      targetBg = '#000000';
+    if (isHome) {
+      targetBg = '#0a0f14';
+      targetBgImage = `url(${HERO_FALLBACK_SRC})`;
     } else if (p.startsWith('/admin')) {
       targetBg = '#0b1020';
     } else if (p.startsWith('/embassy')) {
@@ -36,12 +41,34 @@ function App() {
     }
 
     const rootEl = document.getElementById('root');
-    if (rootEl) {
-      rootEl.style.backgroundColor = targetBg;
+    const applyBg = (el) => {
+      if (!el) return;
+      el.style.backgroundColor = targetBg;
+      el.style.backgroundImage = targetBgImage;
+      el.style.backgroundSize = targetBgImage ? 'cover' : '';
+      el.style.backgroundPosition = targetBgImage ? 'center top' : '';
+      el.style.backgroundRepeat = 'no-repeat';
+    };
+
+    applyBg(rootEl);
+    applyBg(document.documentElement);
+    applyBg(document.body);
+
+    if (isHome) {
+      void warmHeroBannerImages();
     }
-    document.documentElement.style.backgroundColor = targetBg;
-    document.body.style.backgroundColor = targetBg;
   }, [location.pathname]);
+
+  useEffect(() => {
+    const onPageShow = () => {
+      const p = window.location.pathname;
+      if (p === '/' || p === '') {
+        void warmHeroBannerImages();
+      }
+    };
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, []);
 
   // Initialize Auth Session and Listeners + cinematic loader
   useEffect(() => {
@@ -118,18 +145,20 @@ function App() {
 
   return (
     <>
-      {/* CINEMATIC LOADER — only on home banner refresh */}
-      <AnimatePresence mode="wait">
-        {showInitialLoader && <LoadingAnimation alwaysShow={true} />}
-      </AnimatePresence>
+      <PersistentHeroBackdrop />
 
-      {/* Background preloader for auth videos & posters */}
-      <AuthVideoPreloader />
+      <div className="relative z-[1] min-h-screen">
+        {/* CINEMATIC LOADER — only on home banner refresh */}
+        <AnimatePresence mode="wait">
+          {showInitialLoader && <LoadingAnimation alwaysShow={true} />}
+        </AnimatePresence>
 
-      {/* APP UI rendered beneath for instant, zero-flicker transition */}
-      <ToastContainer />
-      <Toaster />
-      <Routing />
+        <AuthVideoPreloader />
+
+        <ToastContainer />
+        <Toaster />
+        <Routing />
+      </div>
     </>
   );
 }
