@@ -102,30 +102,21 @@ function App() {
         });
       };
 
-      // 1. Minimum cinematic flight duration (1.9s)
-      const minDurationPromise = new Promise((resolve) => setTimeout(resolve, 1900));
-
-      // 2. Full download & GPU decode of the critical hero banner images
-      const bannerImagesPromise = Promise.all([
-        preloadAndDecode('/Slider-front1.jpg'),
-        preloadAndDecode('/Slider1.jpg'),
-        preloadAndDecode('/Slider7.jpg'),
-        preloadAndDecode('/Slider2.jpg'),
-        preloadAndDecode('/Slider3.jpg'),
-        preloadAndDecode('/Slider6.jpg'),
-        preloadAndDecode('/Slider-front.jpg'),
-      ]);
-
-      // 3. Safety ceiling (4.5s) to guarantee no infinite hang on offline/slow 2G
-      const maxSafetyCeiling = new Promise((resolve) => setTimeout(resolve, 4500));
+      // Short splash + one hero decode (extra slides warm in background — avoids main-thread jank)
+      const minDurationPromise = new Promise((resolve) => setTimeout(resolve, 1100));
+      const heroReadyPromise = preloadAndDecode('/Slider-front1.jpg');
+      const maxSafetyCeiling = new Promise((resolve) => setTimeout(resolve, 2800));
 
       Promise.race([
-        Promise.all([minDurationPromise, bannerImagesPromise]),
+        Promise.all([minDurationPromise, heroReadyPromise]),
         maxSafetyCeiling,
       ]).then(() => {
         if (!isCancelled) {
           dispatch(stopLoading());
-          setShowInitialLoader(false);
+          requestAnimationFrame(() => {
+            if (!isCancelled) setShowInitialLoader(false);
+          });
+          void warmHeroBannerImages();
         }
       });
 
@@ -149,8 +140,8 @@ function App() {
 
       <div className="relative z-[1] min-h-screen">
         {/* CINEMATIC LOADER — only on home banner refresh */}
-        <AnimatePresence mode="wait">
-          {showInitialLoader && <LoadingAnimation alwaysShow={true} />}
+        <AnimatePresence>
+          {showInitialLoader && <LoadingAnimation />}
         </AnimatePresence>
 
         <AuthVideoPreloader />

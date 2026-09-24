@@ -101,11 +101,7 @@ const Banner = () => {
 
   useEffect(() => {
     if (!isAppLoading) {
-      // Coordinate entrance smoothly
-      const timer = setTimeout(() => {
-        setIsReady(true);
-      }, 50);
-      return () => clearTimeout(timer);
+      setIsReady(true);
     }
   }, [isAppLoading]);
 

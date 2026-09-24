@@ -3,14 +3,15 @@ import {
   X, MessageCircle, ArrowLeft, ArrowRight, Headphones
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  getBestEffortLocalReply,
-  SORRY_NO_ANSWER,
-} from '../util/chat/siteAssistantEngine';
+import { getBestEffortLocalReply } from '../util/chat/siteAssistantEngine';
 import { sendVisaSupportChat } from '../util/chat/visaSupportChat';
 
 const WELCOME_TEXT =
   "Hello! I'm your visa support assistant. How can I help you today?";
+
+/* Navbar is fixed with py-4 (~16px each) + content ≈ 60px.
+   We use a CSS custom property so it's easy to tweak in one place. */
+const NAVBAR_HEIGHT = 60; // px – adjust if navbar height changes
 
 const quickReplies = [
   'What visa services do you offer?',
@@ -56,17 +57,17 @@ const GlobalLiveChat = () => {
   const requestAssistantReply = useCallback(async (historyMessages) => {
     const apiMessages = toApiMessages(historyMessages);
 
-    const groq = await sendVisaSupportChat(apiMessages);
-    if (groq.ok && groq.reply) {
-      return { text: groq.reply, source: 'groq' };
+    const api = await sendVisaSupportChat(apiMessages);
+    if (api.ok && api.reply) {
+      const source =
+        api.engine === 'gemini' ? 'gemini' : api.engine === 'local' ? 'local' : 'groq';
+      return { text: api.reply, source };
     }
 
-    const localReply = getBestEffortLocalReply(apiMessages);
-    if (localReply) {
-      return { text: localReply, source: 'local' };
-    }
-
-    return { text: SORRY_NO_ANSWER, source: 'none' };
+    return {
+      text: getBestEffortLocalReply(apiMessages),
+      source: 'local',
+    };
   }, []);
 
   const sendUserText = useCallback(
@@ -153,8 +154,10 @@ const GlobalLiveChat = () => {
             initial={{ opacity: 0, y: 100, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.8 }}
-            className="fixed bottom-6 right-6 w-[400px] max-w-[calc(100vw-32px)] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] z-50 overflow-hidden"
+            className="fixed right-6 w-[400px] max-w-[calc(100vw-32px)] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] z-50 overflow-hidden flex flex-col"
             style={{
+              top: `${NAVBAR_HEIGHT + 12}px`,
+              bottom: '24px',
               background:
                 'linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.52) 100%)',
               backdropFilter: 'blur(20px) saturate(180%) contrast(95%)',
@@ -168,7 +171,7 @@ const GlobalLiveChat = () => {
               outline: 'none',
             }}
           >
-            <div className="bg-gradient-to-r from-[#FF5252] to-[#E63946] p-4 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-[#FF5252] to-[#E63946] p-4 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
                   <Headphones className="w-5 h-5 text-white" />
@@ -208,7 +211,7 @@ const GlobalLiveChat = () => {
             {!chatMinimized && (
               <>
                 <div
-                  className="h-96 overflow-y-auto p-4 space-y-4 glass-scrollbar min-h-0"
+                  className="flex-1 overflow-y-auto p-4 space-y-4 glass-scrollbar min-h-0"
                   style={{
                     background: 'rgba(248, 250, 252, 0.35)',
                     backdropFilter: 'blur(10px)',
@@ -263,16 +266,10 @@ const GlobalLiveChat = () => {
                           border: 'none',
                         }}
                       >
-                        <div className="flex gap-1">
-                          <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
-                          <span
-                            className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
-                            style={{ animationDelay: '0.1s' }}
-                          />
-                          <span
-                            className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
-                            style={{ animationDelay: '0.2s' }}
-                          />
+                        <div className="flex gap-1.5 items-center h-5" aria-hidden="true">
+                          <span className="gg-splash-loader__dot w-2 h-2 bg-slate-500 rounded-full" />
+                          <span className="gg-splash-loader__dot w-2 h-2 bg-slate-500 rounded-full [animation-delay:0.2s]" />
+                          <span className="gg-splash-loader__dot w-2 h-2 bg-slate-500 rounded-full [animation-delay:0.4s]" />
                         </div>
                       </div>
                     </div>
@@ -283,7 +280,7 @@ const GlobalLiveChat = () => {
 
                 {showQuickReplies && (
                   <div
-                    className="px-4 py-3 border-t border-slate-200/50"
+                    className="px-4 py-3 border-t border-slate-200/50 flex-shrink-0"
                     style={{
                       background: 'rgba(255, 255, 255, 0.50)',
                       backdropFilter: 'blur(16px)',
@@ -307,7 +304,7 @@ const GlobalLiveChat = () => {
                 )}
 
                 <div
-                  className="p-4 border-t border-slate-200/50"
+                  className="p-4 border-t border-slate-200/50 flex-shrink-0"
                   style={{
                     background: 'rgba(255, 255, 255, 0.60)',
                     backdropFilter: 'blur(16px)',
@@ -349,9 +346,9 @@ const GlobalLiveChat = () => {
                   <p className="text-xs text-slate-500 mt-2 text-center">
                     {lastReplySource === 'groq'
                       ? 'Powered by Groq AI • Site-trained guide'
-                      : lastReplySource === 'none'
-                        ? 'Limited mode — contact us for more help'
-                        : 'Site guide backup (Groq unavailable)'}
+                      : lastReplySource === 'gemini'
+                        ? 'Powered by Gemini AI • Site-trained guide'
+                        : 'Site guide • AI backup offline'}
                   </p>
                 </div>
               </>

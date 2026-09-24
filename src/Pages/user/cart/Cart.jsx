@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
-import CartHeader from '../../../Components/user/cart/CartHeader';
+import CartBanner from '../../../Components/user/cart/CartBanner';
 import EmptyCart from '../../../Components/user/cart/EmptyCart';
 import CartHeaderWithAction from '../../../Components/user/cart/CartHeaderWithAction';
 import CartItemCard from '../../../Components/user/cart/CartItemCard';
@@ -97,36 +96,23 @@ const Cart = () => {
   // console.log('Available charges', allCharges?.course);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-      {/* Professional Header with Trust Indicators */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 text-white shadow-2xl">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-8 sm:py-12">
-          <button
-            onClick={() => navigateBack()}
-            className="flex items-center text-white/80 hover:text-white mb-6 transition-colors font-medium text-sm group cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-            Continue Shopping
-          </button>
-
-          <CartHeader cartItems={cartItems} total={total} />
-        </div>
-      </div>
+    <div className="min-h-screen bg-white">
+      {/* Page Banner — consistent with About, Courses, Countries, etc. */}
+      <CartBanner />
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 max-w-7xl">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 max-w-7xl">
         {(isCartLoading || isChargesLoading || isCodeLoading) ? (
-          <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="flex items-center justify-center py-32">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#FF5252] mx-auto mb-4" />
-              <p className="text-gray-600 font-medium">Loading course details...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF5252] mx-auto mb-4" />
+              <p className="text-gray-500 font-medium text-sm">Loading your cart...</p>
             </div>
           </div>
         ) : cartItems?.length === 0 ? (
-          // Empty Cart - Professional
           <EmptyCart navigateBack={navigateBack} />
         ) : (
-          // Cart with Items - Production Ready
+          // Cart with Items
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-6">
@@ -177,7 +163,8 @@ const Cart = () => {
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 2;
         }
-      `}</style>
+      `}
+      </style>
     </div>
   );
 };

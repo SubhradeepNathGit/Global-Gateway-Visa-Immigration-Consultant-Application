@@ -1,54 +1,86 @@
 import React from 'react'
-import { ShoppingCart, Globe, FileCheck, Users, Headphones } from 'lucide-react';
+import { ShoppingCart, Globe, FileCheck, Users, Headphones, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const EmptyCart = ({ navigateBack }) => {
 
+    const navigate = useNavigate();
+
+    const services = [
+        {
+            icon: Globe,
+            title: 'Study Visa',
+            description: 'Complete guidance for your study abroad journey',
+            path: '/apply-visa',
+        },
+        {
+            icon: FileCheck,
+            title: 'IELTS Prep',
+            description: 'Band 7+ guaranteed preparation courses',
+            path: '/course',
+        },
+        {
+            icon: Users,
+            title: 'Work Permit',
+            description: 'Expert assistance for work visa applications',
+            path: '/apply-visa',
+        },
+    ];
+
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-2xl p-8 sm:p-16 text-center border border-slate-200"
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="py-6"
         >
-            <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                <ShoppingCart className="w-16 h-16 text-slate-400" />
+            {/* Empty State */}
+            <div className="text-center mb-14">
+                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
+                    <ShoppingCart className="w-10 h-10 text-gray-400" />
+                </div>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                    Your cart is empty
+                </h2>
+                <p className="text-gray-500 max-w-md mx-auto text-sm leading-relaxed">
+                    Start your visa journey by exploring our expert consultation services and preparation courses.
+                </p>
+                <button
+                    onClick={navigateBack}
+                    className="mt-6 inline-flex items-center gap-2 px-6 py-2.5 bg-[#FF5252] hover:bg-[#E53935] text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
+                >
+                    Browse Courses
+                    <ArrowRight className="w-4 h-4" />
+                </button>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">
-                Your cart is empty
-            </h2>
-            <p className="text-slate-600 mb-6 max-w-md mx-auto leading-relaxed">
-                Start your visa journey by exploring our expert consultation services and preparation courses.
-            </p>
 
-            {/* Popular Services Suggestions */}
-            <div className="max-w-2xl mx-auto mb-8">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Popular Services</h3>
-                <div className="grid sm:grid-cols-3 gap-4 text-left">
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <Globe className="w-8 h-8 text-[#FF5252] mb-2" />
-                        <h4 className="font-semibold text-sm mb-1">Study Visa</h4>
-                        <p className="text-xs text-slate-600">Complete guidance</p>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <FileCheck className="w-8 h-8 text-[#FF5252] mb-2" />
-                        <h4 className="font-semibold text-sm mb-1">IELTS Prep</h4>
-                        <p className="text-xs text-slate-600">Band 7+ guaranteed</p>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <Users className="w-8 h-8 text-[#FF5252] mb-2" />
-                        <h4 className="font-semibold text-sm mb-1">Work Permit</h4>
-                        <p className="text-xs text-slate-600">Expert assistance</p>
-                    </div>
+            {/* Divider */}
+            <div className="border-t border-gray-200 mb-10" />
+
+            {/* Popular Services */}
+            <div className="max-w-3xl mx-auto">
+                <h3 className="text-base font-semibold text-gray-900 mb-5 text-center">Popular Services</h3>
+                <div className="grid sm:grid-cols-3 gap-4">
+                    {services.map((service) => (
+                        <div
+                            key={service.title}
+                            onClick={() => navigate(service.path)}
+                            className="group p-5 rounded-xl border border-gray-200 hover:border-gray-300 bg-white hover:shadow-sm transition-all cursor-pointer"
+                        >
+                            <service.icon className="w-7 h-7 text-[#FF5252] mb-3" />
+                            <h4 className="font-medium text-sm text-gray-900 mb-1">{service.title}</h4>
+                            <p className="text-xs text-gray-500 leading-relaxed">{service.description}</p>
+                        </div>
+                    ))}
                 </div>
             </div>
 
-             
-
-            {/* Support Contact */}
-            <div className="mt-8 pt-8 border-t border-slate-200">
-                <p className="text-sm text-slate-600 mb-3">Need help choosing the right service?</p>
-                <p className="text-[#FF5252] font-semibold text-sm inline-flex items-center gap-2">
-                    <Headphones className="w-4 h-4" />
+            {/* Support hint */}
+            <div className="text-center mt-12 pt-8 border-t border-gray-200">
+                <p className="text-sm text-gray-500 mb-1">Need help choosing the right service?</p>
+                <p className="text-[#FF5252] font-medium text-sm inline-flex items-center gap-1.5">
+                    <Headphones className="w-3.5 h-3.5" />
                     Use our live chat in the bottom-right corner
                 </p>
             </div>
