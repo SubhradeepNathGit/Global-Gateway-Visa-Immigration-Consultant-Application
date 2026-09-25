@@ -212,8 +212,8 @@ export const INTENTS = [
     reply:
       "Contact Global Gateway Team:\n\n" +
       "• Email: needhelp@globalgateway.com\n" +
-      "• Phone: +91-8978564530 / +92 666 888 0000\n" +
-      "• Office: 66 Road Broklyn Street, 600 New York, USA\n" +
+      "• Phone: +91 8976564530\n" +
+      "• Office: Sector V, Bidhannagar, Kolkata, West Bengal 700091, India\n" +
       "• Form: Fill the contact form on the Contact us page for 24-hour response.",
   },
 ];

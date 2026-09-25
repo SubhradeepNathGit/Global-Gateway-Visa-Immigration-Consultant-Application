@@ -138,29 +138,29 @@ const Footer = () => {
               <span style={{ color: '#ef4444' }}>/</span> Contact
             </Typography>
             <Typography sx={{ mb: 0.5, fontSize: '14px', color: '#cbd5e1', lineHeight: 1.5, fontWeight: 400 }}>
-              66 Road Broklyn Street, 600
+              Sector V, Bidhannagar
             </Typography>
             <Typography sx={{ mb: 2.5, fontSize: '14px', color: '#cbd5e1', lineHeight: 1.5, fontWeight: 400 }}>
-              New York, USA
+              Kolkata, West Bengal 700091, India
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
               <Email sx={{ color: '#ef4444', fontSize: '16px', mr: 1 }} />
               <Typography
                 component="a"
-                href="mailto:needhelp@company.com"
+                href="mailto:needhelp@globalgateway.com"
                 sx={{ fontSize: '14px', color: '#cbd5e1', textDecoration: 'none', '&:hover': { color: '#ef4444' } }}
               >
-                needhelp@company.com
+                needhelp@globalgateway.com
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Phone sx={{ color: '#ef4444', fontSize: '16px', mr: 1 }} />
               <Typography
                 component="a"
-                href="tel:+926668880000"
+                href="tel:+918976564530"
                 sx={{ fontSize: '14px', color: '#cbd5e1', textDecoration: 'none', '&:hover': { color: '#ef4444' } }}
               >
-                +92 666 888 0000
+                +91 8976564530
               </Typography>
             </Box>
           </Grid>

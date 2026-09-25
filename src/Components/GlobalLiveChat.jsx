@@ -44,7 +44,7 @@ const GlobalLiveChat = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [chatMinimized, setChatMinimized] = useState(false);
-  const [lastReplySource, setLastReplySource] = useState('groq');
+  const [lastReplySource, setLastReplySource] = useState('local');
   const messagesEndRef = useRef(null);
   const sendingRef = useRef(false);
 
@@ -388,10 +388,10 @@ const GlobalLiveChat = () => {
                   </div>
                   <p className="text-xs text-slate-500 mt-2 text-center">
                     {lastReplySource === 'groq'
-                      ? 'Powered by Groq AI • Site-trained guide'
+                      ? '⚡ Powered by Groq AI'
                       : lastReplySource === 'gemini'
-                        ? 'Powered by Gemini AI • Site-trained guide'
-                        : 'Smart site guide • Visas, countries & how to apply'}
+                        ? '✨ Powered by Gemini AI'
+                        : '🌐 Global Gateway Expert Guide'}
                   </p>
                 </div>
               </>

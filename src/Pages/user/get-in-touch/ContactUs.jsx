@@ -13,7 +13,7 @@ const contactItems = [
   {
     icon: <PhoneIcon sx={{ fontSize: 28, color: '#fff' }} />,
     title: 'Have any question?',
-    content: 'Free +91-8976564530',
+    content: '+91 8976564530',
   },
   {
     icon: <EmailIcon sx={{ fontSize: 28, color: '#fff' }} />,
@@ -23,7 +23,7 @@ const contactItems = [
   {
     icon: <LocationOnIcon sx={{ fontSize: 28, color: '#fff' }} />,
     title: 'Visit anytime',
-    content: 'Sector V, Bidhannagar, Kolkata, West Bengal',
+    content: 'Sector V, Bidhannagar, Kolkata, West Bengal 700091, India',
   },
 ];
 
