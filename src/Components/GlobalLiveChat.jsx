@@ -171,13 +171,13 @@ const GlobalLiveChat = () => {
             backdropFilter: 'blur(24px) saturate(190%)',
             WebkitBackdropFilter: 'blur(24px) saturate(190%)',
             border: '1px solid rgba(255, 255, 255, 0.85)',
-           
+
           }}
           aria-label="Open visa support chat"
         >
           <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-[#ef4444] to-[#dc2626] text-white  transition-transform duration-300 group-hover:scale-108">
             <Headphones className="w-4 h-4 text-white" />
-          
+
           </div>
           <div className="flex flex-col text-left pr-1.5">
             <span className="text-xs font-bold text-[#0f172a] leading-tight tracking-wide">
@@ -267,27 +267,25 @@ const GlobalLiveChat = () => {
                       className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-[80%] rounded-2xl p-3 ${
-                          message.sender === 'user'
+                        className={`max-w-[80%] rounded-2xl p-3 ${message.sender === 'user'
                             ? 'bg-gradient-to-r from-[#FF5252] to-[#E63946] text-white'
                             : 'text-slate-900 shadow-sm'
-                        }`}
+                          }`}
                         style={
                           message.sender !== 'user'
                             ? {
-                                background: 'rgba(255, 255, 255, 0.82)',
-                                backdropFilter: 'blur(8px)',
-                                WebkitBackdropFilter: 'blur(8px)',
-                                border: 'none',
-                              }
+                              background: 'rgba(255, 255, 255, 0.82)',
+                              backdropFilter: 'blur(8px)',
+                              WebkitBackdropFilter: 'blur(8px)',
+                              border: 'none',
+                            }
                             : {}
                         }
                       >
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
                         <p
-                          className={`text-xs mt-1 ${
-                            message.sender === 'user' ? 'text-white/70' : 'text-slate-500'
-                          }`}
+                          className={`text-xs mt-1 ${message.sender === 'user' ? 'text-white/70' : 'text-slate-500'
+                            }`}
                         >
                           {new Date(message.timestamp).toLocaleTimeString('en-US', {
                             hour: '2-digit',
@@ -377,11 +375,10 @@ const GlobalLiveChat = () => {
                       type="button"
                       onClick={handleSendMessage}
                       disabled={!inputMessage.trim() || isTyping}
-                      className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                        inputMessage.trim() && !isTyping
+                      className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${inputMessage.trim() && !isTyping
                           ? 'bg-gradient-to-r from-[#FF5252] to-[#E63946] text-white hover:shadow-lg cursor-pointer'
                           : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                      }`}
+                        }`}
                     >
                       Send
                     </button>

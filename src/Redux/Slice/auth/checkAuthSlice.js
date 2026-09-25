@@ -31,27 +31,31 @@ export const fetchLoggedUserDetails = createAsyncThunk("checkUserAuthSlice/fetch
 
 // Check if user session exists
 export const checkLoggedInUser = () => async (dispatch) => {
-    const { data, error } = await supabase.auth.getSession();
+    try {
+        const { data, error } = await supabase.auth.getSession();
 
-    // console.log('Logged data', data);
+        if (error) {
+            console.warn("Session error, purging local storage:", error.message);
+            await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+            dispatch(clearUser());
+            return;
+        }
 
-    if (error) {
-        console.error("Error fetching session:", error.message);
-        dispatch(clearUser());
-        return;
-    }
+        if (data.session?.user) {
+            dispatch(
+                setuser({
+                    user: data.session.user,
+                    session: data.session,
+                })
+            );
 
-    if (data.session?.user) {
-        dispatch(
-            setuser({
-                user: data.session.user,
-                session: data.session,
-            })
-        );
-
-        // Fetch users details
-        dispatch(fetchLoggedUserDetails(data.session.user.id));
-    } else {
+            // Fetch users details
+            dispatch(fetchLoggedUserDetails(data.session.user.id));
+        } else {
+            dispatch(clearUser());
+        }
+    } catch (err) {
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
         dispatch(clearUser());
     }
 }
