@@ -154,33 +154,51 @@ const GlobalLiveChat = () => {
 
   return (
     <>
-      {!showChat && (
-        <motion.button
-          initial={{ opacity: 0, y: 20, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          whileHover={{ scale: 1.06, y: -3 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setShowChat(true)}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-3.5 px-4.5 py-3 rounded-full cursor-pointer group transition-all duration-400"
-          style={{
-            background:
-              'linear-gradient(135deg, rgba(255, 255, 255, 0.90) 0%, rgba(255, 255, 255, 0.65) 100%)',
-            backdropFilter: 'blur(24px) saturate(190%)',
-            WebkitBackdropFilter: 'blur(24px) saturate(190%)',
-            border: '1px solid #585454d9',
-
-          }}
-          aria-label="Open visa support chat"
-        >
-
-          <div className="flex flex-col text-center pr-2">
-            <span className="text-sm font-semibold text-[#0f172a] leading-tight tracking-wide">
-              Ask Gateway AI
-            </span>
-
-          </div>
-        </motion.button>
-      )}
+      <AnimatePresence>
+        {!showChat && (
+          <motion.button
+            key="chat-pill-button"
+            initial={{ opacity: 0, y: 35, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.92 }}
+            transition={{
+              type: 'spring',
+              stiffness: 260,
+              damping: 24,
+              mass: 0.8,
+            }}
+            whileHover={{
+              scale: 1.05,
+              y: -3,
+              transition: { duration: 0.2, ease: 'easeOut' },
+            }}
+            whileTap={{ scale: 0.96 }}
+            onClick={() => setShowChat(true)}
+            className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-4 py-2.5 rounded-full cursor-pointer group shadow-[0_10px_30px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_36px_rgba(0,0,0,0.16)] select-none"
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(243, 246, 249, 0.88) 100%)',
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+              border: '1px solid rgba(203, 213, 225, 0.7)',
+              willChange: 'transform, opacity',
+              transform: 'translateZ(0)',
+            }}
+            aria-label="Open visa support chat"
+          >
+            <img
+              src="/Gateway AI.png"
+              alt="Gateway AI"
+              className="w-7.5 h-7.5 object-contain rounded-full flex-shrink-0 drop-shadow-sm"
+            />
+            <div className="flex flex-col text-left pr-1">
+              <span className="text-sm font-semibold text-slate-800 leading-tight tracking-wide group-hover:text-slate-950">
+                Ask Gateway AI
+              </span>
+            </div>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showChat && (
@@ -207,7 +225,7 @@ const GlobalLiveChat = () => {
           >
             <div className="bg-gradient-to-r from-[#FF5252] to-[#E63946] p-4 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-3">
-
+               
                 <div>
                   <h3 className="text-white font-semibold">Gateway AI</h3>
                   <p className="text-white/90 text-xs flex items-center gap-1">

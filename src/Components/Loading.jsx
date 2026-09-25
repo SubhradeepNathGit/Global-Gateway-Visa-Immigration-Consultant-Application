@@ -1,14 +1,80 @@
-import React, { memo } from 'react';
+import { memo, useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { HERO_FALLBACK_SRC } from '../util/heroBannerPreload';
 
-/** Home splash only — no Redux (avoids re-renders during auth init). GPU-friendly: no fullscreen blur. */
+const TITLE = 'Global Gateway';
+const TYPE_SPEED_MS = 70;
+
+// CSS animation durations (must match App.css keyframes)
+const FLOAT_DUR  = 4800;
+const RING_DUR   = 10000;
+const BEAM_DUR   = 1600;
+const DOT_DUR    = 1400;
+const DOT_DELAYS = [0, 200, 400]; // stagger offsets for 3 dots
+
+/**
+ * Compute animation-delay values so that when React replaces the
+ * static HTML DOM, every looping animation continues from the same
+ * phase it was already at — no visible restart/snap.
+ *
+ * We call performance.now() ONCE outside the component so the value
+ * is captured at module-eval time (before first render).
+ */
+const mountedAt = performance.now();
+
+function getAnimDelays() {
+  const t = mountedAt;
+  return {
+    float: `-${(t % FLOAT_DUR).toFixed(0)}ms`,
+    ring:  `-${(t % RING_DUR).toFixed(0)}ms`,
+    beam:  `-${(t % BEAM_DUR).toFixed(0)}ms`,
+    dots:  DOT_DELAYS.map((off) => `-${((t + off) % DOT_DUR).toFixed(0)}ms`),
+  };
+}
+
+/** Home splash only — no Redux (avoids re-renders during auth init). */
 const LoadingAnimation = memo(function LoadingAnimation({ message: propMessage }) {
   const message = propMessage || 'Crafting Comfort Across Continents over a Decade';
+  const [typed, setTyped] = useState('');
+  const timerRef = useRef(null);
+
+  // Compute once; stable across re-renders
+  const delays = useRef(getAnimDelays()).current;
+
+  useEffect(() => {
+    let i = 0;
+    setTyped('');
+
+    const tick = () => {
+      i += 1;
+      setTyped(TITLE.slice(0, i));
+      if (i < TITLE.length) {
+        timerRef.current = setTimeout(tick, TYPE_SPEED_MS);
+      }
+    };
+
+    timerRef.current = setTimeout(tick, TYPE_SPEED_MS);
+    return () => clearTimeout(timerRef.current);
+  }, []);
+
+  // Lock scroll synchronously before first paint — useLayoutEffect fires before browser renders
+  useLayoutEffect(() => {
+    const html = document.documentElement;
+    html.style.overflow = 'hidden';
+    html.style.scrollbarGutter = 'auto';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      // Clear inline styles so the CSS stylesheet takes over — scrollbar returns naturally
+      html.style.overflow = '';
+      html.style.scrollbarGutter = '';
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
@@ -22,15 +88,21 @@ const LoadingAnimation = memo(function LoadingAnimation({ message: propMessage }
       aria-busy="true"
       aria-label="Loading"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/65 to-black/80" />
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/85" />
 
-      <div className="relative z-10 flex flex-col items-center gap-4 px-4 text-center">
+      <div className="relative z-10 flex flex-col items-center gap-4 px-4 text-center" style={{ willChange: 'transform' }}>
+
+        {/* Floating plane + spinning ring — synced to CSS phase */}
         <div className="relative gg-splash-loader__plane-wrap">
-          <div className="gg-splash-loader__float">
-            <div className="w-[132px] h-[132px] sm:w-[150px] sm:h-[150px] rounded-full bg-white/12 border border-white/25 flex items-center justify-center shadow-[0_16px_40px_rgba(0,0,0,0.45)]">
+          <div
+            className="gg-splash-loader__float"
+            style={{ animationDelay: delays.float }}
+          >
+            <div className="w-[150px] h-[150px] rounded-full bg-white/12 border border-white/25 flex items-center justify-center shadow-[0_16px_40px_rgba(0,0,0,0.45)]">
               <svg
-                width="56"
-                height="56"
+                width="76"
+                height="76"
                 viewBox="0 0 24 24"
                 fill="currentColor"
                 className="text-white drop-shadow-[0_2px_10px_rgba(255,82,82,0.55)]"
@@ -40,12 +112,33 @@ const LoadingAnimation = memo(function LoadingAnimation({ message: propMessage }
               </svg>
             </div>
           </div>
-          <div className="gg-splash-loader__ring absolute -top-3 -left-3 sm:-top-[14px] sm:-left-[14px] w-[158px] h-[158px] sm:w-[178px] sm:h-[178px] rounded-full border-2 border-transparent border-r-[#FF5252] border-b-[#FF5252]/60" />
+          <div
+            className="gg-splash-loader__ring absolute -top-[14px] -left-[14px] w-[178px] h-[178px] rounded-full border-2 border-transparent border-r-[#FF5252] border-b-[#FF5252]/60"
+            style={{ animationDelay: delays.ring }}
+          />
         </div>
 
-        <div className="gg-splash-loader__fade-up mt-4">
-          <h1 className="text-[2rem] sm:text-[2.8rem] md:text-[4rem] font-bold text-white tracking-tight font-['Outfit'] drop-shadow-[0_4px_20px_rgba(0,0,0,0.75)]">
-            Global Gateway
+        {/* Typewriter title — types smoothly from empty string */}
+        <div className="mt-4">
+          <h1
+            className="text-[2rem] sm:text-[2.8rem] md:text-[4rem] font-bold text-white tracking-tight font-['Outfit'] drop-shadow-[0_4px_20px_rgba(0,0,0,0.75)]"
+            style={{
+              minHeight: '1.2em',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            aria-label={TITLE}
+          >
+            {typed.split('').map((char, idx) => (
+              <span
+                key={idx}
+                className="gg-typewriter-char"
+                aria-hidden="true"
+              >
+                {char === ' ' ? '\u00a0' : char}
+              </span>
+            ))}
           </h1>
           <p
             className={`tracking-[0.22em] text-xs sm:text-sm mt-2 mb-5 font-medium uppercase font-['Inter'] ${
@@ -56,14 +149,23 @@ const LoadingAnimation = memo(function LoadingAnimation({ message: propMessage }
           </p>
         </div>
 
+        {/* Sweeping loading beam — synced to CSS phase */}
         <div className="w-[min(430px,92vw)] h-[5px] rounded-full bg-white/15 overflow-hidden">
-          <div className="gg-splash-loader__beam h-full w-1/3 rounded-full bg-gradient-to-r from-transparent via-[#FF5252] to-white/90" />
+          <div
+            className="gg-splash-loader__beam h-full w-1/3 rounded-full bg-gradient-to-r from-transparent via-[#FF5252] to-white/90"
+            style={{ animationDelay: delays.beam }}
+          />
         </div>
 
+        {/* Pulsing dots — synced and staggered */}
         <div className="flex gap-3 mt-3" aria-hidden="true">
-          <span className="gg-splash-loader__dot w-2 h-2 rounded-full bg-white/80" />
-          <span className="gg-splash-loader__dot w-2 h-2 rounded-full bg-white/80 [animation-delay:0.2s]" />
-          <span className="gg-splash-loader__dot w-2 h-2 rounded-full bg-white/80 [animation-delay:0.4s]" />
+          {delays.dots.map((delay, i) => (
+            <span
+              key={i}
+              className="gg-splash-loader__dot w-2 h-2 rounded-full bg-white/80"
+              style={{ animationDelay: delay }}
+            />
+          ))}
         </div>
       </div>
     </motion.div>

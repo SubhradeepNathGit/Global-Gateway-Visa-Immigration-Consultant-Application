@@ -213,6 +213,24 @@ select:not(.text-white):-webkit-autofill {
   animation: gg-loader-fade-up 0.65s ease-out both;
 }
 
+/* Per-character typewriter: only the newest span animates in */
+.gg-typewriter-char {
+  display: inline-block;
+  animation: gg-char-appear 0.1s ease-out both;
+  will-change: opacity, transform;
+}
+
+@keyframes gg-char-appear {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 5px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
 @keyframes gg-loader-float {
   0%,
   100% {
@@ -272,4 +290,23 @@ select:not(.text-white):-webkit-autofill {
   .gg-splash-loader__fade-up {
     animation: none !important;
   }
+}
+
+/* Weak / Low-Bandwidth International Connection Optimization */
+html.weak-connection .home-hero-swiper *,
+html.weak-connection .home-hero-swiper *::before,
+html.weak-connection .home-hero-swiper *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+html.weak-connection .home-hero-swiper [class*="relative z-10"] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html.weak-connection .home-hero-swiper img {
+  will-change: auto !important;
+  transform: none !important;
 }

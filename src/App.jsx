@@ -148,7 +148,7 @@ function App() {
 
         <ToastContainer />
         <Toaster />
-        <Routing />
+        {!showInitialLoader && <Routing />}
       </div>
     </>
   );

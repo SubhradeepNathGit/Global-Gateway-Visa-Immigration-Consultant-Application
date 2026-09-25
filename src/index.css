@@ -15,6 +15,13 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* Applied during splash loader — kills scrollbar gutter so no space reserved on right */
+html.gg-splash-lock,
+html.gg-splash-lock body {
+  overflow: hidden !important;
+  scrollbar-gutter: auto !important;
+}
+
 @media (max-width: 767px) {
   html,
   body {

@@ -11,7 +11,6 @@
     <!-- Preload critical hero & loader images for jitter-free instant rendering -->
     <link rel="preload" as="image" href="/Slider-front1.jpg" fetchpriority="high" />
     <link rel="preload" as="image" href="/Slider1.jpg" fetchpriority="high" />
-    <link rel="preload" as="image" href="/Slider7.jpg" fetchpriority="high" />
     <link rel="preload" as="image" href="/Slider2.jpg" />
     
     <!-- Preload auth preview posters and prefetch auth videos for smooth instant start -->
@@ -20,19 +19,179 @@
     <link rel="prefetch" href="/signup.mp4" as="video" type="video/mp4" />
     <link rel="prefetch" href="/registration.mp4" as="video" type="video/mp4" />
     
+    <style>
+      html.not-home #initial-home-splash {
+        display: none !important;
+      }
+      .gg-splash-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        background-color: #0a0f14;
+        background-image: url('/Slider-front1.jpg');
+        background-size: cover;
+        background-position: center;
+        contain: layout paint;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+      }
+      .gg-splash-loader__overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.65) 50%, rgba(0,0,0,0.8) 100%);
+      }
+      .gg-splash-loader__float {
+        animation: gg-loader-float 4.8s ease-in-out infinite;
+        will-change: transform;
+      }
+      .gg-splash-loader__ring {
+        position: absolute;
+        top: -14px;
+        left: -14px;
+        width: 178px;
+        height: 178px;
+        border-radius: 9999px;
+        border: 2px solid transparent;
+        border-right-color: #FF5252;
+        border-bottom-color: rgba(255, 82, 82, 0.6);
+        animation: gg-loader-spin 10s linear infinite;
+        will-change: transform;
+      }
+      .gg-splash-loader__beam {
+        height: 100%;
+        width: 33%;
+        border-radius: 9999px;
+        background: linear-gradient(90deg, transparent, #FF5252, rgba(255, 255, 255, 0.9));
+        animation: gg-loader-beam 1.6s ease-in-out infinite;
+        will-change: transform;
+      }
+      .gg-splash-loader__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.8);
+        animation: gg-loader-dot 1.4s ease-in-out infinite;
+        will-change: transform, opacity;
+      }
+      .gg-splash-loader__fade-up {
+        animation: gg-loader-fade-up 0.65s ease-out both;
+      }
+      @keyframes gg-loader-float {
+        0%, 100% { transform: translate3d(0, 0, 0); }
+        50% { transform: translate3d(0, -8px, 0); }
+      }
+      @keyframes gg-loader-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes gg-loader-beam {
+        0% { transform: translate3d(-100%, 0, 0); }
+        100% { transform: translate3d(350%, 0, 0); }
+      }
+      @keyframes gg-loader-dot {
+        0%, 80%, 100% { opacity: 0.35; transform: scale(0.85); }
+        40% { opacity: 1; transform: scale(1.15); }
+      }
+      @keyframes gg-loader-fade-up {
+        from { opacity: 0; transform: translate3d(0, 10px, 0); }
+        to { opacity: 1; transform: translate3d(0, 0, 0); }
+      }
+      @keyframes gg-loader-reveal {
+        from { opacity: 0; transform: translate3d(0, 6px, 0); }
+        to { opacity: 1; transform: translate3d(0, 0, 0); }
+      }
+      /* CSS typewriter for pre-React phase */
+      @keyframes gg-html-typewriter {
+        from { clip-path: inset(0 100% 0 0); }
+        to   { clip-path: inset(0 0%   0 0); }
+      }
+      @keyframes gg-cursor-blink {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0; }
+      }
+      .gg-html-typewriter {
+        display: inline-block;
+        overflow: hidden;
+        white-space: nowrap;
+        clip-path: inset(0 100% 0 0);
+        /* 14 chars = 'Global Gateway' — steps(14) types one char at a time */
+        animation: gg-html-typewriter 0.9s steps(14, end) 0.2s both;
+      }
+      .gg-html-cursor {
+        display: inline-block;
+        color: #FF5252;
+        font-weight: 300;
+        animation: gg-cursor-blink 0.75s step-end 0.2s infinite;
+      }
+    </style>
     <title>Global Gateway</title>
     <script>
-      // Prevent flash: match body bg to what React will render before paint
-      document.addEventListener('DOMContentLoaded', function(){}, false);
       (function(){
         var p = window.location.pathname;
-        var isDark = p === '/' || p === '' || p.startsWith('/admin') || p.startsWith('/embassy');
-        document.documentElement.style.backgroundColor = isDark ? '#0b1020' : '#fff';
+        var isHome = p === '/' || p === '';
+        var isAdmin = p.startsWith('/admin');
+        if (isHome) {
+          document.documentElement.style.backgroundColor = '#0a0f14';
+          document.documentElement.style.backgroundImage = "url('/Slider-front1.jpg')";
+          document.documentElement.style.backgroundSize = "cover";
+          document.documentElement.style.backgroundPosition = "center";
+          document.documentElement.style.backgroundRepeat = "no-repeat";
+        } else if (isAdmin) {
+          document.documentElement.style.backgroundColor = '#0b1020';
+        } else {
+          document.documentElement.style.backgroundColor = '#fff';
+        }
+        if (!isHome) {
+          document.documentElement.classList.add('not-home');
+        } else {
+          // Lock scroll instantly via inline style (works before CSS bundle loads)
+          document.documentElement.style.overflow = 'hidden';
+          document.documentElement.style.scrollbarGutter = 'auto';
+          document.body.style.overflow = 'hidden';
+        }
       })();
     </script>
   </head>
   <body style="margin: 0;">
-    <div id="root"></div>
+    <div id="root">
+      <div id="initial-home-splash" class="gg-splash-loader" aria-busy="true" aria-label="Loading">
+        <div class="gg-splash-loader__overlay" style="background: linear-gradient(180deg, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.70) 50%, rgba(0,0,0,0.85) 100%);"></div>
+        <div style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 0 16px; text-align: center; opacity: 0; animation: gg-loader-reveal 0.55s ease-out 0.2s both;">
+          <div style="position: relative;">
+            <div class="gg-splash-loader__float">
+              <div style="width: 150px; height: 150px; border-radius: 9999px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; box-shadow: 0 16px 40px rgba(0,0,0,0.45);">
+                <svg width="76" height="76" viewBox="0 0 24 24" fill="currentColor" style="color: #ffffff; filter: drop-shadow(0 2px 10px rgba(255,82,82,0.55));" aria-hidden="true">
+                  <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+                </svg>
+              </div>
+            </div>
+            <div class="gg-splash-loader__ring"></div>
+          </div>
+
+          <div style="margin-top: 16px;">
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: clamp(2rem, 5vw, 4rem); font-weight: 700; color: #ffffff; letter-spacing: -0.02em; filter: drop-shadow(0 4px 20px rgba(0,0,0,0.75)); margin: 0; min-height: 1.2em; display: flex; align-items: center; justify-content: center;" aria-label="Global Gateway">
+            </h1>
+            <p style="font-family: 'Inter', sans-serif; letter-spacing: 0.22em; font-size: 13px; margin: 8px 0 20px 0; font-weight: 500; text-transform: uppercase; color: rgba(255,255,255,0.75);">
+              Crafting Comfort Across Continents over a Decade
+            </p>
+          </div>
+
+          <div style="width: min(430px, 92vw); height: 5px; border-radius: 9999px; background: rgba(255,255,255,0.15); overflow: hidden;">
+            <div class="gg-splash-loader__beam"></div>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 12px;" aria-hidden="true">
+            <span class="gg-splash-loader__dot"></span>
+            <span class="gg-splash-loader__dot" style="animation-delay: 0.2s;"></span>
+            <span class="gg-splash-loader__dot" style="animation-delay: 0.4s;"></span>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
