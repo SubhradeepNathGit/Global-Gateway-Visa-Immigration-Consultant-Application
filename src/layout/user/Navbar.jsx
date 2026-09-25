@@ -136,16 +136,16 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 px-16 py-4 transition-all duration-400 ${scrolled
+        className={`fixed top-0 left-0 right-0 z-50 px-4 md:px-16 py-4 transition-all duration-400 ${scrolled
           ? 'bg-black/60 backdrop-blur-md shadow-lg'
           : 'bg-transparent'
           }`}
       >
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center w-full">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <FlightTakeoffIcon className="text-white text-[30px]" />
-            <h1 className="text-white font-bold text-[25px] tracking-wide">
+            <FlightTakeoffIcon className="text-white text-[24px] md:text-[30px]" />
+            <h1 className="text-white font-bold text-[20px] md:text-[25px] tracking-wide whitespace-nowrap">
               Global Gateway
             </h1>
           </div>

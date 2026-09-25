@@ -210,7 +210,7 @@ const Banner = () => {
             
                 <button
                   onClick={handleDiscoverMore}
-                  className="group relative overflow-hidden px-10 py-3.5 rounded-lg font-bold text-[13px] sm:text-[14px] tracking-[0.22em] text-white uppercase transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] cursor-pointer shadow-none border border-white/35 hover:border-white/60 bg-white/10 hover:bg-white/20 backdrop-blur-xl"
+                  className="group relative overflow-hidden px-10 py-3.5 rounded-lg font-bold text-[13px] sm:text-[14px] tracking-[0.22em] text-white uppercase transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] cursor-pointer shadow-none border-1 border-white/80 hover:border-white/60 bg-white/10 hover:bg-white/20 backdrop-blur-xl"
                   style={{
                     boxShadow: 'none',
                     backdropFilter: 'blur(36px)',
@@ -229,7 +229,7 @@ const Banner = () => {
                     style={{ boxShadow: 'none' }}
                   />
 
-                  <span className="relative z-10 flex items-center justify-center gap-2">
+                  <span className="relative z-10 flex items-center text-md justify-center gap-2 font-semibold">
                     START JOURNEY
                   </span>
                 </button>

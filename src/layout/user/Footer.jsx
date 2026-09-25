@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Grid, Typography, TextField, Button, IconButton } from '@mui/material';
 import { Email, Phone, Twitter, Facebook, Pinterest, Instagram } from '@mui/icons-material';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
+import { Link } from 'react-router-dom';
 
 const galleryImages = [
   '/Footer1.jpg',
@@ -12,7 +13,50 @@ const galleryImages = [
   '/Footer6.jpg'
 ];
 
+const exploreLinks = [
+  { label: 'About Company', to: '/about' },
+  { label: 'Countries & Visas', to: '/country' },
+  { label: 'Coaching Courses', to: '/course' },
+  { label: 'User Dashboard', to: '/dashboard' },
+  { label: 'Contact Us', to: '/contact' },
+];
+
+const visaLinks = [
+  { label: 'Students Visa', to: '/country' },
+  { label: 'Business Visa', to: '/country' },
+  { label: 'Family Visa', to: '/country' },
+  { label: 'Travel Visa', to: '/country' },
+  { label: 'Work Visa', to: '/country' },
+];
+
+const servicesLinks = [
+  { label: 'Visa Consultancy', to: '/country' },
+  { label: 'Abroad Study', to: '/course' },
+  { label: 'IELTS / TOEFL Prep', to: '/course' },
+  { label: 'My Cart & Orders', to: '/cart' },
+  { label: 'Support & Assistance', to: '/contact' },
+];
+
+const socialLinks = [
+  { icon: Twitter, href: 'https://twitter.com' },
+  { icon: Facebook, href: 'https://facebook.com' },
+  { icon: Pinterest, href: 'https://pinterest.com' },
+  { icon: Instagram, href: 'https://instagram.com' },
+];
+
 const Footer = () => {
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    if (newsletterEmail.trim()) {
+      setSubscribed(true);
+      setNewsletterEmail('');
+      setTimeout(() => setSubscribed(false), 4000);
+    }
+  };
+
   return (
     <Box
       component="footer"
@@ -43,7 +87,17 @@ const Footer = () => {
         }}
       >
         {/* Logo */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+        <Box
+          component={Link}
+          to="/"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.2,
+            textDecoration: 'none',
+            cursor: 'pointer'
+          }}
+        >
           <FlightTakeoffIcon sx={{ fontSize: '28px', color: '#ef4444' }} />
           <Typography
             variant="h5"
@@ -60,6 +114,8 @@ const Footer = () => {
 
         {/* Newsletter Subscription */}
         <Box
+          component="form"
+          onSubmit={handleSubscribe}
           sx={{
             display: 'flex',
             flexDirection: { xs: 'column', sm: 'row' },
@@ -78,47 +134,56 @@ const Footer = () => {
               whiteSpace: 'nowrap'
             }}
           >
-            Subscribe to Newsletter
+            {subscribed ? 'Thank you for subscribing!' : 'Subscribe to Newsletter'}
           </Typography>
-          <TextField
-            placeholder="Email Address"
-            size="small"
-            variant="outlined"
-            sx={{
-              backgroundColor: '#ffffff',
-              borderRadius: '4px',
-              width: { xs: '100%', sm: 220 },
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': { border: 'none' },
-                '& input': {
-                  padding: '9px 14px',
-                  fontSize: '14px',
-                  color: '#0f172a'
-                }
-              }
-            }}
-          />
-          <Button
-            variant="contained"
-            disableElevation
-            sx={{
-              backgroundColor: '#ef4444',
-              color: '#ffffff',
-              textTransform: 'uppercase',
-              fontWeight: 600,
-              px: 3,
-              py: 1.1,
-              borderRadius: '4px',
-              fontSize: '12px',
-              letterSpacing: 0.5,
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                backgroundColor: '#dc2626'
-              }
-            }}
-          >
-            Subscribe
-          </Button>
+          {!subscribed && (
+            <>
+              <TextField
+                placeholder="Email Address"
+                size="small"
+                variant="outlined"
+                type="email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                required
+                sx={{
+                  backgroundColor: '#ffffff',
+                  borderRadius: '4px',
+                  width: { xs: '100%', sm: 220 },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': { border: 'none' },
+                    '& input': {
+                      padding: '9px 14px',
+                      fontSize: '14px',
+                      color: '#0f172a'
+                    }
+                  }
+                }}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                disableElevation
+                sx={{
+                  backgroundColor: '#ef4444',
+                  color: '#ffffff',
+                  textTransform: 'uppercase',
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1.1,
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  letterSpacing: 0.5,
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    backgroundColor: '#dc2626'
+                  }
+                }}
+              >
+                Subscribe
+              </Button>
+            </>
+          )}
         </Box>
       </Box>
 
@@ -173,12 +238,15 @@ const Footer = () => {
               <span style={{ color: '#ef4444' }}>/</span> Explore
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {['About Company', 'Meet the Team', 'News & Media', 'Our Projects', 'Contact'].map((item, index) => (
+              {exploreLinks.map((item, index) => (
                 <Typography
                   key={index}
+                  component={Link}
+                  to={item.to}
                   sx={{
                     fontSize: '14px',
                     color: '#94a3b8',
+                    textDecoration: 'none',
                     cursor: 'pointer',
                     lineHeight: 1.6,
                     fontWeight: 400,
@@ -186,7 +254,7 @@ const Footer = () => {
                     '&:hover': { color: '#ffffff' }
                   }}
                 >
-                  {item}
+                  {item.label}
                 </Typography>
               ))}
             </Box>
@@ -200,12 +268,15 @@ const Footer = () => {
               <span style={{ color: '#ef4444' }}>/</span> Visa
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {['Students Visa', 'Business Visa', 'Family Visa', 'Travel Visa', 'Work Visa'].map((item, index) => (
+              {visaLinks.map((item, index) => (
                 <Typography
                   key={index}
+                  component={Link}
+                  to={item.to}
                   sx={{
                     fontSize: '14px',
                     color: '#94a3b8',
+                    textDecoration: 'none',
                     cursor: 'pointer',
                     lineHeight: 1.6,
                     fontWeight: 400,
@@ -213,7 +284,7 @@ const Footer = () => {
                     '&:hover': { color: '#ffffff' }
                   }}
                 >
-                  {item}
+                  {item.label}
                 </Typography>
               ))}
             </Box>
@@ -227,12 +298,15 @@ const Footer = () => {
               <span style={{ color: '#ef4444' }}>/</span> Services
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {['PR Applicants', 'Visa Consultancy', 'Travel Insurance', 'Work Permits', 'Abroad Study'].map((item, index) => (
+              {servicesLinks.map((item, index) => (
                 <Typography
                   key={index}
+                  component={Link}
+                  to={item.to}
                   sx={{
                     fontSize: '14px',
                     color: '#94a3b8',
+                    textDecoration: 'none',
                     cursor: 'pointer',
                     lineHeight: 1.6,
                     fontWeight: 400,
@@ -240,7 +314,7 @@ const Footer = () => {
                     '&:hover': { color: '#ffffff' }
                   }}
                 >
-                  {item}
+                  {item.label}
                 </Typography>
               ))}
             </Box>
@@ -264,23 +338,29 @@ const Footer = () => {
               {galleryImages.map((src, index) => (
                 <Box
                   key={index}
-                  component="img"
-                  src={src}
-                  alt={`gallery-${index}`}
-                  sx={{
-                    width: '100%',
-                    height: 56,
-                    objectFit: 'cover',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    transition: 'transform 0.3s ease, border-color 0.3s ease',
-                    '&:hover': {
-                      transform: 'scale(1.06)',
-                      borderColor: '#ef4444'
-                    }
-                  }}
-                />
+                  component={Link}
+                  to="/country"
+                  sx={{ display: 'block', overflow: 'hidden', borderRadius: '4px' }}
+                >
+                  <Box
+                    component="img"
+                    src={src}
+                    alt={`gallery-${index}`}
+                    sx={{
+                      width: '100%',
+                      height: 56,
+                      objectFit: 'cover',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      transition: 'transform 0.3s ease, border-color 0.3s ease',
+                      '&:hover': {
+                        transform: 'scale(1.06)',
+                        borderColor: '#ef4444'
+                      }
+                    }}
+                  />
+                </Box>
               ))}
             </Box>
           </Grid>
@@ -308,7 +388,7 @@ const Footer = () => {
           }}
         >
           <Typography sx={{ color: '#64748b', fontSize: '13.5px', fontWeight: 400 }}>
-            © Copyright Reserved by Global Gateway : Made by{' '}
+            © Copyright Reserved by Global Gateway : Developed by{' '}
             <Box
               component="a"
               href="https://github.com/SubhradeepNathGit"
@@ -330,9 +410,13 @@ const Footer = () => {
           </Typography>
 
           <Box sx={{ display: 'flex', gap: 0.8 }}>
-            {[Twitter, Facebook, Pinterest, Instagram].map((Icon, index) => (
+            {socialLinks.map(({ icon: Icon, href }, index) => (
               <IconButton
                 key={index}
+                component="a"
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
                 size="small"
                 sx={{
                   color: '#94a3b8',

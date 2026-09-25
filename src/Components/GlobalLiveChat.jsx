@@ -206,7 +206,7 @@ const GlobalLiveChat = () => {
             initial={{ opacity: 0, y: 100, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.8 }}
-            className="fixed right-6 w-[400px] max-w-[calc(100vw-32px)] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] z-50 overflow-hidden flex flex-col"
+            className="fixed left-4 right-4 sm:left-auto sm:right-6 mx-auto sm:mx-0 w-auto sm:w-[400px] max-w-[400px] sm:max-w-[calc(100vw-32px)] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] z-50 overflow-hidden flex flex-col"
             style={{
               top: `${NAVBAR_HEIGHT + 12}px`,
               bottom: '24px',

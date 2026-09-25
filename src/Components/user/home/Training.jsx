@@ -35,10 +35,12 @@ const trainings = [
 
 const TrainingCard = ({ title, img, desc, avatar }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <Card
       elevation={0}
+      onClick={() => navigate('/course')}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onTouchStart={() => setIsHovered(prev => !prev)}
@@ -220,7 +222,7 @@ const Training = () => {
   const navigate = useNavigate();
 
   const handleGoToCourses = () => {
-    navigate('/coachingcards');
+    navigate('/course');
   };
 
   const handlePlayVideo = () => {
