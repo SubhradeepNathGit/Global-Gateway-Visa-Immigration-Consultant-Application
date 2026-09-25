@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  X, MessageCircle, ArrowLeft, ArrowRight, Headphones
-} from 'lucide-react';
+import { X, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSmartLocalReply, isPureGreetingOnly, isWeakGenericReply } from '../util/chat/smartChatReply';
 import { sendVisaSupportChat } from '../util/chat/visaSupportChat';
@@ -72,8 +70,7 @@ const GlobalLiveChat = () => {
     try {
       const api = await sendVisaSupportChat(apiMessages);
       if (api.ok && api.reply && typeof api.reply === 'string') {
-        const engineSource =
-          api.engine === 'gemini' ? 'gemini' : api.engine === 'groq' ? 'groq' : api.engine || 'groq';
+        const engineSource = api.engine || 'openai';
 
         // 3) Check if API gave a weak/generic response
         if (isWeakGenericReply(api.reply)) {
@@ -170,23 +167,17 @@ const GlobalLiveChat = () => {
               'linear-gradient(135deg, rgba(255, 255, 255, 0.90) 0%, rgba(255, 255, 255, 0.65) 100%)',
             backdropFilter: 'blur(24px) saturate(190%)',
             WebkitBackdropFilter: 'blur(24px) saturate(190%)',
-            border: '1px solid rgba(255, 255, 255, 0.85)',
+            border: '1px solid #585454d9',
 
           }}
           aria-label="Open visa support chat"
         >
-          <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-[#ef4444] to-[#dc2626] text-white  transition-transform duration-300 group-hover:scale-108">
-            <Headphones className="w-4 h-4 text-white" />
 
-          </div>
-          <div className="flex flex-col text-left pr-1.5">
-            <span className="text-xs font-bold text-[#0f172a] leading-tight tracking-wide">
-              Visa Support
+          <div className="flex flex-col text-center pr-2">
+            <span className="text-sm font-semibold text-[#0f172a] leading-tight tracking-wide">
+              Ask Gateway AI
             </span>
-            <span className="text-[10.5px] font-semibold text-[#64748b] leading-none flex items-center gap-1.5 mt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Online 24/7
-            </span>
+
           </div>
         </motion.button>
       )}
@@ -216,29 +207,23 @@ const GlobalLiveChat = () => {
           >
             <div className="bg-gradient-to-r from-[#FF5252] to-[#E63946] p-4 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                  <Headphones className="w-5 h-5 text-white" />
-                </div>
+
                 <div>
-                  <h3 className="text-white font-bold">Visa Support</h3>
+                  <h3 className="text-white font-semibold">Gateway AI</h3>
                   <p className="text-white/90 text-xs flex items-center gap-1">
-                    <span className="w-2 h-2 bg-green-400 rounded-full" />
-                    Online now
+                   
+                    Your Intelligent Visa Assistant
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  onClick={() => setChatMinimized(!chatMinimized)}
-                  className="w-8 h-8 rounded-lg hover:bg-white/20 flex items-center justify-center transition-colors"
-                  aria-label={chatMinimized ? 'Expand chat' : 'Minimize chat'}
+                  className="w-8 h-8 rounded-lg hover:bg-white/20 flex items-center justify-center transition-colors cursor-pointer"
+                  aria-label="Chat history"
+                  title="Chat history"
                 >
-                  {chatMinimized ? (
-                    <ArrowRight className="w-5 h-5 text-white rotate-90" />
-                  ) : (
-                    <ArrowLeft className="w-5 h-5 text-white rotate-90" />
-                  )}
+                  <History className="w-5 h-5 text-white" />
                 </button>
                 <button
                   type="button"
@@ -251,8 +236,7 @@ const GlobalLiveChat = () => {
               </div>
             </div>
 
-            {!chatMinimized && (
-              <>
+            <>
                 <div
                   className="flex-1 overflow-y-auto p-4 space-y-4 glass-scrollbar min-h-0"
                   style={{
@@ -268,8 +252,8 @@ const GlobalLiveChat = () => {
                     >
                       <div
                         className={`max-w-[80%] rounded-2xl p-3 ${message.sender === 'user'
-                            ? 'bg-gradient-to-r from-[#FF5252] to-[#E63946] text-white'
-                            : 'text-slate-900 shadow-sm'
+                          ? 'bg-gradient-to-r from-[#FF5252] to-[#E63946] text-white'
+                          : 'text-slate-900 shadow-sm'
                           }`}
                         style={
                           message.sender !== 'user'
@@ -376,23 +360,24 @@ const GlobalLiveChat = () => {
                       onClick={handleSendMessage}
                       disabled={!inputMessage.trim() || isTyping}
                       className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${inputMessage.trim() && !isTyping
-                          ? 'bg-gradient-to-r from-[#FF5252] to-[#E63946] text-white hover:shadow-lg cursor-pointer'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        ? 'bg-gradient-to-r from-[#FF5252] to-[#E63946] text-white hover:shadow-lg cursor-pointer'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                         }`}
                     >
                       Send
                     </button>
                   </div>
                   <p className="text-xs text-slate-500 mt-2 text-center">
-                    {lastReplySource === 'groq'
-                      ? 'Powered by Groq AI'
-                      : lastReplySource === 'gemini'
-                        ? 'Powered by Gemini AI'
-                        : 'Global Gateway Expert Guide'}
+                    {lastReplySource === 'openapi' || lastReplySource === 'openrouter' || lastReplySource === 'openai'
+                      ? 'Powered by OpenAI'
+                      : lastReplySource === 'groq'
+                        ? 'Powered by Groq AI'
+                        : lastReplySource === 'gemini'
+                          ? 'Powered by Gemini AI'
+                          : 'Powered by Global Gateway Pro'}
                   </p>
                 </div>
               </>
-            )}
           </motion.div>
         )}
       </AnimatePresence>

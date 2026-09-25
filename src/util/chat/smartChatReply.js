@@ -18,6 +18,57 @@ export function lastUserText(messages) {
   return '';
 }
 
+/** Pre-baked high-quality instant responses for quick questions */
+export function getPreparedQuickReply(userText) {
+  const n = normalize(userText);
+  if (!n) return null;
+
+  if (n.includes('what visa services do you offer') || n.includes('visa services offer')) {
+    return formatChatReply(
+      "Global Gateway offers expert visa & immigration services for 6 primary categories:\n\n" +
+      "1. Student Visa — Admissions & higher education permits abroad\n" +
+      "2. Tourist Visa — Leisure, vacation, and travel permits\n" +
+      "3. Work Visa — Employment and official work permits\n" +
+      "4. Business Visa — Trade meetings, corporate travel & conferences\n" +
+      "5. Family Visa — Spouse, dependent, & family reunification\n" +
+      "6. Resident Visa — Permanent residency & settlement guidance\n\n" +
+      "Next step: Go to the **Countries page** → pick your destination → open **Visa Process**!"
+    );
+  }
+
+  if (n.includes('how much does it cost') || n.includes('cost') || (n.includes('fee') && !n.includes('refund'))) {
+    return formatChatReply(
+      "Visa fees and costs depend on your chosen destination country and visa type:\n\n" +
+      "• Consultancy & Platform Fee: Displayed transparently at checkout before you pay.\n" +
+      "• Embassy / Government Fees: Official non-refundable fees set by the destination embassy.\n" +
+      "• Coaching Courses: Individual course prices are shown on the **Courses page**.\n\n" +
+      "Next step: Open the **Countries page**, select your target country, and check the **Visa Process** tab for exact fee breakdowns!"
+    );
+  }
+
+  if (n.includes('tell me about ielts prep') || n.includes('ielts') || n.includes('coaching prep')) {
+    return formatChatReply(
+      "Our IELTS & Language Coaching programs are tailored for Band 7+ success:\n\n" +
+      "• IELTS Academic & General Training prep courses\n" +
+      "• 1-on-1 speaking practice & mock interview sessions\n" +
+      "• Unlimited practice tests & essay evaluation\n\n" +
+      "How to enroll: Browse the **Courses page** → select a course → Add to Cart → Checkout. Access instantly from your **Dashboard**!"
+    );
+  }
+
+  if (n.includes('refund policy') || n.includes('refund') || n.includes('cancellation')) {
+    return formatChatReply(
+      "Global Gateway Refund Policy:\n\n" +
+      "1. Consultancy & Platform Fees: 100% refundable if requested before your documents are submitted to the embassy.\n" +
+      "2. Government & Embassy Fees: Non-refundable once paid to official government portals.\n" +
+      "3. Course Purchases: Refundable within 48 hours if course modules have not been accessed.\n\n" +
+      "To request a refund: Reach our support team via the **Contact us page** with your application reference number!"
+    );
+  }
+
+  return null;
+}
+
 function keywordMatches(normalized, keyword) {
   const k = normalize(keyword);
   if (!k) return false;
@@ -228,6 +279,10 @@ export function getSmartLocalReply(messages) {
   if (!normalized) {
     return formatChatReply(greetingReply());
   }
+
+  // 0) Instant prepared response for common quick questions
+  const prepared = getPreparedQuickReply(userText);
+  if (prepared) return prepared;
 
   // 1) Pure greetings, thanks, bye
   if (isPureGreetingOnly(userText)) {
