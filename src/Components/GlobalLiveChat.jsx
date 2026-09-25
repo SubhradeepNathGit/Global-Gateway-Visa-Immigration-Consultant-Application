@@ -388,10 +388,10 @@ const GlobalLiveChat = () => {
                   </div>
                   <p className="text-xs text-slate-500 mt-2 text-center">
                     {lastReplySource === 'groq'
-                      ? '⚡ Powered by Groq AI'
+                      ? 'Powered by Groq AI'
                       : lastReplySource === 'gemini'
-                        ? '✨ Powered by Gemini AI'
-                        : '🌐 Global Gateway Expert Guide'}
+                        ? 'Powered by Gemini AI'
+                        : 'Global Gateway Expert Guide'}
                   </p>
                 </div>
               </>
