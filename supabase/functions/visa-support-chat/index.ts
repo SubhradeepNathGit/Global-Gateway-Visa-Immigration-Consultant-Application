@@ -43,8 +43,88 @@ function formatChatReply(text: string): string {
   return t.trim();
 }
 
-function buildSystemPrompt(): string {
-  return `You are the expert Visa Support AI for Global Gateway (${APP_URL}).
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function shouldUseWebSearch(userText: string): boolean {
+  const lower = userText.toLowerCase();
+  if (lower.length < 8) return false;
+  return /\b(age|eligibility|eligible|requirement|how old|years old|minimum|maximum|policy|rule|criteria|validity|processing|document|fee|cost|tourist|student|work|visa|south africa|india|schengen|uk|usa|canada)\b/.test(
+    lower,
+  );
+}
+
+async function fetchWebSearchContext(query: string): Promise<string> {
+  const snippets: string[] = [];
+
+  const serperKey = Deno.env.get("SERPER_API_KEY")?.trim();
+  if (serperKey) {
+    try {
+      const res = await fetch("https://google.serper.dev/search", {
+        method: "POST",
+        headers: {
+          "X-API-KEY": serperKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ q: query, num: 6, gl: "in" }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        for (const item of (data?.organic ?? []).slice(0, 6)) {
+          if (item?.title && item?.snippet) {
+            snippets.push(`${item.title}: ${item.snippet}`);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[visa-support-chat] Serper search failed", e);
+    }
+  }
+
+  try {
+    const ddgUrl =
+      `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&skip_disambig=1`;
+    const res = await fetch(ddgUrl);
+    if (res.ok) {
+      const data = await res.json();
+      if (typeof data.Abstract === "string" && data.Abstract.trim()) {
+        snippets.push(`Summary: ${data.Abstract.trim()}`);
+      }
+      for (const topic of (data.RelatedTopics ?? []).slice(0, 5)) {
+        if (typeof topic?.Text === "string" && topic.Text.trim()) {
+          snippets.push(topic.Text.trim());
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("[visa-support-chat] DuckDuckGo search failed", e);
+  }
+
+  return snippets.slice(0, 8).join("\n");
+}
+
+function extractOpenAiContent(data: unknown): string {
+  const msg = (data as { choices?: { message?: Record<string, unknown> }[] })
+    ?.choices?.[0]?.message;
+  if (!msg) return "";
+  const content = msg.content;
+  if (typeof content === "string" && content.trim()) return content.trim();
+  if (Array.isArray(content)) {
+    const joined = content
+      .map((p) => (typeof (p as { text?: string })?.text === "string" ? (p as { text: string }).text : ""))
+      .join("\n")
+      .trim();
+    if (joined) return joined;
+  }
+  if (typeof msg.reasoning === "string" && msg.reasoning.trim()) {
+    return msg.reasoning.trim();
+  }
+  return "";
+}
+
+function buildSystemPrompt(searchContext = ""): string {
+  const base = `You are the expert Visa Support AI for Global Gateway (${APP_URL}).
 
 ROLE: Answer every question about this website and visa services — applications, appointments, rescheduling, payments, refunds, courses, login, dashboard, embassy updates, documents, and policies. Think step-by-step for complex cases.
 
@@ -77,8 +157,14 @@ OUTPUT RULES:
 - Warm, clear, under 220 words.
 - Do not invent fees, processing days, or appointment slots — point to Visa Process, dashboard, or Contact us.
 - Never ask for passwords, OTPs, or card numbers.
+- When WEB SEARCH CONTEXT is provided below, use it for factual eligibility, age, and policy answers. Always add how to apply on Global Gateway (Countries page, Visa Process, Sign in).
+- If unsure, give the best nearest answer and say embassy rules can change — confirm on Visa Process or Contact us.
 
-You cannot browse the web; use this knowledge only.`;
+You cannot browse the live web yourself; use site knowledge and any WEB SEARCH CONTEXT below.`;
+
+  const ctx = searchContext.trim();
+  if (!ctx) return base;
+  return `${base}\n\nWEB SEARCH CONTEXT:\n${ctx}`;
 }
 
 const MAX_MESSAGES = 24;
@@ -126,9 +212,26 @@ function isGreeting(text: string): boolean {
   return set.has(n);
 }
 
-function buildLocalReply(messages: ChatMessage[]): string {
+function buildLocalReply(messages: ChatMessage[], searchContext = ""): string {
   const text = lastUserMessage(messages);
   const lower = text.toLowerCase();
+
+  if (
+    /\b(age|eligibility|eligible)\b/.test(lower) &&
+    /\b(tourist|visitor)\b/.test(lower) &&
+    /\bsouth africa\b/.test(lower)
+  ) {
+    let reply =
+      "South Africa visitor/tourist visa eligibility (general guidance):\n\n" +
+      "• Applicants usually need a valid passport, proof of funds, return travel, and accommodation.\n" +
+      "• Minors often need extra documents (birth certificate, parental consent) — exact rules depend on nationality.\n" +
+      "• There is no single 'minimum age' for all tourists; children travel with guardian documents.\n\n" +
+      "On Global Gateway: open the Countries page → South Africa → Visa Process for the checklist for your nationality, then apply after Sign in.";
+    if (searchContext.trim()) {
+      reply += `\n\nReference notes:\n${searchContext.trim().slice(0, 600)}`;
+    }
+    return formatChatReply(reply);
+  }
 
   if (!lower.trim() || isGreeting(text)) {
     return formatChatReply(
@@ -162,9 +265,10 @@ async function callOpenRouter(
   apiKey: string,
   model: string,
   messages: ChatMessage[],
+  searchContext = "",
 ): Promise<string> {
   const chatMessages = [
-    { role: "system", content: buildSystemPrompt() },
+    { role: "system", content: buildSystemPrompt(searchContext) },
     ...messages.map((m) => ({
       role: m.role === "assistant" ? "assistant" : "user",
       content: m.content,
@@ -192,9 +296,9 @@ async function callOpenRouter(
   }
 
   const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content;
-  if (!text || typeof text !== "string") throw new Error("Empty OpenRouter response");
-  return formatChatReply(text.trim());
+  const text = extractOpenAiContent(data);
+  if (!text) throw new Error("Empty OpenRouter response");
+  return formatChatReply(text);
 }
 
 // ─── Groq ──────────────────────────────────────────────────────────────────
@@ -202,9 +306,10 @@ async function callGroq(
   apiKey: string,
   model: string,
   messages: ChatMessage[],
+  searchContext = "",
 ): Promise<string> {
   const chatMessages = [
-    { role: "system", content: buildSystemPrompt() },
+    { role: "system", content: buildSystemPrompt(searchContext) },
     ...messages.map((m) => ({
       role: m.role === "assistant" ? "assistant" : "user",
       content: m.content,
@@ -230,9 +335,9 @@ async function callGroq(
   }
 
   const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content;
-  if (!text || typeof text !== "string") throw new Error("Empty Groq response");
-  return formatChatReply(text.trim());
+  const text = extractOpenAiContent(data);
+  if (!text) throw new Error("Empty Groq response");
+  return formatChatReply(text);
 }
 
 // ─── Gemini ────────────────────────────────────────────────────────────────
@@ -247,6 +352,7 @@ async function callGemini(
   apiKey: string,
   model: string,
   messages: ChatMessage[],
+  searchContext = "",
 ): Promise<string> {
   const endpoints = [
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
@@ -263,7 +369,7 @@ async function callGemini(
           "x-goog-api-key": apiKey,
         },
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: buildSystemPrompt() }] },
+          systemInstruction: { parts: [{ text: buildSystemPrompt(searchContext) }] },
           contents: toGeminiContents(messages),
           generationConfig: {
             temperature: 0.4,
@@ -293,7 +399,10 @@ async function callGemini(
 
 let lastError = "";
 
-async function tryOpenRouter(messages: ChatMessage[]): Promise<string | null> {
+async function tryOpenRouter(
+  messages: ChatMessage[],
+  searchContext = "",
+): Promise<string | null> {
   const apiKey = Deno.env.get("OPENROUTER_API_KEY")?.trim();
   if (!apiKey) {
     lastError = "OPENROUTER_API_KEY secret missing on Supabase";
@@ -313,17 +422,20 @@ async function tryOpenRouter(messages: ChatMessage[]): Promise<string | null> {
    .filter((m, i, a) => a.indexOf(m) === i);
 
   for (const model of models) {
-    try {
-      return await callOpenRouter(apiKey, model, messages);
-    } catch (e: any) {
-      lastError += ` | OpenRouter (${model}): ${e?.message || String(e)}`;
-      console.warn("[visa-support-chat] OpenRouter failed", model, e);
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        return await callOpenRouter(apiKey, model, messages, searchContext);
+      } catch (e: any) {
+        lastError += ` | OpenRouter (${model}): ${e?.message || String(e)}`;
+        console.warn("[visa-support-chat] OpenRouter failed", model, attempt, e);
+        if (attempt < 2) await sleep(500 * (attempt + 1));
+      }
     }
   }
   return null;
 }
 
-async function tryGroq(messages: ChatMessage[]): Promise<string | null> {
+async function tryGroq(messages: ChatMessage[], searchContext = ""): Promise<string | null> {
   const apiKey = Deno.env.get("GROQ_API_KEY")?.trim();
   if (!apiKey) {
     if (!lastError) lastError = "GROQ_API_KEY secret missing on Supabase";
@@ -342,7 +454,7 @@ async function tryGroq(messages: ChatMessage[]): Promise<string | null> {
 
   for (const model of models) {
     try {
-      return await callGroq(apiKey, model, messages);
+      return await callGroq(apiKey, model, messages, searchContext);
     } catch (e: any) {
       lastError += ` | Groq (${model}): ${e?.message || String(e)}`;
       console.warn("[visa-support-chat] Groq failed", model, e);
@@ -351,7 +463,7 @@ async function tryGroq(messages: ChatMessage[]): Promise<string | null> {
   return null;
 }
 
-async function tryGemini(messages: ChatMessage[]): Promise<string | null> {
+async function tryGemini(messages: ChatMessage[], searchContext = ""): Promise<string | null> {
   const apiKey = Deno.env.get("GEMINI_API_KEY")?.trim();
   if (!apiKey) {
     if (!lastError) lastError = "GEMINI_API_KEY secret missing on Supabase";
@@ -369,7 +481,7 @@ async function tryGemini(messages: ChatMessage[]): Promise<string | null> {
 
   for (const model of models) {
     try {
-      return await callGemini(apiKey, model, messages);
+      return await callGemini(apiKey, model, messages, searchContext);
     } catch (e: any) {
       lastError += ` | Gemini (${model}): ${e?.message || String(e)}`;
     }
@@ -418,27 +530,36 @@ Deno.serve(async (req) => {
 
   lastError = "";
 
-  // Priority order: OpenRouter → Groq → Gemini → Local
-  let reply = await tryOpenRouter(messages);
+  const userQuery = lastUserMessage(messages);
+  let searchContext = "";
+  if (shouldUseWebSearch(userQuery)) {
+    searchContext = await fetchWebSearchContext(userQuery);
+  }
+
+  // Priority: OpenRouter → Groq → Gemini → Local (always non-empty reply)
+  let reply = await tryOpenRouter(messages, searchContext);
   let engine = "openrouter";
 
   if (!reply) {
-    reply = await tryGroq(messages);
+    reply = await tryGroq(messages, searchContext);
     engine = "groq";
   }
 
   if (!reply) {
-    reply = await tryGemini(messages);
+    reply = await tryGemini(messages, searchContext);
     engine = "gemini";
   }
 
   if (!reply) {
-    reply = buildLocalReply(messages);
+    reply = buildLocalReply(messages, searchContext);
     engine = "local";
   }
 
+  const finalReply = formatChatReply(reply).trim() ||
+    formatChatReply(buildLocalReply(messages, searchContext));
+
   return json({
-    reply: formatChatReply(reply),
+    reply: finalReply,
     engine,
     debugError: lastError || undefined,
   });

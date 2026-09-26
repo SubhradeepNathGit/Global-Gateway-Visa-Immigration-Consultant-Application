@@ -35,12 +35,12 @@ const services = [
 const VisaServicesSection = () => {
   return (
     <Box sx={{ py: 8, px: 2, textAlign: 'center', bgcolor: '#ffffff' }}>
-      <Typography variant="subtitle2" sx={{ color: '#dc2626', mb: 1, fontWeight: 'bold', letterSpacing: '0.05em' }}>
+      <p className="text-xs md:text-sm font-semibold tracking-[0.15em] text-red-600 uppercase mb-1.5 font-['Inter',sans-serif]">
         / WHAT DO WE OFFER
-      </Typography>
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 6, color: '#111827' }}>
-        Outstanding Immigration <br /> Visa Services
-      </Typography>
+      </p>
+      <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.6rem] font-bold text-gray-900 tracking-tight leading-tight mb-6 font-['Outfit',sans-serif]">
+        Outstanding Immigration &amp; Visa Services
+      </h2>
 
       <Swiper
         modules={[Autoplay]}

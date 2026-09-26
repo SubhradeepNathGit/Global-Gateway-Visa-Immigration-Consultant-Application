@@ -39,7 +39,7 @@ const UserLayout = () => {
       {!hideNavbar && !hideBoth && <Navbar />}
 
       <div
-        className={`flex-1 min-w-0 overflow-x-hidden ${isHome ? 'bg-transparent' : 'bg-white'}`}
+        className={`flex-1 min-w-0 ${isHome ? '' : 'overflow-x-clip'} ${isHome ? 'bg-transparent' : 'bg-white'}`}
       >
         <Outlet />
       </div>

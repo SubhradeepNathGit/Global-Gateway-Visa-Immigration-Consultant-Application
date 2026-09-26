@@ -180,6 +180,20 @@ function composeContextualReply(normalized) {
     );
   }
 
+  if (
+    /\b(age|eligibility|eligible|how old|minimum age)\b/.test(normalized) &&
+    isTourist &&
+    isSA
+  ) {
+    return (
+      'South Africa tourist visa age and eligibility (general guidance):\n\n' +
+      '• There is usually no fixed minimum age for adult tourists; you need a valid passport and standard visitor documents.\n' +
+      '• Children and minors often need extra documents (birth certificate, parental consent, guardian details) depending on nationality.\n' +
+      '• Exact rules vary by passport country — always check the Visa Process page for South Africa on our Countries page for your nationality.\n\n' +
+      'Next step: Countries page → South Africa → Visa Process, then Sign in to start your application or Contact us if your nationality is not listed.'
+    );
+  }
+
   // Indian student going to South Africa
   if (isStudent && isSA) {
     let reply =

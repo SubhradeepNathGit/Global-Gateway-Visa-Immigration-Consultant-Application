@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, History } from 'lucide-react';
+import { X, History, Sparkles, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ensureChatReply } from '../util/chat/ensureChatReply';
 import { getSmartLocalReply, isPureGreetingOnly, isWeakGenericReply } from '../util/chat/smartChatReply';
 import { sendVisaSupportChat } from '../util/chat/visaSupportChat';
 import { GATEWAY_AI_ICON } from './gatewayAiIconData';
@@ -9,6 +10,12 @@ const WELCOME_TEXT =
   "Hello! I'm your visa support assistant. How can I help you today?";
 
 const NAVBAR_HEIGHT = 60;
+
+const THINKING_STAGES = [
+  'Analyzing inquiry...',
+  'Checking visa regulations...',
+  'Synthesizing recommendation...',
+];
 
 const quickReplies = [
   'What visa services do you offer?',
@@ -42,6 +49,7 @@ const GlobalLiveChat = () => {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [thinkingStageIndex, setThinkingStageIndex] = useState(0);
   const [chatMinimized, setChatMinimized] = useState(false);
   const [lastReplySource, setLastReplySource] = useState('local');
   const messagesEndRef = useRef(null);
@@ -50,6 +58,17 @@ const GlobalLiveChat = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
+
+  useEffect(() => {
+    if (!isTyping) {
+      setThinkingStageIndex(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setThinkingStageIndex((prev) => (prev + 1) % THINKING_STAGES.length);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, [isTyping]);
 
   /**
    * Smart reply chain:
@@ -64,24 +83,24 @@ const GlobalLiveChat = () => {
 
     // 1) Instant local for trivial messages (greetings, thanks, bye)
     if (isPureGreetingOnly(lastMsg)) {
-      return { text: getSmartLocalReply(apiMessages), source: 'local' };
+      return { text: ensureChatReply(getSmartLocalReply(apiMessages)), source: 'local' };
     }
 
     // 2) Try API first for substantive questions
     try {
       const api = await sendVisaSupportChat(apiMessages);
-      if (api.ok && api.reply && typeof api.reply === 'string') {
-        const engineSource = api.engine || 'openai';
+      if (api.ok && typeof api.reply === 'string' && api.reply.trim()) {
+        const engineSource = api.engine || 'openrouter';
+        const replyText = ensureChatReply(api.reply);
 
-        // 3) Check if API gave a weak/generic response
-        if (isWeakGenericReply(api.reply)) {
-          const smartLocal = getSmartLocalReply(apiMessages);
+        if (isWeakGenericReply(replyText)) {
+          const smartLocal = ensureChatReply(getSmartLocalReply(apiMessages));
           if (!isWeakGenericReply(smartLocal)) {
             return { text: smartLocal, source: engineSource };
           }
         }
 
-        return { text: api.reply, source: engineSource };
+        return { text: replyText, source: engineSource };
       }
     } catch {
       // API failed — fall through to local
@@ -89,7 +108,7 @@ const GlobalLiveChat = () => {
 
     // 4) Smart local fallback
     return {
-      text: getSmartLocalReply(apiMessages),
+      text: ensureChatReply(getSmartLocalReply(apiMessages)),
       source: 'local',
     };
   }, []);
@@ -121,7 +140,7 @@ const GlobalLiveChat = () => {
 
         const agentMessage = {
           id: nextId(),
-          text: replyText,
+          text: ensureChatReply(replyText),
           sender: 'agent',
           timestamp: new Date().toISOString(),
         };
@@ -187,16 +206,19 @@ const GlobalLiveChat = () => {
             }}
             aria-label="Open visa support chat"
           >
-            <img
-              src={GATEWAY_AI_ICON}
-              alt="Gateway AI"
-              width={30}
-              height={30}
-              loading="eager"
-              decoding="sync"
-              fetchPriority="high"
-              className="w-7.5 h-7.5 object-contain rounded-full flex-shrink-0 drop-shadow-sm"
-            />
+            <div className="relative">
+              <img
+                src={GATEWAY_AI_ICON}
+                alt="Gateway AI"
+                width={30}
+                height={30}
+                loading="eager"
+                decoding="sync"
+                fetchPriority="high"
+                className="w-7.5 h-7.5 object-contain rounded-full flex-shrink-0 drop-shadow-sm animate-spin"
+              />
+             
+            </div>
             <div className="flex flex-col text-left pr-1">
               <span className="text-sm font-semibold text-slate-800 leading-tight tracking-wide group-hover:text-slate-950">
                 Ask Gateway AI
@@ -209,33 +231,52 @@ const GlobalLiveChat = () => {
       <AnimatePresence>
         {showChat && (
           <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.8 }}
+            initial={{ opacity: 0, y: 50, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 100, scale: 0.8 }}
-            className="fixed left-4 right-4 sm:left-auto sm:right-6 mx-auto sm:mx-0 w-auto sm:w-[400px] max-w-[400px] sm:max-w-[calc(100vw-32px)] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] z-50 overflow-hidden flex flex-col"
+            exit={{ opacity: 0, y: 50, scale: 0.92 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 280 }}
+            className="fixed left-4 right-4 sm:left-auto sm:right-6 mx-auto sm:mx-0 w-auto sm:w-[410px] max-w-[410px] sm:max-w-[calc(100vw-32px)] rounded-3xl shadow-[0_25px_60px_-15px_rgba(15,23,42,0.22)] z-50 overflow-hidden flex flex-col"
             style={{
-              top: `${NAVBAR_HEIGHT + 12}px`,
+              top: `${NAVBAR_HEIGHT + 26}px`,
               bottom: '24px',
               background:
-                'linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.52) 100%)',
-              backdropFilter: 'blur(10px) saturate(180%) contrast(95%)',
-              WebkitBackdropFilter: 'blur(10px) saturate(180%) contrast(95%)',
+                'linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(246, 249, 252, 0.72) 100%)',
+              backdropFilter: 'blur(24px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(180%)',
               isolation: 'isolate',
               WebkitTransform: 'translate3d(0, 0, 0)',
               transform: 'translate3d(0, 0, 0)',
-              WebkitBackfropVisibility: 'hidden',
-              backfaceVisibility: 'hidden',
-              border: 'none',
-              outline: 'none',
+              border: '1px solid rgba(255, 255, 255, 0.9)',
+              boxShadow: '0 24px 60px -12px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(226, 232, 240, 0.65)',
             }}
           >
-            <div className="bg-gradient-to-r from-[#FF5252] to-[#E63946] p-4 flex items-center justify-between flex-shrink-0">
+            {/* Liquid-morphic Topbar */}
+            <div
+              className="p-4 flex items-center justify-between flex-shrink-0 relative border-b border-slate-200/50"
+              style={{
+                background:
+                  'linear-gradient(135deg, rgba(255, 255, 255, 0.90) 0%, rgba(246, 249, 252, 0.82) 100%)',
+                backdropFilter: 'blur(20px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+              }}
+            >
               <div className="flex items-center gap-3">
-               
+                <div className="relative flex-shrink-0">
+                  <div className="w-10 h-9 rounded-full p-0 bg-white flex items-center justify-center">
+                    <img
+                      src={GATEWAY_AI_ICON}
+                      alt="Gateway AI Logo"
+                      className="w-12 h-12 object-contain drop-shadow-xs"
+                    />
+                  </div>
+                  
+                </div>
                 <div>
-                  <h3 className="text-white font-semibold">Gateway AI</h3>
-                  <p className="text-white/90 text-xs flex items-center gap-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-slate-900 font-bold text-sm tracking-tight">Gateway AI</h3>
                    
+                  </div>
+                  <p className="text-slate-500 text-xs font-medium flex items-center gap-1">
                     Your Intelligent Visa Assistant
                   </p>
                 </div>
@@ -243,165 +284,217 @@ const GlobalLiveChat = () => {
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  className="w-8 h-8 rounded-lg hover:bg-white/20 flex items-center justify-center transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-xl bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 border border-slate-200/60 shadow-xs flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Chat history"
                   title="Chat history"
                 >
-                  <History className="w-5 h-5 text-white" />
+                  <History className="w-4 h-4" />
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowChat(false)}
-                  className="w-8 h-8 rounded-lg hover:bg-white/20 flex items-center justify-center transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-xl bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 border border-slate-200/60 shadow-xs flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Close chat"
                 >
-                  <X className="w-5 h-5 text-white" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            <>
+            {/* Chat Messages */}
+            <div
+              className="flex-1 overflow-y-auto p-4 space-y-4 glass-scrollbar min-h-0"
+              style={{
+                background: 'rgba(248, 250, 252, 0.40)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+              }}
+            >
+              {messages.map((message) => (
                 <div
-                  className="flex-1 overflow-y-auto p-4 space-y-4 glass-scrollbar min-h-0"
-                  style={{
-                    background: 'rgba(248, 250, 252, 0.35)',
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)',
-                  }}
+                  key={message.id}
+                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-2xl p-3 ${message.sender === 'user'
-                          ? 'bg-gradient-to-r from-[#FF5252] to-[#E63946] text-white'
-                          : 'text-slate-900 shadow-sm'
-                          }`}
-                        style={
-                          message.sender !== 'user'
-                            ? {
-                              background: 'rgba(255, 255, 255, 0.82)',
-                              backdropFilter: 'blur(8px)',
-                              WebkitBackdropFilter: 'blur(8px)',
-                              border: 'none',
-                            }
-                            : {}
-                        }
-                      >
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
-                        <p
-                          className={`text-xs mt-1 ${message.sender === 'user' ? 'text-white/70' : 'text-slate-500'
-                            }`}
-                        >
-                          {new Date(message.timestamp).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-
-                  {isTyping && (
-                    <div className="flex justify-start">
-                      <div
-                        className="text-slate-900 rounded-2xl p-3 shadow-sm"
-                        style={{
-                          background: 'rgba(255, 255, 255, 0.82)',
-                          backdropFilter: 'blur(8px)',
-                          WebkitBackdropFilter: 'blur(8px)',
-                          border: 'none',
-                        }}
-                      >
-                        <div className="flex gap-1.5 items-center h-5" aria-hidden="true">
-                          <span className="gg-splash-loader__dot w-2 h-2 bg-slate-500 rounded-full" />
-                          <span className="gg-splash-loader__dot w-2 h-2 bg-slate-500 rounded-full [animation-delay:0.2s]" />
-                          <span className="gg-splash-loader__dot w-2 h-2 bg-slate-500 rounded-full [animation-delay:0.4s]" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {showQuickReplies && (
                   <div
-                    className="px-4 py-3 border-t border-slate-200/50 flex-shrink-0"
+                    className={`max-w-[82%] rounded-2xl p-3.5 transition-all ${
+                      message.sender === 'user'
+                        ? 'rounded-tr-xs text-white'
+                        : 'rounded-tl-xs text-slate-800 shadow-[0_4px_16px_rgba(0,0,0,0.03)] border border-white/80'
+                    }`}
+                    style={
+                      message.sender === 'user'
+                        ? {
+                            background:
+                              'linear-gradient(135deg, rgba(50, 132, 209, 0.97) 0%, rgba(40, 115, 190, 0.95) 50%, rgba(32, 100, 175, 0.97) 100%)',
+                            backdropFilter: 'blur(16px) saturate(180%)',
+                            WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+                            border: '1px solid rgba(255, 255, 255, 0.30)',
+                            boxShadow:
+                              '0 6px 20px -4px rgba(50, 132, 209, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.4)',
+                          }
+                        : {
+                            background:
+                              'linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.82) 100%)',
+                            backdropFilter: 'blur(16px)',
+                            WebkitBackdropFilter: 'blur(16px)',
+                          }
+                    }
+                  >
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
+                    <p
+                      className={`text-[10px] mt-1.5 font-medium ${
+                        message.sender === 'user' ? 'text-white/80' : 'text-slate-400'
+                      }`}
+                    >
+                      {new Date(message.timestamp).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              {/* Liquid-morphic Production-Ready Thinking State */}
+              {isTyping && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.25 }}
+                  className="flex justify-start"
+                  aria-live="polite"
+                  aria-busy="true"
+                >
+                  <div
+                    className="relative rounded-2xl rounded-tl-xs px-4 py-3 shadow-[0_6px_24px_rgba(0,0,0,0.04)] border border-white/90 overflow-hidden"
                     style={{
-                      background: 'rgba(255, 255, 255, 0.50)',
-                      backdropFilter: 'blur(16px)',
-                      WebkitBackdropFilter: 'blur(16px)',
+                      background:
+                        'linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(246, 249, 252, 0.84) 100%)',
+                      backdropFilter: 'blur(20px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
                     }}
                   >
-                    <p className="text-xs text-slate-600 mb-2">Quick questions:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {quickReplies.map((reply) => (
-                        <button
-                          key={reply}
-                          type="button"
-                          onClick={() => handleQuickReply(reply)}
-                          className="text-xs bg-white/70 hover:bg-white text-slate-700 px-3 py-1.5 rounded-full transition-colors border border-slate-200/80 shadow-xs cursor-pointer"
-                        >
-                          {reply}
-                        </button>
-                      ))}
+                    <div className="flex items-center gap-3">
+                    
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-slate-800 tracking-tight transition-all duration-300">
+                            {THINKING_STAGES[thinkingStageIndex]}
+                          </span>
+                          <span className="flex gap-1 items-center h-3.5" aria-hidden="true">
+                            <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:0s]" />
+                            <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+                            <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:0.4s]" />
+                          </span>
+                        </div>
+                       
+                      </div>
                     </div>
                   </div>
-                )}
+                </motion.div>
+              )}
 
-                <div
-                  className="p-4 border-t border-slate-200/50 flex-shrink-0"
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Quick replies */}
+            {showQuickReplies && (
+              <div
+                className="px-4 py-2.5 border-t border-slate-200/50 flex-shrink-0"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.55)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                }}
+              >
+                <p className="text-[11px] text-slate-500 font-semibold mb-2 uppercase tracking-wider">Suggested questions:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {quickReplies.map((reply) => (
+                    <button
+                      key={reply}
+                      type="button"
+                      onClick={() => handleQuickReply(reply)}
+                      className="text-xs bg-white/80 hover:bg-white text-slate-700 hover:text-slate-900 px-3 py-1.5 rounded-full transition-all border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-sm cursor-pointer active:scale-95"
+                    >
+                      {reply}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Input Bar */}
+            <div
+              className="p-3.5 border-t border-slate-200/50 flex-shrink-0"
+              style={{
+                background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(248, 250, 252, 0.85) 100%)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+              }}
+            >
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  placeholder="Ask about visas, eligibility, requirements..."
+                  disabled={isTyping}
+                  className="flex-1 px-4 py-2.5 border border-slate-200/80 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-4 focus:ring-slate-300/40 text-sm disabled:opacity-60 placeholder:text-slate-400 transition-all duration-200 shadow-inner"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.60)',
-                    backdropFilter: 'blur(16px)',
-                    WebkitBackdropFilter: 'blur(16px)',
+                    background: 'rgba(255, 255, 255, 0.92)',
+                    WebkitAppearance: 'none',
+                  }}
+                />
+                <motion.button
+                  type="button"
+                  onClick={handleSendMessage}
+                  disabled={!inputMessage.trim() || isTyping}
+                  whileHover={inputMessage.trim() && !isTyping ? { scale: 1.02 } : {}}
+                  whileTap={
+                    inputMessage.trim() && !isTyping
+                      ? {
+                          scale: 0.92,
+                          y: 1,
+                          transition: { type: 'spring', stiffness: 500, damping: 28, mass: 0.7 },
+                        }
+                      : {}
+                  }
+                  className={`group relative overflow-hidden px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-150 ease-out flex items-center gap-1.5 select-none ${
+                    inputMessage.trim() && !isTyping
+                      ? 'bg-white text-slate-800 border border-slate-200/90 hover:border-slate-300/90 shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_1.5px_1px_rgba(255,255,255,1)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08),inset_0_1.5px_1px_rgba(255,255,255,1)] active:bg-slate-100 active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.02)] cursor-pointer'
+                      : 'bg-white/60 text-slate-300 cursor-not-allowed border border-slate-200/50 shadow-none'
+                  }`}
+                  style={{
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
                   }}
                 >
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                      placeholder="Type your message..."
-                      disabled={isTyping}
-                      className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5252] focus:border-transparent text-sm disabled:opacity-60"
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.85)',
-                        WebkitAppearance: 'none',
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSendMessage}
-                      disabled={!inputMessage.trim() || isTyping}
-                      className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${inputMessage.trim() && !isTyping
-                        ? 'bg-gradient-to-r from-[#FF5252] to-[#E63946] text-white hover:shadow-lg cursor-pointer'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                        }`}
-                    >
-                      Send
-                    </button>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-2 text-center">
-                    {lastReplySource === 'openapi' || lastReplySource === 'openrouter' || lastReplySource === 'openai'
-                      ? 'Powered by OpenAI'
-                      : lastReplySource === 'groq'
-                        ? 'Powered by Groq AI'
-                        : lastReplySource === 'gemini'
-                          ? 'Powered by Gemini AI'
-                          : 'Powered by Global Gateway Pro'}
-                  </p>
-                </div>
-              </>
+                  {/* Liquid gloss top reflection */}
+                  <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/90 to-transparent rounded-t-xl opacity-90 group-active:opacity-30 transition-opacity" />
+                  <Send
+                    className={`w-3.5 h-3.5 relative z-10 transition-transform duration-150 group-active:translate-x-0.5 ${
+                      inputMessage.trim() && !isTyping ? 'text-slate-700 group-hover:text-slate-900' : 'text-slate-300'
+                    }`}
+                  />
+                  <span className="relative z-10">{inputMessage.trim() && !isTyping ? 'Send' : 'Send'}</span>
+                </motion.button>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-2 text-center font-medium">
+                {lastReplySource === 'openapi' || lastReplySource === 'openrouter' || lastReplySource === 'openai'
+                  ? 'Powered by Open AI'
+                  : lastReplySource === 'groq'
+                    ? 'Powered by Groq AI'
+                    : lastReplySource === 'gemini'
+                      ? 'Powered by Gemini AI'
+                      : 'Powered by Global Gateway Pro'}
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

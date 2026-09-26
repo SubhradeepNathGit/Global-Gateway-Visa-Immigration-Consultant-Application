@@ -331,7 +331,7 @@ const About = () => {
 
                   <Box
                     component="a"
-                    href="tel:+919098786545"
+                    href="tel:+918777777777"
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
@@ -366,7 +366,7 @@ const About = () => {
                         fontWeight={700}
                         sx={{ color: '#0f172a', fontSize: '1rem', letterSpacing: '-0.01em', transition: 'color 0.2s', '&:hover': { color: '#e53935' } }}
                       >
-                        +91-9098786545
+                        +91 8777 777 777
                       </Typography>
                     </Box>
                   </Box>

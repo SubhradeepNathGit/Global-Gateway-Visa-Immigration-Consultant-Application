@@ -45,8 +45,8 @@ const TrainingCard = ({ title, img, desc, avatar }) => {
       onMouseLeave={() => setIsHovered(false)}
       onTouchStart={() => setIsHovered(prev => !prev)}
       sx={{
-        width: { xs: '100%', sm: 275, md: 285 },
-        maxWidth: 290,
+        width: { xs: '100%', sm: 280, md: 290, lg: 295 },
+        maxWidth: 300,
         height: 365,
         position: 'relative',
         borderRadius: '18px',
@@ -267,35 +267,16 @@ const Training = () => {
     >
       <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 4, md: 6 } }}>
         <Box sx={{ mb: 4 }}>
-          <Typography
-            variant="body2"
-            sx={{
-              color: '#ef4444',
-              fontWeight: 600,
-              mb: 3,
-              textTransform: 'uppercase',
-              letterSpacing: 1
-            }}
-          >
-            / Training & Certification
-          </Typography>
+          <p className="text-xs md:text-sm font-semibold tracking-[0.15em] text-red-600 uppercase mb-1.5 font-['Inter',sans-serif]">
+            / TRAINING & CERTIFICATION
+          </p>
 
           <Grid container spacing={4} alignItems="center" justifyContent="space-between">
             <Grid size={{ xs: 12, md: 8 }}>
-              <Typography
-                variant="h2"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
-                  color: '#1a1a1a',
-                  lineHeight: 1.2,
-                  mb: { xs: 4, md: 0 },
-                  textAlign: { xs: 'center', md: 'left' }
-                }}
-              >
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.6rem] font-bold text-gray-900 tracking-tight leading-tight mb-0 font-['Outfit',sans-serif] text-center md:text-left">
                 Get the Immigration<br />
                 Trainings you Deserve
-              </Typography>
+              </h2>
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>

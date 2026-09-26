@@ -1,31 +1,40 @@
 import axios from "axios";
 import supabase from "../Supabase/supabase";
 import { buildWebsiteKnowledgePrompt } from "./websiteKnowledgeForAi";
+import { formatChatReply } from "./chatReplyFormat";
 
-const INVOKE_TIMEOUT_MS = 20000;
+const INVOKE_TIMEOUT_MS = 55000;
+const OPENROUTER_TIMEOUT_MS = 45000;
 
-/**
- * Call Vercel API Route /api/visa-chat using Axios
- */
-async function callVercelApi(messages) {
-  const response = await axios.post(
-    "/api/visa-chat",
-    { messages },
-    {
-      headers: { "Content-Type": "application/json" },
-      timeout: INVOKE_TIMEOUT_MS,
-    },
-  );
-  const data = response.data;
-  if (data?.reply && typeof data.reply === "string") {
-    return { reply: data.reply, engine: data.engine || "openrouter" };
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function extractOpenAiMessageContent(data) {
+  const msg = data?.choices?.[0]?.message;
+  if (!msg) return "";
+  if (typeof msg.content === "string" && msg.content.trim()) {
+    return msg.content.trim();
   }
-  throw new Error(data?.debugError || "No AI reply from Vercel API");
+  if (Array.isArray(msg.content)) {
+    const joined = msg.content
+      .map((part) => (typeof part?.text === "string" ? part.text : ""))
+      .join("\n")
+      .trim();
+    if (joined) return joined;
+  }
+  if (typeof msg.reasoning === "string" && msg.reasoning.trim()) {
+    return msg.reasoning.trim();
+  }
+  return "";
+}
+
+function validReply(reply) {
+  return typeof reply === "string" && reply.trim().length > 0;
 }
 
 /**
- * Direct client-side OpenRouter call using Axios.
- * Uses VITE_OPENROUTER_API_KEY set in .env.
+ * OpenRouter with model fallbacks + per-model retries (fixes first-request cold failures).
  */
 async function callDirectOpenRouter(apiKey, messages) {
   const configured = import.meta.env.VITE_OPENROUTER_MODEL?.trim();
@@ -34,9 +43,9 @@ async function callDirectOpenRouter(apiKey, messages) {
     "openrouter/auto",
     "meta-llama/llama-3.3-70b-instruct:free",
     "google/gemma-2-9b-it:free",
-    "deepseek/deepseek-r1-distill-llama-70b:free",
     "qwen/qwen-2.5-72b-instruct:free",
     "mistralai/mistral-7b-instruct:free",
+    "deepseek/deepseek-r1-distill-llama-70b:free",
   ]
     .filter(Boolean)
     .filter((m, i, a) => a.indexOf(m) === i);
@@ -51,51 +60,86 @@ async function callDirectOpenRouter(apiKey, messages) {
 
   let lastErr = "";
   for (const model of models) {
-    try {
-      const res = await axios.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        {
-          model,
-          messages: chatMessages,
-          temperature: 0.4,
-          max_tokens: 1100,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://global-gateway-pro.vercel.app",
-            "X-Title": "Global Gateway Visa Support",
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const res = await axios.post(
+          "https://openrouter.ai/api/v1/chat/completions",
+          {
+            model,
+            messages: chatMessages,
+            temperature: 0.45,
+            max_tokens: 1200,
           },
-          timeout: INVOKE_TIMEOUT_MS,
-        },
-      );
+          {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+              "HTTP-Referer": "https://global-gateway-pro.vercel.app",
+              "X-Title": "Global Gateway Visa Support",
+            },
+            timeout: OPENROUTER_TIMEOUT_MS,
+          },
+        );
 
-      const data = res.data;
-      const text = data?.choices?.[0]?.message?.content;
-      if (text && typeof text === "string" && text.trim()) {
-        return text.trim();
+        const text = extractOpenAiMessageContent(res.data);
+        if (validReply(text)) {
+          return formatChatReply(text);
+        }
+        lastErr = `OpenRouter (${model}): empty content`;
+      } catch (e) {
+        const msg = e?.response?.data?.error?.message || e?.message || String(e);
+        lastErr = `OpenRouter (${model}): ${msg}`;
+        if (attempt < 2) await sleep(500 * (attempt + 1));
       }
-    } catch (e) {
-      const msg = e?.response?.data?.error?.message || e?.message || String(e);
-      lastErr = `OpenRouter (${model}): ${msg}`;
     }
   }
 
   throw new Error(lastErr || "Empty OpenRouter response");
 }
 
-/**
- * Direct client-side Gemini call using Axios.
- */
+async function callVercelApi(messages) {
+  const response = await axios.post(
+    "/api/visa-chat",
+    { messages },
+    {
+      headers: { "Content-Type": "application/json" },
+      timeout: INVOKE_TIMEOUT_MS,
+    },
+  );
+  const data = response.data;
+  if (validReply(data?.reply)) {
+    return {
+      reply: formatChatReply(data.reply),
+      engine: data.engine || "openrouter",
+    };
+  }
+  throw new Error(data?.debugError || "No AI reply from Vercel API");
+}
+
+async function invokeSupabaseEdge(messages) {
+  const { data, error } = await supabase.functions.invoke("visa-support-chat", {
+    body: { messages },
+  });
+
+  if (error) {
+    throw new Error(error.message || "Supabase invoke failed");
+  }
+
+  if (validReply(data?.reply)) {
+    const engine = typeof data.engine === "string" ? data.engine : "openrouter";
+    return {
+      reply: formatChatReply(data.reply),
+      engine,
+      debugError: data.debugError,
+    };
+  }
+
+  throw new Error(data?.debugError || data?.error || "Empty edge function reply");
+}
+
 async function callDirectGemini(apiKey, messages) {
   const configured = import.meta.env.VITE_GEMINI_MODEL?.trim();
-  const models = [
-    configured,
-    "gemini-2.5-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-pro",
-  ].filter(Boolean);
+  const models = [configured, "gemini-2.5-flash", "gemini-1.5-flash"].filter(Boolean);
   const contents = messages.map((m) => ({
     role: m.role === "assistant" ? "model" : "user",
     parts: [{ text: m.content }],
@@ -104,47 +148,36 @@ async function callDirectGemini(apiKey, messages) {
 
   let lastErr = "";
   for (const model of models) {
-    const endpoints = [
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-      `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent`,
-    ];
-    for (const url of endpoints) {
-      try {
-        const res = await axios.post(
-          url,
-          {
-            systemInstruction,
-            contents,
-            generationConfig: { temperature: 0.4, maxOutputTokens: 900 },
+    try {
+      const res = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          systemInstruction,
+          contents,
+          generationConfig: { temperature: 0.45, maxOutputTokens: 1000 },
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
           },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "x-goog-api-key": apiKey,
-            },
-            timeout: INVOKE_TIMEOUT_MS,
-          },
-        );
+          timeout: OPENROUTER_TIMEOUT_MS,
+        },
+      );
 
-        const data = res.data;
-        const parts = data?.candidates?.[0]?.content?.parts ?? [];
-        for (const part of parts) {
-          if (typeof part?.text === "string" && part.text.trim()) {
-            return part.text.trim();
-          }
+      const parts = res.data?.candidates?.[0]?.content?.parts ?? [];
+      for (const part of parts) {
+        if (validReply(part?.text)) {
+          return formatChatReply(part.text.trim());
         }
-      } catch (e) {
-        const msg = e?.response?.data?.error?.message || e?.message || String(e);
-        lastErr = `Gemini (${model}): ${msg}`;
       }
+    } catch (e) {
+      lastErr = e?.response?.data?.error?.message || e?.message || String(e);
     }
   }
   throw new Error(lastErr || "Empty Gemini response");
 }
 
-/**
- * Direct client-side Groq call using Axios.
- */
 async function callDirectGroq(apiKey, messages) {
   const configured = import.meta.env.VITE_GROQ_MODEL?.trim();
   const models = [configured, "llama-3.3-70b-versatile", "llama-3.1-8b-instant"].filter(Boolean);
@@ -161,51 +194,58 @@ async function callDirectGroq(apiKey, messages) {
     try {
       const res = await axios.post(
         "https://api.groq.com/openai/v1/chat/completions",
-        { model, messages: chatMessages, temperature: 0.4, max_tokens: 1100 },
+        { model, messages: chatMessages, temperature: 0.45, max_tokens: 1100 },
         {
           headers: {
             Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
-          timeout: INVOKE_TIMEOUT_MS,
+          timeout: OPENROUTER_TIMEOUT_MS,
         },
       );
 
-      const data = res.data;
-      const text = data?.choices?.[0]?.message?.content;
-      if (text && typeof text === "string" && text.trim()) return text.trim();
+      const text = extractOpenAiMessageContent(res.data);
+      if (validReply(text)) return formatChatReply(text);
     } catch (e) {
-      const msg = e?.response?.data?.error?.message || e?.message || String(e);
-      lastErr = `Groq (${model}): ${msg}`;
+      lastErr = e?.response?.data?.error?.message || e?.message || String(e);
     }
   }
   throw new Error(lastErr || "Empty Groq response");
 }
 
 /**
- * Main entry point for the chat UI.
- * Priority order:
- * 1. Direct OpenRouter key (VITE_OPENROUTER_API_KEY in .env) via Axios
- * 2. Supabase Edge Function (visa-support-chat)
- * 3. Vercel API Route (/api/visa-chat) via Axios
- * 4. Direct Gemini key (VITE_GEMINI_API_KEY) via Axios
- * 5. Direct Groq key (VITE_GROQ_API_KEY) via Axios
- * 6. Local smart fallback
+ * Priority: Supabase (OpenRouter inside) → Direct OpenRouter → Vercel → Gemini → Groq
  */
 export async function sendVisaSupportChat(messages) {
   if (!Array.isArray(messages) || messages.length === 0) {
     return { ok: false, error: "No messages" };
   }
 
-  const timeoutPromise = new Promise((resolve) => {
-    setTimeout(
-      () => resolve({ ok: false, error: "Request timed out", code: "TIMEOUT" }),
-      INVOKE_TIMEOUT_MS,
-    );
-  });
+  const run = async () => {
+    // 1) Supabase edge — OpenRouter first on server (production)
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const edge = await invokeSupabaseEdge(messages);
+        if (edge.debugError) {
+          console.warn("[VisaChat] Edge debug:", edge.debugError);
+        }
+        if (
+          edge.engine === "openrouter" ||
+          edge.engine === "groq" ||
+          edge.engine === "gemini"
+        ) {
+          return { ok: true, reply: edge.reply, engine: edge.engine };
+        }
+        if (edge.engine === "local" && validReply(edge.reply)) {
+          return { ok: true, reply: edge.reply, engine: "local" };
+        }
+      } catch (err) {
+        console.warn("[VisaChat] Supabase attempt failed:", err?.message);
+        if (attempt === 0) await sleep(600);
+      }
+    }
 
-  const invokePromise = (async () => {
-    // ── 1. Direct OpenRouter Key (Highest Priority for local & production) ──
+    // 2) Direct OpenRouter (dev / backup)
     const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY?.trim();
     if (openRouterKey) {
       try {
@@ -216,36 +256,16 @@ export async function sendVisaSupportChat(messages) {
       }
     }
 
-    // ── 2. Supabase Edge Function ──────────────────────────────────────────
-    try {
-      const { data, error } = await supabase.functions.invoke("visa-support-chat", {
-        body: { messages },
-      });
-
-      if (!error && data?.reply && typeof data.reply === "string") {
-        if (data?.debugError) {
-          console.warn("[VisaChat Edge Function Warning]:", data.debugError);
-        }
-        const engine = typeof data.engine === "string" ? data.engine : "local";
-        if (engine === "openrouter" || engine === "groq" || engine === "gemini") {
-          return { ok: true, reply: data.reply, engine };
-        }
-      }
-    } catch (err) {
-      console.warn("[VisaChat] Supabase invoke failed:", err?.message);
-    }
-
-    // ── 3. Vercel API Route (when hosted on Vercel) ───────────────────────
-    if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    // 3) Vercel API route
+    if (typeof window !== "undefined") {
       try {
         const result = await callVercelApi(messages);
         return { ok: true, reply: result.reply, engine: result.engine };
       } catch (err) {
-        console.warn("[VisaChat] Vercel API route failed:", err?.message);
+        console.warn("[VisaChat] Vercel API failed:", err?.message);
       }
     }
 
-    // ── 4 & 5. Direct Gemini / Groq Keys ─────────────────────────────────
     const geminiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
     const groqKey = import.meta.env.VITE_GROQ_API_KEY?.trim();
 
@@ -267,9 +287,15 @@ export async function sendVisaSupportChat(messages) {
       }
     }
 
-    // ── 6. Signal caller to use local engine ──────────────────────────────
     return { ok: false, error: "AI unavailable", code: "NO_AI" };
-  })();
+  };
 
-  return Promise.race([invokePromise, timeoutPromise]);
+  const timeoutPromise = new Promise((resolve) => {
+    setTimeout(
+      () => resolve({ ok: false, error: "Request timed out", code: "TIMEOUT" }),
+      INVOKE_TIMEOUT_MS,
+    );
+  });
+
+  return Promise.race([run(), timeoutPromise]);
 }

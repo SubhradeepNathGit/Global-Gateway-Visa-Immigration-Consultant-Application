@@ -49,46 +49,26 @@ const WhyChooseUs = () => {
           }}
         >
           {/* LEFT SECTION */}
-          <Box flex={1}>
-            <Typography
-              sx={{
-                color: '#ef4444',
-                fontSize: '14px',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                mb: 2,
-                letterSpacing: 1,
-              }}
-            >
-              / Our Benefits
-            </Typography>
+          <Box flex={1} sx={{ minWidth: 0 }}>
+            <p className="text-xs md:text-sm font-semibold tracking-[0.15em] text-red-600 uppercase mb-1.5 font-['Inter',sans-serif]">
+              / OUR BENEFITS
+            </p>
 
-            <Typography
-              variant="h3"
-              sx={{
-                fontWeight: 700,
-                fontSize: { xs: '2rem', md: '3rem' },
-                color: '#1e293b',
-                lineHeight: 1.4,
-                mb: 3,
-                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-
-              }}
-            >
-              The Reasons to Choose <br /> Our Company
-            </Typography>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.6rem] font-bold text-gray-900 tracking-tight leading-tight mb-3 font-['Outfit',sans-serif]">
+              The Reasons <br />
+              To Choose Our Company
+            </h2>
 
             <Typography
               sx={{
-                color: '#6c757d',
-                fontSize: '1rem',
+                color: '#475569',
+                fontSize: { xs: '0.92rem', md: '0.98rem' },
                 mb: 4,
-                maxWidth: '500px',
-                lineHeight: 1.7,
+                maxWidth: '560px',
+                lineHeight: 1.65,
               }}
             >
-              Lorem Ipsum. Proin gravida nibh vel velit auctor aliquet. Aenean
-              sollicitudin, lorem is simply free text quis bibendum.
+              Empowering your global journey with certified immigration consultants, verified visa strategies, and end-to-end relocation support tailored to your success.
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -214,7 +194,7 @@ const WhyChooseUs = () => {
                 mt: 0,
                 bgcolor: '#ef4444',
                 color: 'white',
-                fontWeight: 900,
+                fontWeight: 600,
                 textAlign: 'center',
                 py: 1.5,
                 px: 2,
