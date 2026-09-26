@@ -8,7 +8,9 @@ const ContactFAQ = ({ faqs }) => {
     const [expanded, setExpanded] = useState('panel0');
 
     const handleChange = (panel) => (event, isExpanded) => {
-        setExpanded(isExpanded ? panel : false);
+        if (isExpanded) {
+            setExpanded(panel);
+        }
     };
 
     return (
@@ -31,7 +33,7 @@ const ContactFAQ = ({ faqs }) => {
                     {/* Left Side - FAQ */}
                     <Box
                         sx={{
-                            flex: '0 0 50%',
+                            flex: { xs: '1 1 auto', lg: '0 0 50%' },
                             minWidth: 0,
                             display: 'flex',
                             flexDirection: 'column'
@@ -125,7 +127,7 @@ const ContactFAQ = ({ faqs }) => {
                     {/* Right Side - Cards */}
                     <Box
                         sx={{
-                            flex: '0 0 45%',
+                            flex: { xs: '1 1 auto', lg: '0 0 45%' },
                             minWidth: 0,
                             display: 'flex',
                             flexDirection: 'column',
@@ -142,10 +144,11 @@ const ContactFAQ = ({ faqs }) => {
                                 color: 'white',
                                 position: 'relative',
                                 overflow: 'hidden',
-                                minHeight: { xs: '160px', md: '200px' },
+                                minHeight: { xs: '150px', md: '170px' },
                                 display: 'flex',
                                 flexDirection: 'column',
-                                justifyContent: 'center'
+                                justifyContent: 'center',
+                                flexShrink: 0
                             }}
                         >
                             <Box
@@ -173,13 +176,16 @@ const ContactFAQ = ({ faqs }) => {
                             </Typography>
                         </Paper>
 
-                        {/* Image with Text Overlay */}
+                        {/* Image with Text Overlay stretched to match left side */}
                         <Box
                             sx={{
                                 position: 'relative',
                                 borderRadius: '12px',
                                 overflow: 'hidden',
-                                height: { xs: '250px', md: '300px' }
+                                flex: 1,
+                                minHeight: { xs: '260px', md: '320px' },
+                                display: 'flex',
+                                flexDirection: 'column'
                             }}
                         >
                             <Box
@@ -189,6 +195,7 @@ const ContactFAQ = ({ faqs }) => {
                                 sx={{
                                     width: '100%',
                                     height: '100%',
+                                    flex: 1,
                                     objectFit: 'cover'
                                 }}
                             />
@@ -200,9 +207,16 @@ const ContactFAQ = ({ faqs }) => {
                                     bottom: 0,
                                     left: 0,
                                     right: 0,
+                                    width: '100%',
                                     bgcolor: 'rgba(255, 255, 255, 0.95)',
-                                    backdropFilter: 'blur(10px)',
-                                    p: { xs: 2.5, md: 3 }
+                                    backdropFilter: 'none',
+                                    WebkitBackdropFilter: 'none',
+                                    borderRadius: 0,
+                                    p: { xs: 2.5, md: 3 },
+                                    textAlign: 'center',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
                                 }}
                             >
                                 <Typography
@@ -210,8 +224,10 @@ const ContactFAQ = ({ faqs }) => {
                                     sx={{
                                         fontWeight: 'bold',
                                         color: '#2c3e50',
-                                        fontSize: { xs: '1.1rem', md: '1.3rem', lg: '1.4rem' },
-                                        lineHeight: 1.3
+                                        fontSize: { xs: '1.05rem', md: '1.25rem', lg: '1.35rem' },
+                                        lineHeight: 1.3,
+                                        textAlign: 'center',
+                                        width: '100%'
                                     }}
                                 >
                                     Global Gateway - Visa Consultant Agency
