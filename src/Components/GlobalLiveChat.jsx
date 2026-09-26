@@ -3,6 +3,7 @@ import { X, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSmartLocalReply, isPureGreetingOnly, isWeakGenericReply } from '../util/chat/smartChatReply';
 import { sendVisaSupportChat } from '../util/chat/visaSupportChat';
+import { GATEWAY_AI_ICON } from './gatewayAiIconData';
 
 const WELCOME_TEXT =
   "Hello! I'm your visa support assistant. How can I help you today?";
@@ -187,8 +188,13 @@ const GlobalLiveChat = () => {
             aria-label="Open visa support chat"
           >
             <img
-              src="/Gateway AI.png"
+              src={GATEWAY_AI_ICON}
               alt="Gateway AI"
+              width={30}
+              height={30}
+              loading="eager"
+              decoding="sync"
+              fetchPriority="high"
               className="w-7.5 h-7.5 object-contain rounded-full flex-shrink-0 drop-shadow-sm"
             />
             <div className="flex flex-col text-left pr-1">
