@@ -191,7 +191,7 @@ const Footer = () => {
       <Box sx={{ px: { xs: 3, md: 8 }, py: 6 }}>
         <Grid container spacing={4} justifyContent="space-between">
           {/* Contact Section */}
-          <Grid item xs={12} sm={6} md={2.4}>
+          <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
             <Typography
               sx={{
                 color: '#ffffff',
@@ -231,7 +231,7 @@ const Footer = () => {
           </Grid>
 
           {/* Explore Section */}
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <Typography
               sx={{ color: '#ffffff', fontWeight: 600, fontSize: '15px', mb: 2.5 }}
             >
@@ -261,7 +261,7 @@ const Footer = () => {
           </Grid>
 
           {/* Visa Section */}
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <Typography
               sx={{ color: '#ffffff', fontWeight: 600, fontSize: '15px', mb: 2.5 }}
             >
@@ -291,7 +291,7 @@ const Footer = () => {
           </Grid>
 
           {/* Services Section */}
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <Typography
               sx={{ color: '#ffffff', fontWeight: 600, fontSize: '15px', mb: 2.5 }}
             >
@@ -321,7 +321,7 @@ const Footer = () => {
           </Grid>
 
           {/* Gallery Section */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Typography
               sx={{ color: '#ffffff', fontWeight: 600, fontSize: '15px', mb: 2.5 }}
             >

@@ -1,13 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
-import SchoolIcon from '@mui/icons-material/School';
-import GroupIcon from '@mui/icons-material/Group';
-import CameraAltIcon from '@mui/icons-material/CameraAlt';
-import HomeIcon from '@mui/icons-material/Home';
-import WorkIcon from '@mui/icons-material/Work';
-import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
-
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -16,32 +9,26 @@ const services = [
   {
     title: 'Student Visa',
     image: '/Business2.jpg',
-    icon: <SchoolIcon sx={{ color: '#fff' }} />,
   },
   {
     title: 'Family Visa',
     image: '/Family-Visa.jpg',
-    icon: <GroupIcon sx={{ color: '#fff' }} />,
   },
   {
     title: 'Tourist Visa',
     image: '/Tourist-Visa.jpg',
-    icon: <CameraAltIcon sx={{ color: '#fff' }} />,
   },
   {
     title: 'Resident Visa',
     image: '/Resident-Visa.jpg',
-    icon: <HomeIcon sx={{ color: '#fff' }} />,
   },
   {
     title: 'Working Visa',
     image: '/Worker-Visa.jpeg',
-    icon: <WorkIcon sx={{ color: '#fff' }} />,
   },
   {
     title: 'Business Visa',
     image: '/Student.jpg',
-    icon: <BusinessCenterIcon sx={{ color: '#fff' }} />,
   },
 ];
 
@@ -84,23 +71,7 @@ const VisaServicesSection = () => {
                 cursor: 'pointer',
               }}
             >
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 16,
-                  left: 16,
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
-                  backgroundColor: '#ff4a57',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 2,
-                }}
-              >
-                {service.icon}
-              </Box>
+
 
               <Box
                 sx={{

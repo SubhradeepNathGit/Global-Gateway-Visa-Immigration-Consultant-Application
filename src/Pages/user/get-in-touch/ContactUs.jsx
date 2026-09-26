@@ -29,16 +29,20 @@ const contactItems = [
 
 const faqs = [
   {
-    question: "How to get free immigration?",
-    answer: "Sed rhoncus facilisis purus, at accumsan purus sagittis vitae. Nullam acelit at eros imperdiet. Pellentesque sit."
+    question: "How do I start my visa application process with Global Gateway?",
+    answer: "You can select your destination country from our Countries page, check eligibility requirements, and apply directly online or book a consultation with our licensed visa experts."
   },
   {
-    question: "Which country is good for residents?",
-    answer: "Canada, Australia, and New Zealand are popular destinations for permanent residency due to their immigration-friendly policies, quality of life, and opportunities for skilled workers."
+    question: "Which country is best for permanent residency and work permits?",
+    answer: "Canada, Australia, Germany, and New Zealand offer high permanent residency opportunities for skilled workers, students, and professionals through point-based immigration systems."
   },
   {
-    question: "Canada study visa requirements?",
-    answer: "To obtain a Canadian study visa, you need an acceptance letter from a designated learning institution, proof of financial support, no criminal record, and may need to complete a medical exam."
+    question: "What documents are required for student and study visas?",
+    answer: "Key requirements include an Official Admission Letter from a certified institution, proof of financial funds, valid passport, language proficiency scores (IELTS/TOEFL), and health clearance."
+  },
+  {
+    question: "How long does the visa application approval take?",
+    answer: "Processing times vary depending on the country and visa type (usually between 2 to 8 weeks). You can track your real-time application status directly in your User Dashboard."
   }
 ];
 

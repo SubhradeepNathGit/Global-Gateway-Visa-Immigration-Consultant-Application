@@ -58,7 +58,7 @@ const ContactFAQ = ({ faqs }) => {
                                 mb: { xs: 3, md: 4 }
                             }}
                         >
-                            Sed rhoncus facilisis purus, at accumsan purus sagittis vitae. Nullam acelit at eros.
+                            Explore answers to frequently asked questions regarding visa applications, documentation, consulting, and processing times.
                         </Typography>
 
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
