@@ -83,7 +83,7 @@ async function fetchWebSearchContext(query: string): Promise<string> {
   try {
     const ddgUrl =
       `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&skip_disambig=1`;
-    const res = await fetch(ddgUrl);
+    const res = await fetch(ddgUrl, { signal: AbortSignal.timeout(2500) });
     if (res.ok) {
       const data = await res.json();
       if (typeof data.Abstract === "string" && data.Abstract.trim()) {
@@ -115,10 +115,44 @@ function extractOpenAiContent(data: unknown): string {
       .trim();
     if (joined) return joined;
   }
-  if (typeof msg.reasoning === "string" && msg.reasoning.trim()) {
-    return msg.reasoning.trim();
+  const reasoning = msg.reasoning || msg.reasoning_content;
+  if (typeof reasoning === "string" && reasoning.trim()) {
+    const cleaned = reasoning.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+    if (cleaned) return cleaned;
+    return reasoning.trim();
   }
   return "";
+}
+
+/** Merges consecutive messages of the same role and guarantees clean alternating multi-turn chat */
+function prepareChatMessages(
+  systemPrompt: string,
+  messages: ChatMessage[],
+): { role: string; content: string }[] {
+  const prepared: { role: string; content: string }[] = [];
+  if (systemPrompt.trim()) {
+    prepared.push({ role: "system", content: systemPrompt.trim() });
+  }
+
+  for (const m of messages) {
+    const role = m.role === "assistant" ? "assistant" : "user";
+    const content = String(m.content ?? "").trim();
+    if (!content) continue;
+
+    const last = prepared[prepared.length - 1];
+    if (last && last.role === role) {
+      last.content += "\n\n" + content;
+    } else {
+      prepared.push({ role, content });
+    }
+  }
+
+  const firstNonSystem = prepared.findIndex((p) => p.role !== "system");
+  if (firstNonSystem !== -1 && prepared[firstNonSystem].role === "assistant") {
+    prepared.splice(firstNonSystem, 1);
+  }
+
+  return prepared;
 }
 
 function buildSystemPrompt(searchContext = ""): string {
@@ -265,13 +299,7 @@ async function callOpenRouter(
   messages: ChatMessage[],
   searchContext = "",
 ): Promise<string> {
-  const chatMessages = [
-    { role: "system", content: buildSystemPrompt(searchContext) },
-    ...messages.map((m) => ({
-      role: m.role === "assistant" ? "assistant" : "user",
-      content: m.content,
-    })),
-  ];
+  const chatMessages = prepareChatMessages(buildSystemPrompt(searchContext), messages);
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -310,13 +338,7 @@ async function callGroq(
   messages: ChatMessage[],
   searchContext = "",
 ): Promise<string> {
-  const chatMessages = [
-    { role: "system", content: buildSystemPrompt(searchContext) },
-    ...messages.map((m) => ({
-      role: m.role === "assistant" ? "assistant" : "user",
-      content: m.content,
-    })),
-  ];
+  const chatMessages = prepareChatMessages(buildSystemPrompt(searchContext), messages);
 
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
@@ -345,10 +367,22 @@ async function callGroq(
 
 // ─── Gemini ────────────────────────────────────────────────────────────────
 function toGeminiContents(messages: ChatMessage[]) {
-  return messages.map((m) => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
-  }));
+  const contents: { role: string; parts: { text: string }[] }[] = [];
+  for (const m of messages) {
+    const role = m.role === "assistant" ? "model" : "user";
+    const text = String(m.content ?? "").trim();
+    if (!text) continue;
+    const last = contents[contents.length - 1];
+    if (last && last.role === role) {
+      last.parts[0].text += "\n\n" + text;
+    } else {
+      contents.push({ role, parts: [{ text }] });
+    }
+  }
+  while (contents.length > 0 && contents[0].role === "model") {
+    contents.shift();
+  }
+  return contents;
 }
 
 async function callGemini(
@@ -420,15 +454,16 @@ async function tryOpenRouter(
 
   const configured = Deno.env.get("OPENROUTER_MODEL")?.trim();
 
-  // Active verified free models on OpenRouter + configured model
+  // Multi-provider verified active free models (Google, Meta, DeepSeek, Qwen, Mistral)
   const models = [
     configured,
     "google/gemini-2.0-flash-exp:free",
     "meta-llama/llama-3.3-70b-instruct:free",
+    "meta-llama/llama-3.1-8b-instruct:free",
     "deepseek/deepseek-r1:free",
     "deepseek/deepseek-chat:free",
     "qwen/qwen-2.5-coder-32b-instruct:free",
-    "meta-llama/llama-3.1-8b-instruct:free",
+    "mistralai/mistral-small-24b-instruct-2501:free",
     "openrouter/auto",
   ].filter((m): m is string => Boolean(m))
    .filter((m, i, a) => a.indexOf(m) === i);
@@ -495,9 +530,9 @@ async function tryGroq(
   searchContext: string,
   errors: string[],
 ): Promise<string | null> {
-  const apiKey = Deno.env.get("GROQ_API_KEY")?.trim();
+  const apiKey = (Deno.env.get("GROQ_API_KEY") || Deno.env.get("GROQ_APT_KEY"))?.trim();
   if (!apiKey) {
-    errors.push("GROQ_API_KEY secret missing on Supabase");
+    errors.push("GROQ_API_KEY (or GROQ_APT_KEY) secret missing on Supabase");
     return null;
   }
 

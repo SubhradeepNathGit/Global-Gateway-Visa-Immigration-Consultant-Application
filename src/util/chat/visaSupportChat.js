@@ -16,6 +16,8 @@ function extractOpenAiMessageContent(data) {
   const msg = data?.choices?.[0]?.message;
   if (!msg) return "";
   if (typeof msg.content === "string" && msg.content.trim()) {
+    const cleaned = msg.content.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+    if (cleaned) return cleaned;
     return msg.content.trim();
   }
   if (Array.isArray(msg.content)) {
@@ -25,8 +27,11 @@ function extractOpenAiMessageContent(data) {
       .trim();
     if (joined) return joined;
   }
-  if (typeof msg.reasoning === "string" && msg.reasoning.trim()) {
-    return msg.reasoning.trim();
+  const reasoning = msg.reasoning || msg.reasoning_content;
+  if (typeof reasoning === "string" && reasoning.trim()) {
+    const cleaned = reasoning.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+    if (cleaned) return cleaned;
+    return reasoning.trim();
   }
   return "";
 }
@@ -35,9 +40,37 @@ function validReply(reply) {
   return typeof reply === "string" && reply.trim().length > 0;
 }
 
+/** Merges consecutive messages of the same role and guarantees clean alternating multi-turn chat */
+function prepareChatMessages(systemPrompt, messages) {
+  const prepared = [];
+  if (typeof systemPrompt === "string" && systemPrompt.trim()) {
+    prepared.push({ role: "system", content: systemPrompt.trim() });
+  }
+
+  for (const m of messages) {
+    const role = m.role === "assistant" ? "assistant" : "user";
+    const content = String(m.content ?? "").trim();
+    if (!content) continue;
+
+    const last = prepared[prepared.length - 1];
+    if (last && last.role === role) {
+      last.content += "\n\n" + content;
+    } else {
+      prepared.push({ role, content });
+    }
+  }
+
+  const firstNonSystem = prepared.findIndex((p) => p.role !== "system");
+  if (firstNonSystem !== -1 && prepared[firstNonSystem].role === "assistant") {
+    prepared.splice(firstNonSystem, 1);
+  }
+
+  return prepared;
+}
+
 /**
  * PRIMARY: Direct OpenRouter call from the browser.
- * Retries each model up to 3 times with exponential back-off + jitter.
+ * Retries each model up to 2 times with exponential back-off + jitter.
  * Detects 429 rate limits and skips exhausted models early.
  */
 async function callDirectOpenRouter(apiKey, messages) {
@@ -46,22 +79,17 @@ async function callDirectOpenRouter(apiKey, messages) {
     configured,
     "google/gemini-2.0-flash-exp:free",
     "meta-llama/llama-3.3-70b-instruct:free",
+    "meta-llama/llama-3.1-8b-instruct:free",
     "deepseek/deepseek-r1:free",
     "deepseek/deepseek-chat:free",
     "qwen/qwen-2.5-coder-32b-instruct:free",
-    "meta-llama/llama-3.1-8b-instruct:free",
+    "mistralai/mistral-small-24b-instruct-2501:free",
     "openrouter/auto",
   ]
     .filter(Boolean)
     .filter((m, i, a) => a.indexOf(m) === i);
 
-  const chatMessages = [
-    { role: "system", content: buildWebsiteKnowledgePrompt() },
-    ...messages.map((m) => ({
-      role: m.role === "assistant" ? "assistant" : "user",
-      content: m.content,
-    })),
-  ];
+  const chatMessages = prepareChatMessages(buildWebsiteKnowledgePrompt(), messages);
 
   const errors = [];
   for (const model of models) {
@@ -169,10 +197,22 @@ async function invokeSupabaseEdge(messages) {
 async function callDirectGemini(apiKey, messages) {
   const configured = import.meta.env.VITE_GEMINI_MODEL?.trim();
   const models = [configured, "gemini-2.5-flash", "gemini-1.5-flash"].filter(Boolean);
-  const contents = messages.map((m) => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
-  }));
+  const contents = [];
+  for (const m of messages) {
+    const role = m.role === "assistant" ? "model" : "user";
+    const text = String(m.content ?? "").trim();
+    if (!text) continue;
+    const last = contents[contents.length - 1];
+    if (last && last.role === role) {
+      last.parts[0].text += "\n\n" + text;
+    } else {
+      contents.push({ role, parts: [{ text }] });
+    }
+  }
+  while (contents.length > 0 && contents[0].role === "model") {
+    contents.shift();
+  }
+
   const systemInstruction = { parts: [{ text: buildWebsiteKnowledgePrompt() }] };
 
   let lastErr = "";
@@ -210,13 +250,7 @@ async function callDirectGemini(apiKey, messages) {
 async function callDirectGroq(apiKey, messages) {
   const configured = import.meta.env.VITE_GROQ_MODEL?.trim();
   const models = [configured, "llama-3.3-70b-versatile", "llama-3.1-8b-instant"].filter(Boolean);
-  const chatMessages = [
-    { role: "system", content: buildWebsiteKnowledgePrompt() },
-    ...messages.map((m) => ({
-      role: m.role === "assistant" ? "assistant" : "user",
-      content: m.content,
-    })),
-  ];
+  const chatMessages = prepareChatMessages(buildWebsiteKnowledgePrompt(), messages);
 
   let lastErr = "";
   for (const model of models) {

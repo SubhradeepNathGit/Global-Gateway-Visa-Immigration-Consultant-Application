@@ -39,6 +39,77 @@ function corsHeaders() {
   };
 }
 
+/** Merges consecutive messages of the same role and guarantees clean alternating multi-turn chat */
+function prepareChatMessages(systemPrompt, messages) {
+  const prepared = [];
+  if (typeof systemPrompt === 'string' && systemPrompt.trim()) {
+    prepared.push({ role: 'system', content: systemPrompt.trim() });
+  }
+
+  for (const m of messages) {
+    const role = m.role === 'assistant' ? 'assistant' : 'user';
+    const content = String(m.content ?? '').trim();
+    if (!content) continue;
+
+    const last = prepared[prepared.length - 1];
+    if (last && last.role === role) {
+      last.content += '\n\n' + content;
+    } else {
+      prepared.push({ role, content });
+    }
+  }
+
+  const firstNonSystem = prepared.findIndex((p) => p.role !== 'system');
+  if (firstNonSystem !== -1 && prepared[firstNonSystem].role === 'assistant') {
+    prepared.splice(firstNonSystem, 1);
+  }
+
+  return prepared;
+}
+
+function extractOpenAiContent(data) {
+  const msg = data?.choices?.[0]?.message;
+  if (!msg) return '';
+  if (typeof msg.content === 'string' && msg.content.trim()) {
+    const cleaned = msg.content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    if (cleaned) return cleaned;
+    return msg.content.trim();
+  }
+  if (Array.isArray(msg.content)) {
+    const joined = msg.content
+      .map((part) => (typeof part?.text === 'string' ? part.text : ''))
+      .join('\n')
+      .trim();
+    if (joined) return joined;
+  }
+  const reasoning = msg.reasoning || msg.reasoning_content;
+  if (typeof reasoning === 'string' && reasoning.trim()) {
+    const cleaned = reasoning.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    if (cleaned) return cleaned;
+    return reasoning.trim();
+  }
+  return '';
+}
+
+function toGeminiContents(messages) {
+  const contents = [];
+  for (const m of messages) {
+    const role = m.role === 'assistant' ? 'model' : 'user';
+    const text = String(m.content ?? '').trim();
+    if (!text) continue;
+    const last = contents[contents.length - 1];
+    if (last && last.role === role) {
+      last.parts[0].text += '\n\n' + text;
+    } else {
+      contents.push({ role, parts: [{ text }] });
+    }
+  }
+  while (contents.length > 0 && contents[0].role === 'model') {
+    contents.shift();
+  }
+  return contents;
+}
+
 async function callOpenRouter(messages) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not set in Vercel env vars');
@@ -48,20 +119,15 @@ async function callOpenRouter(messages) {
     configured,
     'google/gemini-2.0-flash-exp:free',
     'meta-llama/llama-3.3-70b-instruct:free',
+    'meta-llama/llama-3.1-8b-instruct:free',
     'deepseek/deepseek-r1:free',
     'deepseek/deepseek-chat:free',
     'qwen/qwen-2.5-coder-32b-instruct:free',
-    'meta-llama/llama-3.1-8b-instruct:free',
+    'mistralai/mistral-small-24b-instruct-2501:free',
     'openrouter/auto',
   ].filter(Boolean);
 
-  const chatMessages = [
-    { role: 'system', content: buildSystemPrompt() },
-    ...messages.map((m) => ({
-      role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: m.content,
-    })),
-  ];
+  const chatMessages = prepareChatMessages(buildSystemPrompt(), messages);
 
   let lastErr = '';
   for (const model of models) {
@@ -94,9 +160,9 @@ async function callOpenRouter(messages) {
       }
 
       const data = await res.json();
-      const text = data?.choices?.[0]?.message?.content;
-      if (text && typeof text === 'string' && text.trim()) {
-        return { reply: text.trim(), engine: 'openrouter' };
+      const text = extractOpenAiContent(data);
+      if (text) {
+        return { reply: text, engine: 'openrouter' };
       }
     } catch (e) {
       lastErr = e?.message || String(e);
@@ -114,10 +180,7 @@ async function callGemini(messages) {
 
   const configured = process.env.GEMINI_MODEL;
   const models = [configured, 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'].filter(Boolean);
-  const contents = messages.map((m) => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }],
-  }));
+  const contents = toGeminiContents(messages);
 
   let lastErr = '';
   for (const model of models) {
@@ -165,13 +228,7 @@ async function callGroq(messages) {
 
   const configured = process.env.GROQ_MODEL;
   const models = [configured, 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant'].filter(Boolean);
-  const chatMessages = [
-    { role: 'system', content: buildSystemPrompt() },
-    ...messages.map((m) => ({
-      role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: m.content,
-    })),
-  ];
+  const chatMessages = prepareChatMessages(buildSystemPrompt(), messages);
 
   let lastErr = '';
   for (const model of models) {
@@ -192,9 +249,9 @@ async function callGroq(messages) {
       }
 
       const data = await res.json();
-      const text = data?.choices?.[0]?.message?.content;
-      if (text && typeof text === 'string' && text.trim()) {
-        return { reply: text.trim(), engine: 'groq' };
+      const text = extractOpenAiContent(data);
+      if (text) {
+        return { reply: text, engine: 'groq' };
       }
     } catch (e) {
       lastErr = e?.message || String(e);

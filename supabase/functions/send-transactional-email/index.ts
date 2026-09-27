@@ -225,12 +225,16 @@ function parseFromAddress(from: string) {
  * 100% free: your existing Gmail + Google App Password (no domain, no Resend/Brevo).
  * Limit: ~500 emails/day per Gmail account (Google policy).
  */
+function getEmailFrom(): string | undefined {
+  return Deno.env.get("EMAIL_FROM") || Deno.env.get("EMALI_FROM");
+}
+
 async function sendWithGmail(to: string[], subject: string, html: string) {
   const user = Deno.env.get("GMAIL_USER");
   const pass = Deno.env.get("GMAIL_APP_PASSWORD");
   if (!user || !pass) return null;
 
-  const fromRaw = Deno.env.get("EMAIL_FROM");
+  const fromRaw = getEmailFrom();
   const fromAddress = fromRaw ?? `${BRAND} <${user}>`;
 
   const transport = nodemailer.createTransport({
@@ -256,7 +260,7 @@ async function sendWithGmail(to: string[], subject: string, html: string) {
 /** Optional fallback — Brevo free tier */
 async function sendWithBrevo(to: string[], subject: string, html: string) {
   const apiKey = Deno.env.get("BREVO_API_KEY");
-  const fromRaw = Deno.env.get("EMAIL_FROM");
+  const fromRaw = getEmailFrom();
   if (!apiKey || !fromRaw) return null;
 
   const sender = parseFromAddress(fromRaw);
@@ -287,7 +291,7 @@ async function sendWithBrevo(to: string[], subject: string, html: string) {
 
 async function sendWithResend(to: string[], subject: string, html: string) {
   const apiKey = Deno.env.get("RESEND_API_KEY");
-  const from = Deno.env.get("EMAIL_FROM");
+  const from = getEmailFrom();
   if (!apiKey || !from) return null;
 
   const res = await fetch("https://api.resend.com/emails", {
@@ -314,7 +318,7 @@ async function sendEmail(to: string[], subject: string, html: string) {
 
   const brevoKey = Deno.env.get("BREVO_API_KEY");
   const resendKey = Deno.env.get("RESEND_API_KEY");
-  const from = Deno.env.get("EMAIL_FROM");
+  const from = getEmailFrom();
 
   if (brevoKey && from) {
     const result = await sendWithBrevo(to, subject, html);
