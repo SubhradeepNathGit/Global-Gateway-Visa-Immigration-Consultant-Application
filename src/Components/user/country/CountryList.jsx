@@ -52,12 +52,22 @@ const CountryList = () => {
     const totalPages = Math.ceil(filteredCountries.length / ITEMS_PER_PAGE);
     const currentCountries = filteredCountries.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        }
+    };
+
     const handleNext = () => {
-        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+        if (currentPage < totalPages) handlePageChange(currentPage + 1);
     };
 
     const handlePrev = () => {
-        if (currentPage > 1) setCurrentPage(currentPage - 1);
+        if (currentPage > 1) handlePageChange(currentPage - 1);
     };
 
     // Reset pagination when filters change
@@ -172,7 +182,7 @@ const CountryList = () => {
                         {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
                             <button
                                 key={page}
-                                onClick={() => setCurrentPage(page)}
+                                onClick={() => handlePageChange(page)}
                                 className={`h-10 w-10 rounded-xl transition-all ${
                                     page === currentPage
                                     ? "bg-gray-900 text-white"
