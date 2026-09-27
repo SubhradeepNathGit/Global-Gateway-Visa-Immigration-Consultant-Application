@@ -287,10 +287,14 @@ async function callOpenRouter(
       temperature: 0.4,
       max_tokens: 1100,
     }),
+    signal: AbortSignal.timeout(9000),
   });
 
   if (!res.ok) {
-    throw new Error(`OpenRouter ${res.status}: ${parseApiError(await res.text())}`);
+    const errText = await res.text();
+    const err: any = new Error(`OpenRouter ${res.status}: ${parseApiError(errText)}`);
+    err.status = res.status;
+    throw err;
   }
 
   const data = await res.json();
@@ -326,6 +330,7 @@ async function callGroq(
       temperature: 0.4,
       max_tokens: 1100,
     }),
+    signal: AbortSignal.timeout(9000),
   });
 
   if (!res.ok) {
@@ -374,6 +379,7 @@ async function callGemini(
             maxOutputTokens: 900,
           },
         }),
+        signal: AbortSignal.timeout(9000),
       });
 
       if (!res.ok) {
@@ -414,22 +420,22 @@ async function tryOpenRouter(
 
   const configured = Deno.env.get("OPENROUTER_MODEL")?.trim();
 
-  // openrouter/auto is second — it routes to the best available model (paid or free)
-  // and avoids the per-model rate limits of individual free models.
+  // Active verified free models on OpenRouter + configured model
   const models = [
     configured,
-    "openrouter/auto",
+    "google/gemini-2.0-flash-exp:free",
     "meta-llama/llama-3.3-70b-instruct:free",
-    "google/gemma-2-9b-it:free",
-    "deepseek/deepseek-r1-distill-llama-70b:free",
-    "qwen/qwen-2.5-72b-instruct:free",
-    "mistralai/mistral-7b-instruct:free",
+    "deepseek/deepseek-r1:free",
+    "deepseek/deepseek-chat:free",
+    "qwen/qwen-2.5-coder-32b-instruct:free",
+    "meta-llama/llama-3.1-8b-instruct:free",
+    "openrouter/auto",
   ].filter((m): m is string => Boolean(m))
    .filter((m, i, a) => a.indexOf(m) === i);
 
   for (const model of models) {
     let skipModel = false;
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 2; attempt++) {
       if (skipModel) break;
       try {
         const reply = await callOpenRouter(apiKey, model, messages, searchContext);
@@ -440,23 +446,43 @@ async function tryOpenRouter(
         errors.push(`OpenRouter (${model}) attempt ${attempt + 1}: empty reply`);
       } catch (e: any) {
         const errMsg: string = e?.message || String(e);
-        errors.push(`OpenRouter (${model}) attempt ${attempt + 1}: ${errMsg}`);
-        console.warn(`[visa-support-chat] OpenRouter failed: ${model} attempt ${attempt + 1}:`, errMsg);
+        const status: number = e?.status || (
+          errMsg.includes("401") ? 401 :
+          errMsg.includes("402") ? 402 :
+          errMsg.includes("404") ? 404 :
+          errMsg.includes("429") ? 429 : 0
+        );
+        errors.push(`OpenRouter (${model}): ${errMsg}`);
+        console.warn(`[visa-support-chat] OpenRouter failed: ${model} (status ${status}):`, errMsg);
 
-        // Detect rate-limit (429) — skip this model entirely on ANY attempt, no point retrying
-        const isRateLimit = errMsg.includes("429") ||
-          errMsg.toLowerCase().includes("rate limit") ||
-          errMsg.toLowerCase().includes("too many");
-        if (isRateLimit) {
-          console.warn(`[visa-support-chat] Rate-limited on ${model}, skipping to next model`);
+        // 401 Unauthorized / Invalid Key — all models will fail with this key, stop OpenRouter entirely!
+        if (status === 401 || errMsg.toLowerCase().includes("invalid api key") || errMsg.toLowerCase().includes("unauthorized")) {
+          errors.push("OpenRouter API key is invalid or unauthorized (401)");
+          return null; // Skip to Groq immediately!
+        }
+
+        // 402 Insufficient credits — skip this model immediately, do not retry!
+        if (status === 402 || errMsg.toLowerCase().includes("credits") || errMsg.toLowerCase().includes("payment required")) {
           skipModel = true;
           break;
         }
 
-        if (attempt < 2) {
-          // Exponential backoff with jitter: 400–700ms → 1000–1300ms
-          const jitter = Math.floor(Math.random() * 300);
-          await sleep(400 * (attempt + 1) + jitter);
+        // 404 Model not found or deprecated — skip this model immediately, do not retry!
+        if (status === 404 || errMsg.toLowerCase().includes("not found")) {
+          skipModel = true;
+          break;
+        }
+
+        // 429 Rate limited — skip this model immediately, do not retry!
+        const isRateLimit = status === 429 || errMsg.toLowerCase().includes("rate limit") || errMsg.toLowerCase().includes("too many");
+        if (isRateLimit) {
+          skipModel = true;
+          break;
+        }
+
+        // Only retry once on 5xx or network errors with brief 300ms backoff
+        if (attempt < 1) {
+          await sleep(300);
         }
       }
     }

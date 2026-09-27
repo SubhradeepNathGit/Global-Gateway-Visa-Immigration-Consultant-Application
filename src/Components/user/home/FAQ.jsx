@@ -12,22 +12,26 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import DescriptionIcon from '@mui/icons-material/Description';
 
-const faqs = [
+const defaultFaqs = [
   {
-    question: "How to get free immigration?",
-    answer: "Sed rhoncus facilisis purus, at accumsan purus sagittis vitae. Nullam acelit at eros imperdiet. Pellentesque sit."
+    question: "How do I start my visa application process with Global Gateway?",
+    answer: "You can select your destination country from our Countries page, check eligibility requirements, and apply directly online or book a consultation with our licensed visa experts."
   },
   {
-    question: "Which country is good for residents?",
-    answer: "Canada, Australia, and New Zealand are popular destinations for permanent residency due to their immigration-friendly policies, quality of life, and opportunities for skilled workers."
+    question: "Which country is best for permanent residency and work permits?",
+    answer: "Canada, Australia, Germany, and New Zealand offer high permanent residency opportunities for skilled workers, students, and professionals through point-based immigration systems."
   },
   {
-    question: "Canada study visa requirements?",
-    answer: "To obtain a Canadian study visa, you need an acceptance letter from a designated learning institution, proof of financial support, no criminal record, and may need to complete a medical exam."
+    question: "What documents are required for student and study visas?",
+    answer: "Key requirements include an Official Admission Letter from a certified institution, proof of financial funds, valid passport, language proficiency scores (IELTS/TOEFL), and health clearance."
+  },
+  {
+    question: "How long does the visa application approval take?",
+    answer: "Processing times vary depending on the country and visa type (usually between 2 to 8 weeks). You can track your real-time application status directly in your User Dashboard."
   }
 ];
 
-const FAQSection = () => {
+const FAQSection = ({ faqs = defaultFaqs }) => {
   const [expanded, setExpanded] = useState('panel0');
 
   const handleChange = (panel) => (event, isExpanded) => {
@@ -35,41 +39,33 @@ const FAQSection = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: '#f8f9fa', py: 6 }}>
+    <Box sx={{ bgcolor: '#ffffff', py: 6 }}>
       <Container maxWidth="lg">
-        {/* Flex layout for left and right side */}
         <Box
           sx={{
             display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            gap: 4,
+            flexDirection: { xs: 'column', lg: 'row' },
+            gap: { xs: 4, md: 5, lg: 6 },
             alignItems: 'stretch'
           }}
         >
-          {/* Left Side */}
-          <Box flex={1} minWidth={0}>
-            <Typography
-              variant="body2"
-              sx={{
-                color: '#ef4444',
-                fontWeight: 600,
-                fontSize: '14px',
-                mb: 2,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
-              }}
-            >
-              / OUR FAQS
-            </Typography>
-
+          {/* Left Side - FAQ */}
+          <Box
+            sx={{
+              flex: { xs: '1 1 auto', lg: '0 0 52%' },
+              minWidth: 0,
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
             <Typography
               variant="h2"
               sx={{
                 fontWeight: 'bold',
-                fontSize: { xs: '2rem', lg: '2.5rem' },
+                fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem', lg: '2.5rem' },
                 lineHeight: 1.2,
                 color: '#2c3e50',
-                mb: 3
+                mb: { xs: 2, md: 3 }
               }}
             >
               Frequently Asked Questions
@@ -78,12 +74,12 @@ const FAQSection = () => {
             <Typography
               sx={{
                 color: '#6c757d',
-                fontSize: '1rem',
+                fontSize: { xs: '0.9rem', md: '1rem' },
                 lineHeight: 1.6,
-                mb: 4
+                mb: { xs: 3, md: 4 }
               }}
             >
-              Sed rhoncus facilisis purus, at accumsan purus sagittis vitae. Nullam acelit at eros.
+              Explore answers to frequently asked questions regarding visa applications, documentation, consulting, and processing times.
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -94,8 +90,9 @@ const FAQSection = () => {
                   onChange={handleChange(`panel${index}`)}
                   sx={{
                     boxShadow: 'none',
-                    bgcolor: expanded === `panel${index}` ? 'white' : '#f1f3f4',
+                    bgcolor: expanded === `panel${index}` ? 'white' : '#f8f9fa',
                     borderRadius: '8px !important',
+                    border: '1px solid #e9ecef',
                     '&:before': { display: 'none' },
                     '&.Mui-expanded': {
                       margin: '0 0 16px 0',
@@ -105,15 +102,15 @@ const FAQSection = () => {
                   <AccordionSummary
                     expandIcon={
                       expanded === `panel${index}` ? (
-                        <ExpandMoreIcon sx={{ color: '#ef4444', fontSize: 28 }} />
+                        <ExpandMoreIcon sx={{ color: '#ef4444', fontSize: { xs: 24, md: 28 } }} />
                       ) : (
-                        <KeyboardArrowRightIcon sx={{ color: '#6c757d', fontSize: 28 }} />
+                        <KeyboardArrowRightIcon sx={{ color: '#6c757d', fontSize: { xs: 24, md: 28 } }} />
                       )
                     }
                     sx={{
-                      py: 2,
-                      px: 3,
-                      minHeight: '70px',
+                      py: { xs: 1.5, md: 2 },
+                      px: { xs: 2, md: 3 },
+                      minHeight: { xs: '60px', md: '70px' },
                       '& .MuiAccordionSummary-content': {
                         alignItems: 'center',
                       }
@@ -122,18 +119,19 @@ const FAQSection = () => {
                     <Typography
                       sx={{
                         fontWeight: 600,
-                        fontSize: '1.1rem',
-                        color: '#2c3e50'
+                        fontSize: { xs: '1rem', md: '1.1rem' },
+                        color: '#2c3e50',
+                        pr: 1
                       }}
                     >
                       {faq.question}
                     </Typography>
                   </AccordionSummary>
-                  <AccordionDetails sx={{ px: 3, pb: 3 }}>
+                  <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: { xs: 2, md: 3 } }}>
                     <Typography
                       sx={{
                         color: '#6c757d',
-                        fontSize: '0.95rem',
+                        fontSize: { xs: '0.9rem', md: '0.95rem' },
                         lineHeight: 1.6
                       }}
                     >
@@ -145,40 +143,49 @@ const FAQSection = () => {
             </Box>
           </Box>
 
-          {/* Right Side */}
-          <Box flex={1} minWidth={0} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* Red Banner */}
+          {/* Right Side - Cards */}
+          <Box
+            sx={{
+              flex: { xs: '1 1 auto', lg: '0 0 44%' },
+              minWidth: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: { xs: 3, md: 4 }
+            }}
+          >
+            {/* Blue Banner */}
             <Paper
               elevation={0}
               sx={{
-                bgcolor: '#ef4444',
+                bgcolor: 'rgba(50, 132, 209, 1)',
                 borderRadius: '12px',
-                p: 4,
+                p: { xs: 3, md: 4 },
                 color: 'white',
                 position: 'relative',
                 overflow: 'hidden',
-                minHeight: '200px',
+                minHeight: { xs: '150px', md: '170px' },
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                flexShrink: 0
               }}
             >
               <Box
                 sx={{
                   position: 'absolute',
-                  top: 20,
-                  left: 30,
+                  top: { xs: 15, md: 20 },
+                  left: { xs: 20, md: 30 },
                   opacity: 0.3
                 }}
               >
-                <DescriptionIcon sx={{ fontSize: '3rem' }} />
+                <DescriptionIcon sx={{ fontSize: { xs: '2.5rem', md: '3rem' } }} />
               </Box>
 
               <Typography
                 variant="h4"
                 sx={{
                   fontWeight: 'bold',
-                  fontSize: { xs: '1.5rem', lg: '1.8rem' },
+                  fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem' },
                   lineHeight: 1.3,
                   position: 'relative',
                   zIndex: 1
@@ -188,13 +195,16 @@ const FAQSection = () => {
               </Typography>
             </Paper>
 
-            {/* Image with Text Overlay */}
+            {/* Image with Text Overlay stretched to match left side */}
             <Box
               sx={{
                 position: 'relative',
                 borderRadius: '12px',
                 overflow: 'hidden',
-                height: '300px'
+                flex: 1,
+                minHeight: { xs: '260px', md: '320px' },
+                display: 'flex',
+                flexDirection: 'column'
               }}
             >
               <Box
@@ -204,6 +214,7 @@ const FAQSection = () => {
                 sx={{
                   width: '100%',
                   height: '100%',
+                  flex: 1,
                   objectFit: 'cover'
                 }}
               />
@@ -215,9 +226,16 @@ const FAQSection = () => {
                   bottom: 0,
                   left: 0,
                   right: 0,
+                  width: '100%',
                   bgcolor: 'rgba(255, 255, 255, 0.95)',
-                  backdropFilter: 'blur(10px)',
-                  p: 3
+                  backdropFilter: 'none',
+                  WebkitBackdropFilter: 'none',
+                  borderRadius: 0,
+                  p: { xs: 2.5, md: 3 },
+                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               >
                 <Typography
@@ -225,10 +243,13 @@ const FAQSection = () => {
                   sx={{
                     fontWeight: 'bold',
                     color: '#2c3e50',
-                    fontSize: '1.4rem'
+                    fontSize: { xs: '1.05rem', md: '1.25rem', lg: '1.35rem' },
+                    lineHeight: 1.3,
+                    textAlign: 'center',
+                    width: '100%'
                   }}
                 >
-                 Global Gateway- Visa Consultant  Agency
+                  Global Gateway - Visa Consultant Agency
                 </Typography>
               </Paper>
             </Box>

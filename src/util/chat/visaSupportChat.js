@@ -42,15 +42,15 @@ function validReply(reply) {
  */
 async function callDirectOpenRouter(apiKey, messages) {
   const configured = import.meta.env.VITE_OPENROUTER_MODEL?.trim();
-  // openrouter/auto as second slot so the router picks best available (paid or free)
   const models = [
     configured,
-    "openrouter/auto",
+    "google/gemini-2.0-flash-exp:free",
     "meta-llama/llama-3.3-70b-instruct:free",
-    "google/gemma-2-9b-it:free",
-    "qwen/qwen-2.5-72b-instruct:free",
-    "mistralai/mistral-7b-instruct:free",
-    "deepseek/deepseek-r1-distill-llama-70b:free",
+    "deepseek/deepseek-r1:free",
+    "deepseek/deepseek-chat:free",
+    "qwen/qwen-2.5-coder-32b-instruct:free",
+    "meta-llama/llama-3.1-8b-instruct:free",
+    "openrouter/auto",
   ]
     .filter(Boolean)
     .filter((m, i, a) => a.indexOf(m) === i);
@@ -65,7 +65,9 @@ async function callDirectOpenRouter(apiKey, messages) {
 
   const errors = [];
   for (const model of models) {
-    for (let attempt = 0; attempt < 3; attempt++) {
+    let skipModel = false;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (skipModel) break;
       try {
         const res = await axios.post(
           "https://openrouter.ai/api/v1/chat/completions",
@@ -73,7 +75,7 @@ async function callDirectOpenRouter(apiKey, messages) {
             model,
             messages: chatMessages,
             temperature: 0.4,
-            max_tokens: 1200,
+            max_tokens: 1100,
           },
           {
             headers: {
@@ -82,7 +84,7 @@ async function callDirectOpenRouter(apiKey, messages) {
               "HTTP-Referer": "https://global-gateway-pro.vercel.app",
               "X-Title": "Global Gateway Visa Support",
             },
-            timeout: API_CALL_TIMEOUT_MS,
+            timeout: 8000,
           },
         );
 
@@ -94,21 +96,28 @@ async function callDirectOpenRouter(apiKey, messages) {
         errors.push(`OpenRouter (${model}) attempt ${attempt + 1}: empty content`);
       } catch (e) {
         const msg = e?.response?.data?.error?.message || e?.message || String(e);
-        const status = e?.response?.status;
-        errors.push(`OpenRouter (${model}) attempt ${attempt + 1}: ${msg}`);
+        const status = e?.response?.status || (
+          msg.includes("401") ? 401 :
+          msg.includes("402") ? 402 :
+          msg.includes("404") ? 404 :
+          msg.includes("429") ? 429 : 0
+        );
+        errors.push(`OpenRouter (${model}): ${msg}`);
+        console.warn(`[VisaChat] OpenRouter failed: ${model} (status ${status}):`, msg);
 
-        // 429 rate limit — skip remaining retries on this model immediately
-        const isRateLimit = status === 429 || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("too many");
-        if (isRateLimit) {
-          console.warn(`[VisaChat] OpenRouter rate-limited: ${model}, skipping model`);
-          break; // jump to next model
+        // 401 Unauthorized — key is invalid, skip OpenRouter entirely!
+        if (status === 401 || msg.toLowerCase().includes("invalid api key") || msg.toLowerCase().includes("unauthorized")) {
+          throw new Error("OpenRouter API key invalid or unauthorized (401)");
         }
 
-        if (attempt < 2) {
-          // Exponential backoff with jitter
-          const base = 400;
-          const jitter = Math.floor(Math.random() * 300);
-          await sleep(base * (attempt + 1) + jitter);
+        // 402, 404, 429 — skip model immediately
+        if (status === 402 || status === 404 || status === 429 || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("credits") || msg.toLowerCase().includes("not found")) {
+          skipModel = true;
+          break;
+        }
+
+        if (attempt < 1) {
+          await sleep(300);
         }
       }
     }

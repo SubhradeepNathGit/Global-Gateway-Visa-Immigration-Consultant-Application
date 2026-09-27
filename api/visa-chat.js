@@ -46,12 +46,13 @@ async function callOpenRouter(messages) {
   const configured = process.env.OPENROUTER_MODEL;
   const models = [
     configured,
-    'openrouter/auto',
+    'google/gemini-2.0-flash-exp:free',
     'meta-llama/llama-3.3-70b-instruct:free',
-    'google/gemma-2-9b-it:free',
-    'deepseek/deepseek-r1-distill-llama-70b:free',
-    'qwen/qwen-2.5-72b-instruct:free',
-    'mistralai/mistral-7b-instruct:free',
+    'deepseek/deepseek-r1:free',
+    'deepseek/deepseek-chat:free',
+    'qwen/qwen-2.5-coder-32b-instruct:free',
+    'meta-llama/llama-3.1-8b-instruct:free',
+    'openrouter/auto',
   ].filter(Boolean);
 
   const chatMessages = [
@@ -76,14 +77,19 @@ async function callOpenRouter(messages) {
         body: JSON.stringify({
           model,
           messages: chatMessages,
-          temperature: 0.55,
+          temperature: 0.4,
           max_tokens: 1100,
         }),
+        signal: AbortSignal.timeout(8000),
       });
 
       if (!res.ok) {
         const errText = await res.text();
-        lastErr = `OpenRouter (${model}) ${res.status}: ${errText.slice(0, 150)}`;
+        const status = res.status;
+        lastErr = `OpenRouter (${model}) ${status}: ${errText.slice(0, 150)}`;
+        if (status === 401) {
+          throw new Error('OpenRouter API key invalid or unauthorized (401)');
+        }
         continue;
       }
 
@@ -94,6 +100,9 @@ async function callOpenRouter(messages) {
       }
     } catch (e) {
       lastErr = e?.message || String(e);
+      if (lastErr.includes('401') || lastErr.includes('unauthorized')) {
+        throw new Error(lastErr);
+      }
     }
   }
   throw new Error(lastErr || 'Empty OpenRouter response');

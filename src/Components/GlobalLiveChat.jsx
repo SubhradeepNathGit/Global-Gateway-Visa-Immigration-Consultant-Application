@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, History, Sparkles, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ensureChatReply } from '../util/chat/ensureChatReply';
-import { getSmartLocalReply, isPureGreetingOnly, isWeakGenericReply } from '../util/chat/smartChatReply';
+import { getSmartLocalReply } from '../util/chat/smartChatReply';
 import { sendVisaSupportChat } from '../util/chat/visaSupportChat';
 import { GATEWAY_AI_ICON } from './gatewayAiIconData';
 
@@ -72,41 +72,24 @@ const GlobalLiveChat = () => {
 
   /**
    * Smart reply chain:
-   * 1. Pure greetings / thanks / bye → instant local (no API)
-   * 2. Try Supabase edge function (Gemini/Groq AI)
-   * 3. If API reply is weak/generic → replace with smart local
-   * 4. If API fails entirely → smart local fallback
+   * 1. Try AI first (OpenRouter primary → Groq → Gemini)
+   * 2. Local fallback ONLY if all AI providers are completely unavailable
    */
   const requestAssistantReply = useCallback(async (historyMessages) => {
     const apiMessages = toApiMessages(historyMessages);
-    const lastMsg = apiMessages[apiMessages.length - 1]?.content ?? '';
 
-    // 1) Instant local for trivial messages (greetings, thanks, bye)
-    if (isPureGreetingOnly(lastMsg)) {
-      return { text: ensureChatReply(getSmartLocalReply(apiMessages)), source: 'local' };
-    }
-
-    // 2) Try API first for substantive questions
+    // 1) Try AI first for all user inquiries
     try {
       const api = await sendVisaSupportChat(apiMessages);
       if (api.ok && typeof api.reply === 'string' && api.reply.trim()) {
         const engineSource = api.engine || 'openrouter';
-        const replyText = ensureChatReply(api.reply);
-
-        if (isWeakGenericReply(replyText)) {
-          const smartLocal = ensureChatReply(getSmartLocalReply(apiMessages));
-          if (!isWeakGenericReply(smartLocal)) {
-            return { text: smartLocal, source: engineSource };
-          }
-        }
-
-        return { text: replyText, source: engineSource };
+        return { text: ensureChatReply(api.reply), source: engineSource };
       }
-    } catch {
-      // API failed — fall through to local
+    } catch (err) {
+      console.warn('[GlobalLiveChat] AI API call failed:', err);
     }
 
-    // 4) Smart local fallback
+    // 2) Smart local fallback ONLY when all AI APIs completely fail
     return {
       text: ensureChatReply(getSmartLocalReply(apiMessages)),
       source: 'local',
