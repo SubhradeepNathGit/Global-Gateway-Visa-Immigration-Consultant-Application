@@ -1,20 +1,17 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { motion } from "framer-motion";
 import { Link } from 'react-router-dom';
 import { useFullCountryDetails } from '../../../tanstack/query/getCountryDetails';
 import { encodeBase64Url } from '../../../util/encodeDecode/base64';
 
 const CountryCard = ({ countryId, countryName, countryDescription, countryData }) => {
-    const [imageLoaded, setImageLoaded] = useState(false);
-    const [flagLoaded, setFlagLoaded] = useState(false);
-
-    // Only fetch details if not already provided in countryData to prevent 24 redundant network requests on 1st load
+    // Only fetch details if not already provided in countryData to prevent redundant network requests
     const hasSufficientData = Boolean(
         countryData?.country_details?.flag_url && (countryData?.image_url || countryData?.country_details?.banner_url)
     );
     const { data } = useFullCountryDetails(hasSufficientData ? null : countryId);
 
-    // Prioritize data from props (pre-fetched in CountryList) for instant rendering
+    // Prioritize pre-fetched data for instant rendering
     const countryFlag = countryData?.country_details?.flag_url || data?.details?.flag_url || "/demo/demo-flag.png";
     const countryImage = countryData?.image_url || countryData?.country_details?.banner_url || data?.details?.banner_url || data?.image_url || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1000";
 
@@ -33,80 +30,111 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
         return continentsData;
     })();
 
-    return (
-        <div className="w-full sm:w-1/2 lg:w-1/4 p-3 flex">
-            <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                whileHover={{ y: -6 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="w-full relative group"
-            >
-                <div className="h-full bg-white rounded-[1.4rem] border border-gray-100 overflow-hidden flex flex-col transition-all duration-300 hover:border-[#FF5252]/25 hover:shadow-xl hover:shadow-gray-200/60">
-                    {/* Country Image Header - Taller & Cinematic */}
-                    <div className="relative h-52 overflow-hidden bg-gray-100">
-                        {/* Shimmer placeholder while image loads */}
-                        <div
-                            className={`absolute inset-0 bg-gray-200 animate-pulse transition-opacity duration-500 ${
-                                imageLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
-                            }`}
-                        />
+    const tagline = countryDescription || "Discover opportunities & begin your journey";
+    const countryLink = `/country/${encodeBase64Url(String(countryId))}`;
 
+    return (
+        <div className="w-full sm:w-1/2 lg:w-1/3 p-3 sm:p-3.5 flex">
+            <motion.div
+                whileHover={{ y: -5 }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full relative group cursor-pointer"
+            >
+                {/* ═══ CARD CONTAINER: Height (320px-350px), crisp rounded-xl ═══ */}
+                <div className="country-card relative h-[320px] sm:h-[350px] w-full rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-gray-900">
+                    
+                    {/* ═══ BACKGROUND IMAGE: Instant solid render (NO pulsing, NO heartbeat animation) ═══ */}
+                    <div className="absolute inset-0 overflow-hidden bg-gray-900">
                         <img
                             src={countryImage}
                             alt={countryName}
                             loading="eager"
                             decoding="async"
-                            onLoad={() => setImageLoaded(true)}
-                            className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${
-                                imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-102'
-                            }`}
+                            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/70 via-gray-900/15 to-transparent pointer-events-none" />
 
-                        {/* Corner Flag Badge - Circular & Sleek */}
-                        <div className="absolute top-3.5 right-3.5 h-10 w-10 p-0.5 bg-white/95 backdrop-blur-sm rounded-full shadow-md border border-white/50 overflow-hidden z-10 transition-transform duration-300 group-hover:scale-105">
+                        {/* Soft subtle bottom gradient specifically to make white embossed text pop */}
+                        <div className="absolute bottom-0 left-0 right-0 h-52 bg-gradient-to-t from-black/75 via-black/35 to-transparent pointer-events-none" />
+                    </div>
+
+                    {/* ── Top Bar: Continent Tag + Circular Flag Badge ── */}
+                    <div className="relative z-20 flex items-center justify-between p-4 pointer-events-none">
+                        {/* Continent Tag */}
+                        <span className="px-3 py-1 rounded-full bg-black/40 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-[0.14em] border border-white/20 shadow-sm">
+                            {continents}
+                        </span>
+
+                        {/* Circular Flag Badge */}
+                        <div className="h-14 w-14 p-[3px] bg-white/95 backdrop-blur-sm rounded-full shadow-lg border border-white/60 overflow-hidden transition-transform duration-300 group-hover:scale-110">
                             <img
                                 src={countryFlag}
                                 alt="flag"
                                 loading="eager"
                                 decoding="async"
-                                onLoad={() => setFlagLoaded(true)}
-                                className={`w-full h-full object-cover rounded-full transition-opacity duration-300 ${
-                                    flagLoaded ? 'opacity-100' : 'opacity-80'
-                                }`}
+                                className="w-full h-full object-cover rounded-full"
                             />
-                        </div>
-
-                        {/* Continent Tag */}
-                        <div className="absolute bottom-3 left-3 z-10">
-                            <span className="px-2.5 py-1 rounded-lg bg-black/45 backdrop-blur-md text-[9.5px] font-bold text-white uppercase tracking-wider border border-white/15">
-                                {continents}
-                            </span>
                         </div>
                     </div>
 
-                    {/* Content - Compact & Refined */}
-                    <div className="p-4 flex-grow flex flex-col justify-between">
-                        <div>
-                            <h2 className="text-[17px] font-bold text-gray-900 group-hover:text-[#FF5252] transition-colors leading-tight mb-1 truncate" title={countryName}>
+                    {/* ═══ WHITE EMBOSSED TEXT: High readability over any landscape/city image ═══ */}
+                    <div className="absolute inset-0 z-10 flex flex-col justify-end p-5 sm:p-6 pb-[74px] sm:pb-[78px] pointer-events-none">
+                        <div className="relative z-10 transition-all duration-300 ease-out opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0">
+                            {/* Embossed Country Name */}
+                            <h2
+                                className="text-2xl sm:text-3xl font-extrabold text-white leading-tight mb-1.5"
+                                style={{
+                                    fontFamily: "'Outfit', sans-serif",
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.95), 0 4px 12px rgba(0,0,0,0.8), 0 1px 2px #000'
+                                }}
+                            >
                                 {countryName}
                             </h2>
 
-                            <p className="text-gray-500 text-[11.5px] leading-relaxed line-clamp-2 font-medium mb-3.5">
-                                {countryDescription || "Explore pathways, career opportunities, and settlement options in this beautiful nation."}
+                            {/* Embossed Tagline */}
+                            <p
+                                className="text-white/95 text-xs sm:text-sm font-semibold leading-relaxed line-clamp-2"
+                                style={{
+                                    fontFamily: "'Inter', sans-serif",
+                                    textShadow: '0 1px 3px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 1px 1px #000'
+                                }}
+                            >
+                                {tagline}
                             </p>
                         </div>
-
-                        <div>
-                            <Link
-                                to={`/country/${encodeBase64Url(String(countryId))}`}
-                                className="flex items-center justify-center w-full py-2.5 px-4 bg-black/80 hover:bg-[#FF5252] text-white text-xs font-bold rounded-xl transition-all duration-300 active:scale-95 shadow-sm group-hover:shadow-md"
-                            >
-                                Visit Now
-                            </Link>
-                        </div>
                     </div>
+
+                    {/* ═══ TRANSPARENT SQUARE-ISH BUTTON (White embossed text + glass finish) ═══ */}
+                    <div className="absolute bottom-3.5 sm:bottom-4 left-3.5 sm:left-4 right-3.5 sm:right-4 z-20">
+                        <Link
+                            to={countryLink}
+                            className="w-full py-2.5 sm:py-3 px-4 rounded-lg
+                                       bg-white/20 hover:bg-white/35 active:scale-[0.98]
+                                       backdrop-blur-md border border-white/50 hover:border-white/80
+                                       shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.4)]
+                                       flex items-center justify-center gap-2
+                                       text-white font-bold text-xs sm:text-sm tracking-wide
+                                       transition-all duration-300 group/btn"
+                            style={{
+                                fontFamily: "'Outfit', sans-serif",
+                                textShadow: '0 1px 3px rgba(0,0,0,0.9)'
+                            }}
+                        >
+                            <span>Visit {countryName}</span>
+                            <svg
+                                className="w-4 h-4 text-white group-hover/btn:translate-x-1.5 transition-all duration-300"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                            </svg>
+                        </Link>
+                    </div>
+
+                    {/* Full-card clickable area to navigate */}
+                    <Link
+                        to={countryLink}
+                        aria-label={`View ${countryName}`}
+                        className="absolute inset-0 z-10"
+                    />
                 </div>
             </motion.div>
         </div>

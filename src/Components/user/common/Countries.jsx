@@ -294,7 +294,7 @@ const CountrySupportSection = () => {
                   className="w-[calc(100vw-32px)] sm:w-[calc((100vw-72px)/2)] lg:w-[calc((100vw-96px)/3)] max-w-[560px] h-[375px] md:h-[395px] shrink-0 block group"
                 >
                   {/* Clean Liquid-Morphic Card - Images & Name */}
-                  <div className="relative w-full h-full rounded-[1.4rem] p-2 flex flex-col justify-between overflow-hidden bg-white/90 backdrop-blur-xl border border-gray-200/80 shadow-[0_8px_25px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.09)] hover:border-gray-300 hover:-translate-y-1.5 transition-all duration-300">
+                  <div className="relative w-full h-full rounded-[1.4rem] p-2 flex flex-col justify-between overflow-hidden bg-white/90 backdrop-blur-xl border border-gray-200/80 hover:border-gray-300 transition-all duration-300">
                     
                     {/* Scenic Destination Image */}
                     <div className="relative h-[290px] md:h-[310px] w-full rounded-2xl overflow-hidden bg-gray-100 shrink-0">

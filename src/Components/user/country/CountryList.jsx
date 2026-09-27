@@ -65,17 +65,26 @@ const CountryList = () => {
         setCurrentPage(1);
     }, [searchQuery, selectedContinent]);
 
-    // Skeleton Loader
+    // Skeleton Loader matching current card structure
     const renderSkeletons = () =>
-        Array.from({ length: 12 }).map((_, index) => (
-            <div key={index} className="w-full sm:w-1/2 lg:w-1/4 p-3 flex">
-                <div className="w-full bg-white rounded-[1.4rem] border border-gray-100 overflow-hidden flex flex-col shadow-sm animate-pulse">
-                    <div className="h-52 bg-gray-200/70"></div>
-                    <div className="p-4 space-y-2.5">
-                        <div className="h-4 bg-gray-200/70 rounded-md w-3/4"></div>
-                        <div className="h-3 bg-gray-200/50 rounded-md w-full"></div>
-                        <div className="h-3 bg-gray-200/40 rounded-md w-2/3"></div>
-                        <div className="h-9 bg-gray-200/70 rounded-xl w-full mt-2"></div>
+        Array.from({ length: 9 }).map((_, index) => (
+            <div key={index} className="w-full sm:w-1/2 lg:w-1/3 p-3 sm:p-3.5 flex">
+                <div className="w-full h-[320px] sm:h-[350px] rounded-xl overflow-hidden relative shadow-md bg-gradient-to-b from-gray-200 via-gray-100 to-gray-200 border border-gray-100">
+                    {/* Top Bar: Continent pill + Circular flag */}
+                    <div className="relative z-10 flex items-center justify-between p-4">
+                        <div className="h-6 w-20 bg-gray-300/80 rounded-full border border-white/40 shadow-sm"></div>
+                        <div className="h-14 w-14 bg-gray-300/80 rounded-full border border-white/60 shadow-sm"></div>
+                    </div>
+
+                    {/* Subtle bottom gradient matching card */}
+                    <div className="absolute bottom-0 left-0 right-0 h-44 bg-gradient-to-t from-gray-300/50 via-gray-200/20 to-transparent pointer-events-none" />
+
+                    {/* Button matching current card structure */}
+                    <div className="absolute bottom-3.5 sm:bottom-4 left-3.5 sm:left-4 right-3.5 sm:right-4 z-10">
+                        <div className="w-full py-2.5 sm:py-3 px-4 rounded-lg bg-white/60 backdrop-blur-md border border-white/70 shadow-sm flex items-center justify-center gap-2">
+                            <div className="h-3.5 w-24 bg-gray-300/90 rounded-md"></div>
+                            <div className="h-3.5 w-3.5 bg-gray-300/90 rounded-sm"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -114,7 +123,7 @@ const CountryList = () => {
             </div>
 
             {/* Country Cards Grid */}
-            <div className="flex flex-wrap -m-3">
+            <div className="flex flex-wrap -m-3.5 sm:-m-4">
                 {isAllCountryListLoading
                     ? renderSkeletons()
                     : currentCountries.length > 0 ? (
