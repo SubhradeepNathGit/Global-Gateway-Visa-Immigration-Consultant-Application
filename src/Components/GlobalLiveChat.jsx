@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, History, Sparkles, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ensureChatReply } from '../util/chat/ensureChatReply';
-import { getSmartLocalReply } from '../util/chat/smartChatReply';
 import { sendVisaSupportChat } from '../util/chat/visaSupportChat';
 import { GATEWAY_AI_ICON } from './gatewayAiIconData';
 
@@ -28,13 +27,53 @@ function nextId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function toApiMessages(messages) {
-  return messages
-    .filter((m) => m.sender === 'user' || (m.sender === 'agent' && m.id !== 'welcome'))
+function toApiMessages(messages, fallbackUserText) {
+  const filtered = (messages || [])
+    .filter((m) => m && (m.sender === 'user' || (m.sender === 'agent' && m.id !== 'welcome' && !m.isError)))
     .map((m) => ({
       role: m.sender === 'user' ? 'user' : 'assistant',
-      content: m.text,
-    }));
+      content: String(m.text || '').trim(),
+    }))
+    .filter((m) => m.content.length > 0);
+
+  if (filtered.length === 0 && fallbackUserText && fallbackUserText.trim()) {
+    return [{ role: 'user', content: fallbackUserText.trim() }];
+  }
+  return filtered;
+}
+
+function renderFormattedMessage(text, isUser) {
+  if (!text) return null;
+  const lines = text.split('\n');
+
+  return (
+    <div className="space-y-1 text-sm leading-relaxed">
+      {lines.map((line, lineIdx) => {
+        if (!line.trim()) {
+          return <div key={lineIdx} className="h-1.5" />;
+        }
+
+        const parts = line.split(/(\*\*[^*]+\*\*)/g);
+        return (
+          <p key={lineIdx}>
+            {parts.map((part, partIdx) => {
+              if (part.startsWith('**') && part.endsWith('**')) {
+                return (
+                  <strong
+                    key={partIdx}
+                    className={isUser ? 'font-bold text-white' : 'font-semibold text-slate-900'}
+                  >
+                    {part.slice(2, -2)}
+                  </strong>
+                );
+              }
+              return <span key={partIdx}>{part}</span>;
+            })}
+          </p>
+        );
+      })}
+    </div>
+  );
 }
 
 const GlobalLiveChat = () => {
@@ -51,9 +90,15 @@ const GlobalLiveChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [thinkingStageIndex, setThinkingStageIndex] = useState(0);
   const [chatMinimized, setChatMinimized] = useState(false);
-  const [lastReplySource, setLastReplySource] = useState('local');
+  const [lastReplySource, setLastReplySource] = useState('openrouter');
   const messagesEndRef = useRef(null);
   const sendingRef = useRef(false);
+
+  // Synchronous ref to prevent stale closures and React 19 async batching race conditions
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -71,28 +116,33 @@ const GlobalLiveChat = () => {
   }, [isTyping]);
 
   /**
-   * Smart reply chain:
-   * 1. Try AI first (OpenRouter primary → Groq → Gemini)
-   * 2. Local fallback ONLY if all AI providers are completely unavailable
+   * Only query real AI API router (OpenRouter primary → Groq → Gemini).
+   * No local canned dummy replies.
    */
-  const requestAssistantReply = useCallback(async (historyMessages) => {
-    const apiMessages = toApiMessages(historyMessages);
+  const requestAssistantReply = useCallback(async (historyMessages, userQueryText) => {
+    const apiMessages = toApiMessages(historyMessages, userQueryText);
 
-    // 1) Try AI first for all user inquiries
     try {
       const api = await sendVisaSupportChat(apiMessages);
       if (api.ok && typeof api.reply === 'string' && api.reply.trim()) {
         const engineSource = api.engine || 'openrouter';
-        return { text: ensureChatReply(api.reply), source: engineSource };
+        return { text: ensureChatReply(api.reply), source: engineSource, isError: false };
+      }
+      if (api.error) {
+        return {
+          text: api.error,
+          source: 'error',
+          isError: true,
+        };
       }
     } catch (err) {
       console.warn('[GlobalLiveChat] AI API call failed:', err);
     }
 
-    // 2) Smart local fallback ONLY when all AI APIs completely fail
     return {
-      text: ensureChatReply(getSmartLocalReply(apiMessages)),
-      source: 'local',
+      text: "Our AI assistant is temporarily unreachable. Please try asking again in a few moments, or reach out to our team on the Contact us page.",
+      source: 'error',
+      isError: true,
     };
   }, []);
 
@@ -108,34 +158,42 @@ const GlobalLiveChat = () => {
         timestamp: new Date().toISOString(),
       };
 
-      let historyForApi = [];
-      setMessages((prev) => {
-        historyForApi = [...prev, userMessage];
-        return historyForApi;
-      });
+      // Guaranteed synchronous update via ref and state
+      const currentMessages = messagesRef.current || [];
+      const newHistory = [...currentMessages, userMessage];
+      messagesRef.current = newHistory;
+      setMessages(newHistory);
+
       setInputMessage('');
       setIsTyping(true);
       sendingRef.current = true;
 
       try {
-        const { text: replyText, source } = await requestAssistantReply(historyForApi);
-        setLastReplySource(source ?? 'local');
+        const { text: replyText, source, isError } = await requestAssistantReply(newHistory, trimmed);
+        setLastReplySource(source ?? 'openrouter');
 
         const agentMessage = {
           id: nextId(),
           text: ensureChatReply(replyText),
           sender: 'agent',
+          isError: Boolean(isError),
           timestamp: new Date().toISOString(),
         };
-        setMessages((prev) => [...prev, agentMessage]);
+
+        const updatedHistory = [...(messagesRef.current || []), agentMessage];
+        messagesRef.current = updatedHistory;
+        setMessages(updatedHistory);
       } catch {
         const agentMessage = {
           id: nextId(),
-          text: 'Something went wrong. Please try again or visit the Contact us page for help.',
+          text: 'Something went wrong while connecting to our visa AI assistant. Please try again or visit the Contact us page for help.',
           sender: 'agent',
+          isError: true,
           timestamp: new Date().toISOString(),
         };
-        setMessages((prev) => [...prev, agentMessage]);
+        const updatedHistory = [...(messagesRef.current || []), agentMessage];
+        messagesRef.current = updatedHistory;
+        setMessages(updatedHistory);
       } finally {
         setIsTyping(false);
         sendingRef.current = false;
@@ -298,37 +356,35 @@ const GlobalLiveChat = () => {
                   key={message.id}
                   className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div
-                    className={`max-w-[82%] rounded-2xl p-3.5 transition-all ${
-                      message.sender === 'user'
-                        ? 'rounded-tr-xs text-white'
-                        : 'rounded-tl-xs text-slate-800 shadow-[0_4px_16px_rgba(0,0,0,0.03)] border border-white/80'
-                    }`}
-                    style={
-                      message.sender === 'user'
-                        ? {
-                            background:
-                              'linear-gradient(135deg, rgba(50, 132, 209, 0.97) 0%, rgba(40, 115, 190, 0.95) 50%, rgba(32, 100, 175, 0.97) 100%)',
-                            backdropFilter: 'blur(16px) saturate(180%)',
-                            WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-                            border: '1px solid rgba(255, 255, 255, 0.30)',
-                            boxShadow:
-                              '0 6px 20px -4px rgba(50, 132, 209, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.4)',
-                          }
-                        : {
-                            background:
-                              'linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.82) 100%)',
-                            backdropFilter: 'blur(16px)',
-                            WebkitBackdropFilter: 'blur(16px)',
-                          }
-                    }
-                  >
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
-                    <p
-                      className={`text-[10px] mt-1.5 font-medium ${
-                        message.sender === 'user' ? 'text-white/80' : 'text-slate-400'
+                  <div className="flex flex-col max-w-[82%] w-fit">
+                    <div
+                      className={`rounded-2xl p-3.5 transition-all ${
+                        message.sender === 'user'
+                          ? 'rounded-tr-xs text-white'
+                          : 'rounded-tl-xs text-slate-800 shadow-[0_4px_16px_rgba(0,0,0,0.03)] border border-white/80'
                       }`}
+                      style={
+                        message.sender === 'user'
+                          ? {
+                              background:
+                                'linear-gradient(135deg, rgba(50, 132, 209, 0.97) 0%, rgba(40, 115, 190, 0.95) 50%, rgba(32, 100, 175, 0.97) 100%)',
+                              backdropFilter: 'blur(16px) saturate(180%)',
+                              WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+                              border: '1px solid rgba(255, 255, 255, 0.30)',
+                              boxShadow:
+                                '0 6px 20px -4px rgba(50, 132, 209, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.4)',
+                            }
+                          : {
+                              background:
+                                'linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.82) 100%)',
+                              backdropFilter: 'blur(16px)',
+                              WebkitBackdropFilter: 'blur(16px)',
+                            }
+                      }
                     >
+                      {renderFormattedMessage(message.text, message.sender === 'user')}
+                    </div>
+                    <p className="text-[10px] mt-1 px-1 font-medium text-slate-400 text-right">
                       {new Date(message.timestamp).toLocaleTimeString('en-US', {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -469,13 +525,15 @@ const GlobalLiveChat = () => {
                 </motion.button>
               </div>
               <p className="text-[11px] text-slate-400 mt-2 text-center font-medium">
-                {lastReplySource === 'openapi' || lastReplySource === 'openrouter' || lastReplySource === 'openai'
-                  ? 'Powered by Open AI'
+                {lastReplySource === 'openrouter' || lastReplySource === 'openapi' || lastReplySource === 'openai'
+                  ? 'Powered by OpenRouter AI'
                   : lastReplySource === 'groq'
                     ? 'Powered by Groq AI'
                     : lastReplySource === 'gemini'
                       ? 'Powered by Gemini AI'
-                      : 'Powered by Global Gateway Pro'}
+                      : lastReplySource === 'error'
+                        ? 'Gateway AI • Service Notice'
+                        : 'Powered by Gateway AI'}
               </p>
             </div>
           </motion.div>

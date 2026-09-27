@@ -9,25 +9,31 @@ const PATH_LABELS = {
   'reset-password': 'password reset page',
 };
 
-/** Plain chat text: no markdown, no slash paths. */
+/**
+ * Cleans and formats AI reply text.
+ * Strips reasoning tokens, normalizes whitespace, and converts known route paths to friendly labels.
+ * Preserves bold/bullet formatting and avoids mangling English words containing slashes (e.g. and/or, credit/debit).
+ */
 export function formatChatReply(text) {
   if (text == null) return '';
   let t = String(text);
 
-  // Strip markdown formatting
-  t = t.replace(/\*\*([^*]+)\*\*/g, '$1');
-  t = t.replace(/\*([^*]+)\*/g, '$1');
-  t = t.replace(/__([^_]+)__/g, '$1');
-  t = t.replace(/_([^_]+)_/g, '$1');
-  t = t.replace(/^#+\s+/gm, '');
-  t = t.replace(/`([^`]+)`/g, '$1');
+  // Strip <think> reasoning tokens
+  t = t.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
-  // Replace /paths with human-readable labels
-  t = t.replace(/\/([a-z][a-z0-9-]*)/gi, (_, segment) => {
+  // Strip code blocks or heading markers if any
+  t = t.replace(/```[\s\S]*?```/g, '');
+  t = t.replace(/^#+\s+/gm, '');
+
+  // Replace ONLY actual URL paths (e.g. " /dashboard " or "(/country)") with human readable labels
+  // Avoid replacing words like and/or, credit/debit, single/multiple entry
+  t = t.replace(/(^|[\s("'])(\/([a-z][a-z0-9-]*))\b/gi, (match, prefix, fullPath, segment) => {
     const key = segment.toLowerCase();
     const label = PATH_LABELS[key];
-    if (label) return label;
-    return `the ${segment} section`;
+    if (label) {
+      return `${prefix}${label}`;
+    }
+    return match;
   });
 
   t = t.replace(/\s+→\s+/g, ' → ');
