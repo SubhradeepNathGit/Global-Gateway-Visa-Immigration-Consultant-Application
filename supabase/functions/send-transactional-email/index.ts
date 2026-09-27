@@ -226,7 +226,7 @@ function parseFromAddress(from: string) {
  * Limit: ~500 emails/day per Gmail account (Google policy).
  */
 function getEmailFrom(): string | undefined {
-  return Deno.env.get("EMAIL_FROM") || Deno.env.get("EMALI_FROM");
+  return Deno.env.get("EMALI_FROM") || Deno.env.get("EMAIL_FROM");
 }
 
 async function sendWithGmail(to: string[], subject: string, html: string) {

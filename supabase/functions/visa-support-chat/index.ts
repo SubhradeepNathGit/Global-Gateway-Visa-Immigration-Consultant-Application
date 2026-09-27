@@ -530,9 +530,9 @@ async function tryGroq(
   searchContext: string,
   errors: string[],
 ): Promise<string | null> {
-  const apiKey = (Deno.env.get("GROQ_API_KEY") || Deno.env.get("GROQ_APT_KEY"))?.trim();
+  const apiKey = (Deno.env.get("GROQ_APT_KEY") || Deno.env.get("GROQ_API_KEY"))?.trim();
   if (!apiKey) {
-    errors.push("GROQ_API_KEY (or GROQ_APT_KEY) secret missing on Supabase");
+    errors.push("GROQ_APT_KEY secret missing on Supabase");
     return null;
   }
 

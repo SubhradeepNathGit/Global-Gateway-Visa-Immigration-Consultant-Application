@@ -351,7 +351,7 @@ export async function sendVisaSupportChat(messages) {
     }
 
     // ── 5) Direct Groq — QUINARY ──────────────────────────────────────────
-    const groqKey = import.meta.env.VITE_GROQ_API_KEY?.trim();
+    const groqKey = (import.meta.env.VITE_GROQ_APT_KEY || import.meta.env.VITE_GROQ_API_KEY)?.trim();
     if (groqKey) {
       try {
         const reply = await callDirectGroq(groqKey, messages);

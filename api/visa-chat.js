@@ -223,8 +223,8 @@ async function callGemini(messages) {
 }
 
 async function callGroq(messages) {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) throw new Error('GROQ_API_KEY not set in Vercel env vars');
+  const apiKey = process.env.GROQ_APT_KEY || process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error('GROQ_APT_KEY (or GROQ_API_KEY) not set in Vercel env vars');
 
   const configured = process.env.GROQ_MODEL;
   const models = [configured, 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant'].filter(Boolean);
