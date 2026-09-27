@@ -3,8 +3,10 @@ import supabase from "../Supabase/supabase";
 import { buildWebsiteKnowledgePrompt } from "./websiteKnowledgeForAi";
 import { formatChatReply } from "./chatReplyFormat";
 
-const INVOKE_TIMEOUT_MS = 55000;
-const OPENROUTER_TIMEOUT_MS = 45000;
+// Overall timeout for the entire run() including all fallbacks
+const OVERALL_TIMEOUT_MS = 60000;
+// Per-API call timeout
+const API_CALL_TIMEOUT_MS = 28000;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -34,10 +36,13 @@ function validReply(reply) {
 }
 
 /**
- * OpenRouter with model fallbacks + per-model retries (fixes first-request cold failures).
+ * PRIMARY: Direct OpenRouter call from the browser.
+ * Retries each model up to 3 times with exponential back-off + jitter.
+ * Detects 429 rate limits and skips exhausted models early.
  */
 async function callDirectOpenRouter(apiKey, messages) {
   const configured = import.meta.env.VITE_OPENROUTER_MODEL?.trim();
+  // openrouter/auto as second slot so the router picks best available (paid or free)
   const models = [
     configured,
     "openrouter/auto",
@@ -58,7 +63,7 @@ async function callDirectOpenRouter(apiKey, messages) {
     })),
   ];
 
-  let lastErr = "";
+  const errors = [];
   for (const model of models) {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
@@ -67,7 +72,7 @@ async function callDirectOpenRouter(apiKey, messages) {
           {
             model,
             messages: chatMessages,
-            temperature: 0.45,
+            temperature: 0.4,
             max_tokens: 1200,
           },
           {
@@ -77,24 +82,39 @@ async function callDirectOpenRouter(apiKey, messages) {
               "HTTP-Referer": "https://global-gateway-pro.vercel.app",
               "X-Title": "Global Gateway Visa Support",
             },
-            timeout: OPENROUTER_TIMEOUT_MS,
+            timeout: API_CALL_TIMEOUT_MS,
           },
         );
 
         const text = extractOpenAiMessageContent(res.data);
         if (validReply(text)) {
+          console.log(`[VisaChat] OpenRouter OK: ${model} attempt=${attempt + 1}`);
           return formatChatReply(text);
         }
-        lastErr = `OpenRouter (${model}): empty content`;
+        errors.push(`OpenRouter (${model}) attempt ${attempt + 1}: empty content`);
       } catch (e) {
         const msg = e?.response?.data?.error?.message || e?.message || String(e);
-        lastErr = `OpenRouter (${model}): ${msg}`;
-        if (attempt < 2) await sleep(500 * (attempt + 1));
+        const status = e?.response?.status;
+        errors.push(`OpenRouter (${model}) attempt ${attempt + 1}: ${msg}`);
+
+        // 429 rate limit — skip remaining retries on this model immediately
+        const isRateLimit = status === 429 || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("too many");
+        if (isRateLimit) {
+          console.warn(`[VisaChat] OpenRouter rate-limited: ${model}, skipping model`);
+          break; // jump to next model
+        }
+
+        if (attempt < 2) {
+          // Exponential backoff with jitter
+          const base = 400;
+          const jitter = Math.floor(Math.random() * 300);
+          await sleep(base * (attempt + 1) + jitter);
+        }
       }
     }
   }
 
-  throw new Error(lastErr || "Empty OpenRouter response");
+  throw new Error(errors[errors.length - 1] || "All OpenRouter models failed");
 }
 
 async function callVercelApi(messages) {
@@ -103,7 +123,7 @@ async function callVercelApi(messages) {
     { messages },
     {
       headers: { "Content-Type": "application/json" },
-      timeout: INVOKE_TIMEOUT_MS,
+      timeout: API_CALL_TIMEOUT_MS,
     },
   );
   const data = response.data;
@@ -154,14 +174,14 @@ async function callDirectGemini(apiKey, messages) {
         {
           systemInstruction,
           contents,
-          generationConfig: { temperature: 0.45, maxOutputTokens: 1000 },
+          generationConfig: { temperature: 0.4, maxOutputTokens: 1000 },
         },
         {
           headers: {
             "Content-Type": "application/json",
             "x-goog-api-key": apiKey,
           },
-          timeout: OPENROUTER_TIMEOUT_MS,
+          timeout: API_CALL_TIMEOUT_MS,
         },
       );
 
@@ -194,13 +214,13 @@ async function callDirectGroq(apiKey, messages) {
     try {
       const res = await axios.post(
         "https://api.groq.com/openai/v1/chat/completions",
-        { model, messages: chatMessages, temperature: 0.45, max_tokens: 1100 },
+        { model, messages: chatMessages, temperature: 0.4, max_tokens: 1100 },
         {
           headers: {
             Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
-          timeout: OPENROUTER_TIMEOUT_MS,
+          timeout: API_CALL_TIMEOUT_MS,
         },
       );
 
@@ -214,7 +234,13 @@ async function callDirectGroq(apiKey, messages) {
 }
 
 /**
- * Priority: Supabase (OpenRouter inside) → Direct OpenRouter → Vercel → Gemini → Groq
+ * Priority chain:
+ *   1. Direct OpenRouter (PRIMARY — browser → openrouter.ai directly)
+ *   2. Supabase Edge Function (SECONDARY — also tries OpenRouter → Groq → Gemini server-side)
+ *   3. Vercel API Route (TERTIARY)
+ *   4. Direct Gemini (QUATERNARY)
+ *   5. Direct Groq (QUINARY)
+ *   6. Local keyword fallback (LAST RESORT — only when ALL 5 above fail)
  */
 export async function sendVisaSupportChat(messages) {
   if (!Array.isArray(messages) || messages.length === 0) {
@@ -222,32 +248,9 @@ export async function sendVisaSupportChat(messages) {
   }
 
   const run = async () => {
-    // 1) Supabase edge — OpenRouter first on server (production)
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        const edge = await invokeSupabaseEdge(messages);
-        if (edge.debugError) {
-          console.warn("[VisaChat] Edge debug:", edge.debugError);
-        }
-        if (
-          edge.engine === "openrouter" ||
-          edge.engine === "groq" ||
-          edge.engine === "gemini"
-        ) {
-          return { ok: true, reply: edge.reply, engine: edge.engine };
-        }
-        if (edge.engine === "local" && validReply(edge.reply)) {
-          return { ok: true, reply: edge.reply, engine: "local" };
-        }
-      } catch (err) {
-        console.warn("[VisaChat] Supabase attempt failed:", err?.message);
-        if (attempt === 0) await sleep(600);
-      }
-    }
-
-    // 2) Direct OpenRouter (dev / backup)
+    // ── 1) Direct OpenRouter — PRIMARY ─────────────────────────────────────
     const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY?.trim();
-    if (openRouterKey) {
+    if (openRouterKey && openRouterKey !== "your_openrouter_api_key_here") {
       try {
         const reply = await callDirectOpenRouter(openRouterKey, messages);
         return { ok: true, reply, engine: "openrouter" };
@@ -256,19 +259,45 @@ export async function sendVisaSupportChat(messages) {
       }
     }
 
-    // 3) Vercel API route
+    // ── 2) Supabase Edge Function — SECONDARY ──────────────────────────────
+    // It runs OpenRouter → Groq → Gemini server-side (avoids CORS + browser key exposure)
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const edge = await invokeSupabaseEdge(messages);
+        if (edge.debugError) {
+          console.warn("[VisaChat] Edge debug:", edge.debugError);
+        }
+        // Accept openrouter, groq, or gemini replies from edge — not local
+        if (
+          edge.engine === "openrouter" ||
+          edge.engine === "groq" ||
+          edge.engine === "gemini"
+        ) {
+          return { ok: true, reply: edge.reply, engine: edge.engine };
+        }
+        // Edge returned local — log and try next fallback
+        console.warn("[VisaChat] Edge returned local engine, trying next fallback");
+      } catch (err) {
+        console.warn(`[VisaChat] Supabase edge attempt ${attempt + 1} failed:`, err?.message);
+        if (attempt === 0) await sleep(700);
+      }
+    }
+
+    // ── 3) Vercel API Route — TERTIARY ────────────────────────────────────
     if (typeof window !== "undefined") {
       try {
         const result = await callVercelApi(messages);
-        return { ok: true, reply: result.reply, engine: result.engine };
+        // Accept any AI engine from Vercel (openrouter / groq / gemini)
+        if (result.engine !== "local") {
+          return { ok: true, reply: result.reply, engine: result.engine };
+        }
       } catch (err) {
         console.warn("[VisaChat] Vercel API failed:", err?.message);
       }
     }
 
+    // ── 4) Direct Gemini — QUATERNARY ─────────────────────────────────────
     const geminiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
-    const groqKey = import.meta.env.VITE_GROQ_API_KEY?.trim();
-
     if (geminiKey) {
       try {
         const reply = await callDirectGemini(geminiKey, messages);
@@ -278,6 +307,8 @@ export async function sendVisaSupportChat(messages) {
       }
     }
 
+    // ── 5) Direct Groq — QUINARY ──────────────────────────────────────────
+    const groqKey = import.meta.env.VITE_GROQ_API_KEY?.trim();
     if (groqKey) {
       try {
         const reply = await callDirectGroq(groqKey, messages);
@@ -287,15 +318,18 @@ export async function sendVisaSupportChat(messages) {
       }
     }
 
+    // ── 6) All APIs exhausted ─────────────────────────────────────────────
+    console.error("[VisaChat] All AI providers failed — returning NO_AI signal for local fallback");
     return { ok: false, error: "AI unavailable", code: "NO_AI" };
   };
 
   const timeoutPromise = new Promise((resolve) => {
     setTimeout(
       () => resolve({ ok: false, error: "Request timed out", code: "TIMEOUT" }),
-      INVOKE_TIMEOUT_MS,
+      OVERALL_TIMEOUT_MS,
     );
   });
 
   return Promise.race([run(), timeoutPromise]);
 }
+

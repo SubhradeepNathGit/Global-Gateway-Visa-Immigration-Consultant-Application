@@ -1,5 +1,3 @@
-
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -397,19 +395,27 @@ async function callGemini(
   throw new Error(lastGeminiErr || "Gemini call failed");
 }
 
-let lastError = "";
-
+/**
+ * Per-request error tracking. Each handler invocation creates its own errors array.
+ * FIX: Previously a module-level `let lastError = ""` was shared across all concurrent
+ * requests (Deno isolates can share module state between invocations), causing the
+ * alternating success/failure bug where error strings from one request bled into the next.
+ */
 async function tryOpenRouter(
   messages: ChatMessage[],
-  searchContext = "",
+  searchContext: string,
+  errors: string[],
 ): Promise<string | null> {
   const apiKey = Deno.env.get("OPENROUTER_API_KEY")?.trim();
   if (!apiKey) {
-    lastError = "OPENROUTER_API_KEY secret missing on Supabase";
+    errors.push("OPENROUTER_API_KEY secret missing on Supabase");
     return null;
   }
 
   const configured = Deno.env.get("OPENROUTER_MODEL")?.trim();
+
+  // openrouter/auto is second — it routes to the best available model (paid or free)
+  // and avoids the per-model rate limits of individual free models.
   const models = [
     configured,
     "openrouter/auto",
@@ -422,23 +428,50 @@ async function tryOpenRouter(
    .filter((m, i, a) => a.indexOf(m) === i);
 
   for (const model of models) {
+    let skipModel = false;
     for (let attempt = 0; attempt < 3; attempt++) {
+      if (skipModel) break;
       try {
-        return await callOpenRouter(apiKey, model, messages, searchContext);
+        const reply = await callOpenRouter(apiKey, model, messages, searchContext);
+        if (reply && reply.trim()) {
+          console.log(`[visa-support-chat] OpenRouter OK: ${model} attempt=${attempt + 1}`);
+          return reply;
+        }
+        errors.push(`OpenRouter (${model}) attempt ${attempt + 1}: empty reply`);
       } catch (e: any) {
-        lastError += ` | OpenRouter (${model}): ${e?.message || String(e)}`;
-        console.warn("[visa-support-chat] OpenRouter failed", model, attempt, e);
-        if (attempt < 2) await sleep(500 * (attempt + 1));
+        const errMsg: string = e?.message || String(e);
+        errors.push(`OpenRouter (${model}) attempt ${attempt + 1}: ${errMsg}`);
+        console.warn(`[visa-support-chat] OpenRouter failed: ${model} attempt ${attempt + 1}:`, errMsg);
+
+        // Detect rate-limit (429) — skip this model entirely on ANY attempt, no point retrying
+        const isRateLimit = errMsg.includes("429") ||
+          errMsg.toLowerCase().includes("rate limit") ||
+          errMsg.toLowerCase().includes("too many");
+        if (isRateLimit) {
+          console.warn(`[visa-support-chat] Rate-limited on ${model}, skipping to next model`);
+          skipModel = true;
+          break;
+        }
+
+        if (attempt < 2) {
+          // Exponential backoff with jitter: 400–700ms → 1000–1300ms
+          const jitter = Math.floor(Math.random() * 300);
+          await sleep(400 * (attempt + 1) + jitter);
+        }
       }
     }
   }
   return null;
 }
 
-async function tryGroq(messages: ChatMessage[], searchContext = ""): Promise<string | null> {
+async function tryGroq(
+  messages: ChatMessage[],
+  searchContext: string,
+  errors: string[],
+): Promise<string | null> {
   const apiKey = Deno.env.get("GROQ_API_KEY")?.trim();
   if (!apiKey) {
-    if (!lastError) lastError = "GROQ_API_KEY secret missing on Supabase";
+    errors.push("GROQ_API_KEY secret missing on Supabase");
     return null;
   }
 
@@ -453,20 +486,33 @@ async function tryGroq(messages: ChatMessage[], searchContext = ""): Promise<str
    .filter((m, i, a) => a.indexOf(m) === i);
 
   for (const model of models) {
-    try {
-      return await callGroq(apiKey, model, messages, searchContext);
-    } catch (e: any) {
-      lastError += ` | Groq (${model}): ${e?.message || String(e)}`;
-      console.warn("[visa-support-chat] Groq failed", model, e);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const reply = await callGroq(apiKey, model, messages, searchContext);
+        if (reply && reply.trim()) {
+          console.log(`[visa-support-chat] Groq OK: ${model}`);
+          return reply;
+        }
+        errors.push(`Groq (${model}) attempt ${attempt + 1}: empty reply`);
+      } catch (e: any) {
+        const errMsg: string = e?.message || String(e);
+        errors.push(`Groq (${model}) attempt ${attempt + 1}: ${errMsg}`);
+        console.warn(`[visa-support-chat] Groq failed: ${model}`, errMsg);
+        if (attempt < 1) await sleep(400);
+      }
     }
   }
   return null;
 }
 
-async function tryGemini(messages: ChatMessage[], searchContext = ""): Promise<string | null> {
+async function tryGemini(
+  messages: ChatMessage[],
+  searchContext: string,
+  errors: string[],
+): Promise<string | null> {
   const apiKey = Deno.env.get("GEMINI_API_KEY")?.trim();
   if (!apiKey) {
-    if (!lastError) lastError = "GEMINI_API_KEY secret missing on Supabase";
+    errors.push("GEMINI_API_KEY secret missing on Supabase");
     return null;
   }
 
@@ -481,9 +527,14 @@ async function tryGemini(messages: ChatMessage[], searchContext = ""): Promise<s
 
   for (const model of models) {
     try {
-      return await callGemini(apiKey, model, messages, searchContext);
+      const reply = await callGemini(apiKey, model, messages, searchContext);
+      if (reply && reply.trim()) {
+        console.log(`[visa-support-chat] Gemini OK: ${model}`);
+        return reply;
+      }
+      errors.push(`Gemini (${model}): empty reply`);
     } catch (e: any) {
-      lastError += ` | Gemini (${model}): ${e?.message || String(e)}`;
+      errors.push(`Gemini (${model}): ${e?.message || String(e)}`);
     }
   }
   return null;
@@ -528,7 +579,8 @@ Deno.serve(async (req) => {
     return json({ error: "Method not allowed" }, 405);
   }
 
-  lastError = "";
+  // FIX: Per-request scoped error tracking — never shared across concurrent requests
+  const errors: string[] = [];
 
   const userQuery = lastUserMessage(messages);
   let searchContext = "";
@@ -536,23 +588,27 @@ Deno.serve(async (req) => {
     searchContext = await fetchWebSearchContext(userQuery);
   }
 
-  // Priority: OpenRouter → Groq → Gemini → Local (always non-empty reply)
-  let reply = await tryOpenRouter(messages, searchContext);
+  // Priority 1: OpenRouter (primary — always tried first, with per-model retries + backoff)
+  let reply = await tryOpenRouter(messages, searchContext, errors);
   let engine = "openrouter";
 
+  // Priority 2: Groq (fast, reliable secondary)
   if (!reply) {
-    reply = await tryGroq(messages, searchContext);
+    reply = await tryGroq(messages, searchContext, errors);
     engine = "groq";
   }
 
+  // Priority 3: Gemini (tertiary)
   if (!reply) {
-    reply = await tryGemini(messages, searchContext);
+    reply = await tryGemini(messages, searchContext, errors);
     engine = "gemini";
   }
 
+  // Priority 4: Local fallback — ONLY when ALL 3 APIs fail (critical condition)
   if (!reply) {
     reply = buildLocalReply(messages, searchContext);
     engine = "local";
+    console.warn("[visa-support-chat] All APIs failed — local fallback used. Errors:", errors.join(" | "));
   }
 
   const finalReply = formatChatReply(reply).trim() ||
@@ -561,6 +617,7 @@ Deno.serve(async (req) => {
   return json({
     reply: finalReply,
     engine,
-    debugError: lastError || undefined,
+    debugError: errors.length > 0 ? errors.join(" | ") : undefined,
   });
 });
+
