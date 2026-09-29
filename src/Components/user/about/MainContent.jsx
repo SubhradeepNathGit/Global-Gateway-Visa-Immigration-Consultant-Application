@@ -22,14 +22,29 @@ const MainContent = ({ setOpenConfirmDialog }) => {
                     gap: { xs: 4, md: 6 },
                 }}
             >
-                <Box flex={1} sx={{ position: 'relative', minHeight: { xs: 280, sm: 360, md: 500 } }}>
+                <Box
+                    flex={1}
+                    sx={{
+                        position: 'relative',
+                        minHeight: { xs: 280, sm: 360, md: 500 },
+                        aspectRatio: { xs: '4 / 3', md: '910 / 728' },
+                        backgroundColor: '#f1f5f9',
+                        borderRadius: 2,
+                    }}
+                >
                     <img
                         src="/About2.jpg"
                         alt="Immigration Service"
+                        loading="eager"
+                        decoding="async"
+                        fetchPriority="high"
+                        width="910"
+                        height="728"
                         style={{
                             width: '100%',
                             height: '100%',
                             objectFit: 'cover',
+                            display: 'block',
                             borderRadius: 16,
                             boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
                         }}
