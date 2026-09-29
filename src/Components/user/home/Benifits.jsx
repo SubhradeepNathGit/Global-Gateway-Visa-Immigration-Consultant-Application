@@ -140,6 +140,7 @@ const WhyChooseUs = () => {
             <motion.img
               src="/Plane-icon.png"
               alt="Plane"
+              className="hidden md:block"
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: -20, opacity: 1 }}
               transition={{ duration: 1, delay: 0.3 }}

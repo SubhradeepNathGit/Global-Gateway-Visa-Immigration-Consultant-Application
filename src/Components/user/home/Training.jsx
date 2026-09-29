@@ -273,7 +273,7 @@ const Training = () => {
 
           <Grid container spacing={4} alignItems="center" justifyContent="space-between">
             <Grid size={{ xs: 12, md: 8 }}>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.6rem] font-bold text-gray-900 tracking-tight leading-tight mb-0 font-['Outfit',sans-serif] text-center md:text-left">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.6rem] font-bold text-gray-900 tracking-tight leading-tight mb-0 font-['Outfit',sans-serif] text-left">
                 Get the Immigration<br />
                 Trainings you Deserve
               </h2>
