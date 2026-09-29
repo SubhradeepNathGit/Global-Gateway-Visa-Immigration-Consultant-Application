@@ -61,18 +61,26 @@ const About = () => {
                     borderRadius: '22px',
                     overflow: 'visible',
                     zIndex: 1,
+                    aspectRatio: { xs: '4 / 3', sm: '1400 / 933' },
+                    backgroundColor: '#e2e8f0',
+                    boxShadow: '0 28px 55px -12px rgba(15, 23, 42, 0.2)',
+                    border: '1px solid rgba(226, 232, 240, 0.85)',
                   }}
                 >
                   <img
                     src="/About-new.jpg"
                     alt="Award Winning Visa and Immigration Consultancy"
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
+                    width="1400"
+                    height="933"
                     style={{
                       width: '100%',
-                      height: 'auto',
+                      height: '100%',
+                      objectFit: 'cover',
                       display: 'block',
-                      borderRadius: '22px',
-                      boxShadow: '0 28px 55px -12px rgba(15, 23, 42, 0.2)',
-                      border: '1px solid rgba(226, 232, 240, 0.85)',
+                      borderRadius: '21px',
                     }}
                   />
 
@@ -94,6 +102,10 @@ const About = () => {
                     <img
                       src="/Stamp.png"
                       alt="Official Verified Stamp"
+                      loading="eager"
+                      decoding="async"
+                      width="142"
+                      height="142"
                       style={{
                         width: '100%',
                         height: '100%',

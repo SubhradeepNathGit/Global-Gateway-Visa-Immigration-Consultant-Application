@@ -396,7 +396,7 @@ const Footer = () => {
               rel="noopener noreferrer"
               sx={{
                 color: '#cbd5e1',
-                textDecoration: 'underline',
+              
                 fontWeight: 500,
                 cursor: 'pointer',
                 transition: 'color 0.2s ease',
