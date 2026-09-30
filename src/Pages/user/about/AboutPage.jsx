@@ -5,6 +5,7 @@ import TeamSection from '../../../Components/user/common/Team';
 import CountrySupportSection from '../../../Components/user/common/Countries';
 import AboutBanner from '../../../Components/user/about/AboutBanner';
 import MainContent from '../../../Components/user/about/MainContent';
+import TrustCredentials from '../../../Components/user/about/TrustCredentials';
 
 const AboutSection = () => {
   const [openConfirmDialog, setOpenConfirmDialog] = React.useState(false);
@@ -27,6 +28,9 @@ const AboutSection = () => {
 
       {/* ---------- Main About Content ---------- */}
       <MainContent setOpenConfirmDialog={setOpenConfirmDialog} />
+
+      {/* ---------- International Trust & Anti-Fraud Compliance ---------- */}
+      <TrustCredentials setOpenConfirmDialog={setOpenConfirmDialog} />
 
       {/* Team Section */}
       <TeamSection />
