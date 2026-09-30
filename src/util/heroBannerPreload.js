@@ -4,6 +4,7 @@ export const HERO_FALLBACK_SRC = '/Slider-front1.jpg';
 export const BANNER_IMAGE_SRCS = [
   HERO_FALLBACK_SRC,
   '/About-new.jpg',
+  '/About-banner4.jpg',
   '/About2.jpg',
   '/Stamp.png',
   '/Slider2.jpg',

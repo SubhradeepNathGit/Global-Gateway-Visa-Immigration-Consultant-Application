@@ -52,6 +52,7 @@ const AuthVideoPreloader = () => {
       '/admin1.png',
       '/embassy1.png',
       '/embassy2.png',
+      '/About-banner4.jpg',
     ];
 
     posters.forEach((src) => {
