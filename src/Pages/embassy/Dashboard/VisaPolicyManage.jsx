@@ -102,17 +102,19 @@ export default function VisaPolicyManage() {
   // Scroll to form when editing or adding
   useEffect(() => {
     if (editingVisa && editFormRef.current) {
-      setTimeout(() => {
-        editFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const timer = setTimeout(() => {
+        editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
+      return () => clearTimeout(timer);
     }
   }, [editingVisa]);
 
   useEffect(() => {
     if (isAddingVisaType && addVisaFormRef.current) {
-      setTimeout(() => {
-        addVisaFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const timer = setTimeout(() => {
+        addVisaFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
+      return () => clearTimeout(timer);
     }
   }, [isAddingVisaType]);
 
@@ -120,6 +122,9 @@ export default function VisaPolicyManage() {
     setEditingVisa(visa);
     setExpandedVisa(null);
     setIsAddingVisaType(false);
+    setTimeout(() => {
+      editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   const handleDragStart = (e, index) => {
@@ -201,12 +206,16 @@ export default function VisaPolicyManage() {
 
       {/* Add Visa Type Form */}
       {isAddingVisaType && (
-        <AddVisa selectedCountry={selectedCountry} setIsAddingVisaType={setIsAddingVisaType} iconMapping={iconMapping} countryDetails={countryDetails} />
+        <div ref={addVisaFormRef} className="scroll-mt-28">
+          <AddVisa selectedCountry={selectedCountry} setIsAddingVisaType={setIsAddingVisaType} iconMapping={iconMapping} countryDetails={countryDetails} />
+        </div>
       )}
 
       {/* Edit Form */}
       {editingVisa && (
-        <EditVisaDetails currentCountryVisaTypes={currentCountryVisaTypeDetails} countryDetails={countryDetails} selectedCountry={selectedCountry} editingVisa={editingVisa} setEditingVisa={setEditingVisa} />
+        <div ref={editFormRef} className="scroll-mt-28">
+          <EditVisaDetails currentCountryVisaTypes={currentCountryVisaTypeDetails} countryDetails={countryDetails} selectedCountry={selectedCountry} editingVisa={editingVisa} setEditingVisa={setEditingVisa} />
+        </div>
       )}
 
       {/* Add Visa Type Button */}
