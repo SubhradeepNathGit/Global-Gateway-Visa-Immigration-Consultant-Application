@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import { fetchAllCountryDetails } from "../../../Redux/Slice/countrySlice";
 import CountryCard from "./CountryCard";
 import { ChevronLeft, ChevronRight, Search, Filter, Globe } from "lucide-react";
@@ -10,11 +11,28 @@ const ITEMS_PER_PAGE = 12;
 const CountryList = () => {
     const dispatch = useDispatch();
     const { isAllCountryListLoading, getAllCountryList } = useSelector((state) => state.allCountry);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Helper to get initial page from URL or sessionStorage across reloads
+    const getInitialPage = () => {
+        const pageFromUrl = parseInt(searchParams.get("page"), 10);
+        if (!isNaN(pageFromUrl) && pageFromUrl > 0) return pageFromUrl;
+
+        try {
+            const pageFromStorage = parseInt(sessionStorage.getItem("country_list_page"), 10);
+            if (!isNaN(pageFromStorage) && pageFromStorage > 0) return pageFromStorage;
+        } catch (e) {
+            // ignore storage exception
+        }
+
+        return 1;
+    };
 
     // Filter and Search state
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedContinent, setSelectedContinent] = useState("All");
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(getInitialPage);
+    const isFirstRender = useRef(true);
 
     useEffect(() => {
         dispatch(fetchAllCountryDetails())
@@ -52,13 +70,31 @@ const CountryList = () => {
     const totalPages = Math.ceil(filteredCountries.length / ITEMS_PER_PAGE);
     const currentCountries = filteredCountries.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-    const handlePageChange = (page) => {
-        if (page >= 1 && page <= totalPages) {
+    const handlePageChange = (page, shouldScroll = true) => {
+        if (page >= 1 && (totalPages === 0 || page <= totalPages)) {
             setCurrentPage(page);
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
+            try {
+                sessionStorage.setItem("country_list_page", String(page));
+            } catch (e) {
+                // ignore
+            }
+
+            setSearchParams(prev => {
+                const next = new URLSearchParams(prev);
+                if (page === 1) {
+                    next.delete("page");
+                } else {
+                    next.set("page", String(page));
+                }
+                return next;
+            }, { replace: true });
+
+            if (shouldScroll) {
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+            }
         }
     };
 
@@ -70,10 +106,34 @@ const CountryList = () => {
         if (currentPage > 1) handlePageChange(currentPage - 1);
     };
 
-    // Reset pagination when filters change
+    // Reset pagination when filters change (skip on initial mount to preserve page across refresh)
     useEffect(() => {
-        setCurrentPage(1);
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        handlePageChange(1, false);
     }, [searchQuery, selectedContinent]);
+
+    // Sync page if browser back/forward buttons are pressed
+    useEffect(() => {
+        const pageFromUrl = parseInt(searchParams.get("page"), 10);
+        if (!isNaN(pageFromUrl) && pageFromUrl > 0 && pageFromUrl !== currentPage) {
+            setCurrentPage(pageFromUrl);
+            try {
+                sessionStorage.setItem("country_list_page", String(pageFromUrl));
+            } catch (e) {
+                // ignore
+            }
+        }
+    }, [searchParams]);
+
+    // Clamp page if filtered items count is smaller than current page
+    useEffect(() => {
+        if (totalPages > 0 && currentPage > totalPages) {
+            handlePageChange(totalPages, false);
+        }
+    }, [totalPages]);
 
     // Skeleton Loader matching current card structure
     const renderSkeletons = () =>
