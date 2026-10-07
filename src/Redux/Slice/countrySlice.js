@@ -119,53 +119,94 @@ export const toggleCountryStatus = createAsyncThunk('countrySlice/toggleCountryS
 // upload country image in bucket
 const uploadFile = async (file, country, type, folder) => {
     if (!file) return null;
-    const fileExt = file?.name?.split('.')?.pop();
-    const fileName = `${country}-${type}_${Date.now()}.${fileExt}`;
+    const fileExt = file?.name?.split('.')?.pop() || (file?.type === 'image/webp' ? 'webp' : 'jpg');
+    const safeCountry = String(country || 'country').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const fileName = `${safeCountry}-${type}_${Date.now()}.${fileExt}`;
     const filePath = `${folder}/${fileName}`;
 
-    const res = await supabase.storage.from('country').upload(filePath, file);
+    const res = await supabase.storage.from('country').upload(filePath, file, {
+        contentType: file?.type || (fileExt === 'webp' ? 'image/webp' : undefined),
+        upsert: true
+    });
     // console.log('Response for uploading image in bucket', res);
 
-    if (res?.uploadError) throw res?.uploadError;
+    if (res?.error) throw res.error;
+    if (res?.uploadError) throw res.uploadError;
 
     const { data: urlData } = supabase.storage.from('country').getPublicUrl(filePath);
 
     const bucketData = {
         file: { url: urlData.publicUrl },
         url: urlData.publicUrl,
-        docName: res?.data?.path?.split('/')[1]
+        docName: res?.data?.path?.split('/')[1] || fileName
     }
     return bucketData;
 };
 
+// Helper to extract storage path from record
+const extractStoragePath = (record, folder) => {
+    if (!record) return null;
+
+    let fileName = folder === 'flag'
+        ? (record.flag_name || record.flag?.docName)
+        : (record.image_name || record.image?.docName);
+
+    if (!fileName) {
+        const url = folder === 'flag'
+            ? (record.flag_url || record.flag?.url)
+            : (record.image_url || record.image?.url);
+
+        if (typeof url === 'string') {
+            const marker = `/${folder}/`;
+            if (url.includes(marker)) {
+                const parts = url.split(marker);
+                if (parts[1]) {
+                    fileName = parts[1].split('?')[0];
+                }
+            }
+        }
+    }
+
+    if (!fileName || typeof fileName !== 'string') return null;
+
+    // Do not delete external URLs (e.g., Unsplash, CDN placeholders)
+    if (fileName.startsWith('http://') || fileName.startsWith('https://')) return null;
+
+    const clean = fileName.replace(/^\/+/, '');
+    return clean.startsWith(`${folder}/`) ? clean : `${folder}/${clean}`;
+};
+
 // delete uploaded image from bucket
 async function deleteFile(country_id, dbName, folder) {
-    // console.log("Image deletion country I'd", country_id, " from", folder," of",dbName);
+    if (!country_id) return null;
 
     try {
-        const col_name = dbName == "countries" ? "id" : "country_id";
-        // Fetch existing country images
-        const { data: img, error: fetchErr } = await supabase.from(dbName).select("*").eq(col_name, country_id).single();
-        // console.log('Fetched image', img,col_name);
+        const col_name = dbName === "countries" ? "id" : "country_id";
+        const { data: img, error: fetchErr } = await supabase
+            .from(dbName)
+            .select("*")
+            .eq(col_name, country_id)
+            .maybeSingle();
 
-        if (fetchErr) throw fetchErr;
+        if (fetchErr || !img) return null;
 
-        const deleted_img = folder === 'flag' ? img?.flag_name : img?.image_name;
+        const pathToDelete = extractStoragePath(img, folder);
 
-        // delete old documents from bucket
-        if (deleted_img) {
-            // console.log('Deleted doc id', deleted_img,folder);
+        if (pathToDelete) {
+            // Supabase storage .remove() strictly requires an ARRAY of string paths: ['folder/file.ext']
+            const { data: removeRes, error: removeErr } = await supabase
+                .storage
+                .from("country")
+                .remove([pathToDelete]);
 
-            const res = await supabase.storage.from("country").remove(`${folder}/${deleted_img}`);
-            // console.log('Response for deleting doc', res);
-
+            // console.log('Old file deleted from bucket:', pathToDelete, removeRes, removeErr);
+            return pathToDelete;
         }
 
-        return deleted_img;
-
     } catch (err) {
-        console.error("Error deleting document:", err);
+        console.error("Error deleting old file from storage bucket:", err);
     }
+    return null;
 }
 
 // add country
@@ -223,28 +264,25 @@ export const addOrUpdateCountry = createAsyncThunk("countrySlice/addOrUpdateCoun
                 currency: { "name": countryData?.currency?.name || apiData?.currency?.name, "symbol": countryData?.currency?.symbol || apiData?.currency?.symbol, "code": countryData?.currency?.code || apiData?.currency?.code }
             };
 
-            // console.log(typeof (finalData.imageFile), finalData.imageFile);
-            // console.log("final data", finalData);
+            const targetCountryId = finalData.id || existingCountry?.id;
 
-            // Upload images
-            if (countryData.user_type == 'admin') {
-
-                flagUrl = typeof (finalData.flagFile) != 'string' ? await uploadFile(finalData.flagFile, finalData.name, 'flag', "flag") : finalData.flagFile;
-
-                if (typeof (finalData.flagFile) != 'string') {
-                    deleteFile(finalData.id, "country_details", "flag");
+            // Upload flag and delete previous flag from bucket
+            if (countryData.user_type === 'admin') {
+                const isNewFlag = typeof finalData.flagFile !== 'string' && finalData.flagFile;
+                if (isNewFlag && targetCountryId) {
+                    await deleteFile(targetCountryId, "country_details", "flag");
                 }
+                flagUrl = isNewFlag ? await uploadFile(finalData.flagFile, finalData.name, 'flag', "flag") : finalData.flagFile;
             }
 
+            // Upload country image and delete previous image from bucket
             let countryImageUrl = finalData.imageFile;
-
-            if (type == 'addCountry') {
-                countryImageUrl = !finalData.imageFile?.isOld ? await uploadFile(finalData.imageFile, finalData.name, 'place', "important_place") : finalData.imageFile;
-            }
-            // console.log(flagUrl, countryImageUrl);
-
-            if (type == 'addCountry' && !finalData.imageFile?.isOld) {
-                deleteFile(finalData.id, "countries", "important_place");
+            if (type === 'addCountry') {
+                const isNewCountryImage = !finalData.imageFile?.isOld && typeof finalData.imageFile !== 'string' && finalData.imageFile;
+                if (isNewCountryImage && targetCountryId) {
+                    await deleteFile(targetCountryId, "countries", "important_place");
+                }
+                countryImageUrl = isNewCountryImage ? await uploadFile(finalData.imageFile, finalData.name, 'place', "important_place") : finalData.imageFile;
             }
 
             // Upsert countries table

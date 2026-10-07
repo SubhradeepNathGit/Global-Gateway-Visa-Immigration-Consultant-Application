@@ -292,8 +292,9 @@ const CountrySetup = () => {
                 required: "Country image is required",
                 validate: (file) => {
                   if (!file) return "Country image is required";
-                  if (!file.type?.match(/image\/(png|jpeg|jpg)/)) {
-                    return "Only PNG, JPG, JPEG files are allowed";
+                  const isAllowed = file.type?.match(/image\/(png|jpeg|jpg|webp)/) || /\.(png|jpe?g|webp)$/i.test(file.name);
+                  if (!isAllowed) {
+                    return "Only PNG, JPG, JPEG, WEBP files are allowed";
                   }
                   if (file.size > 2 * 1024 * 1024) {
                     return "Maximum file size is 2 MB";

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Loader2, Upload, X } from "lucide-react";
 
-const ImageUploadField = ({ label, id, helper, error, currentImageUrl, preview, onImageSelect, uploading }) => {
+const ImageUploadField = ({ label, id, helper, error, currentImageUrl, preview, onImageSelect, uploading, accept = "image/png, image/jpeg, image/jpg, image/webp, image/*" }) => {
     const [previewUrl, setPreviewUrl] = useState(currentImageUrl);
 
     useEffect(() => {
@@ -43,7 +43,7 @@ const ImageUploadField = ({ label, id, helper, error, currentImageUrl, preview, 
             <label htmlFor={id} className="block text-sm font-medium text-slate-300 mb-2">{label}</label>
             <div className="space-y-3">
                 <div className="relative">
-                    <input id={id} type="file" accept="image/*" onChange={handleFileChange} disabled={uploading} className="hidden" />
+                    <input id={id} type="file" accept={accept} onChange={handleFileChange} disabled={uploading} className="hidden" />
                     <label
                         htmlFor={id}
                         className={`flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-slate-700/30 border ${error ? 'border-red-500/50' : 'border-slate-600/50'} rounded-lg text-white hover:bg-slate-700/50 transition-colors cursor-pointer text-sm ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}

@@ -12,7 +12,8 @@ const ImageMediaSection = ({ SettingsSection, setImageFile, uploading, register,
         validate: (value) => {
             const file = value?.[0];
             if (file && file instanceof File) {
-                if (!file.type.match(/image\/(png|jpeg|jpg)/)) return "Only PNG, JPG, JPEG allowed";
+                const isAllowed = file.type?.match(/image\/(png|jpeg|jpg|webp)/) || /\.(png|jpe?g|webp)$/i.test(file.name);
+                if (!isAllowed) return "Only PNG, JPG, JPEG, WEBP allowed";
                 if (file.size > 1 * 1024 * 1024) return "Max size 1 MB";
             }
             return true;
@@ -25,7 +26,8 @@ const ImageMediaSection = ({ SettingsSection, setImageFile, uploading, register,
             if (!file && !hasCountryImage) return "Country image is required";
             if (!file && !country?.image_url) return "Country image is required";
             if (file && file instanceof File) {
-                if (!file.type.match(/image\/(png|jpeg|jpg)/)) return "Only PNG, JPG, JPEG allowed";
+                const isAllowed = file.type?.match(/image\/(png|jpeg|jpg|webp)/) || /\.(png|jpe?g|webp)$/i.test(file.name);
+                if (!isAllowed) return "Only PNG, JPG, JPEG, WEBP allowed";
                 if (file.size > 2 * 1024 * 1024) return "Max size 2 MB";
             }
             return true;
@@ -64,7 +66,8 @@ const ImageMediaSection = ({ SettingsSection, setImageFile, uploading, register,
             <ImageUploadField
                 label="Flag Image"
                 id="flagImage"
-                helper="Upload an image (recommended: 320x240px)"
+                helper="Upload an image (recommended: 320x240px, PNG, JPG, WEBP)"
+                accept="image/png, image/jpeg, image/jpg, image/webp, image/*"
                 onImageSelect={(file) => {
                     setValue("flagImage", file ? [file] : []);
                     setImageFile(file);
@@ -79,7 +82,8 @@ const ImageMediaSection = ({ SettingsSection, setImageFile, uploading, register,
             <ImageUploadField
                 label="Country Image"
                 id="countryImage"
-                helper="Upload an image (recommended: 800x600px)"
+                helper="Upload an image (recommended: 800x600px, PNG, JPG, WEBP)"
+                accept="image/png, image/jpeg, image/jpg, image/webp, image/*"
                 onImageSelect={(file) => {
                     setValue("countryImage", file ? [file] : []);
                     setImageFile(file);
