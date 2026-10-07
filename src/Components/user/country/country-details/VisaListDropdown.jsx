@@ -248,7 +248,7 @@ const VisaCard = ({ item, index, encodedCountryId, userAuthData }) => {
 };
 
 /* ─── Main Component ───────────────────────────────────────────────────── */
-const VisaListDropdown = ({ availableVisa = [] }) => {
+const VisaListDropdown = ({ availableVisa = [], hasApprovedEmbassy = true }) => {
     const [open, setOpen] = useState(false);
     const { isuserAuth, userAuthData } = useSelector(state => state.checkAuth);
     const { country_id } = useParams();
@@ -269,19 +269,28 @@ const VisaListDropdown = ({ availableVisa = [] }) => {
                         <span className="text-sm font-medium text-[#6c757d] uppercase tracking-wide block">
                             Available Visa
                         </span>
-                        {isLoggedInUser && availableVisa.length > 0 && (
+                        {!hasApprovedEmbassy ? (
+                            <span className="text-[11px] text-amber-600 font-medium flex items-center gap-1.5 mt-0.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                Embassies are not associated yet
+                            </span>
+                        ) : isLoggedInUser && availableVisa.length > 0 ? (
                             <span className="text-[11px] text-[#6c757d]/60">
                                 {availableVisa.length} visa {availableVisa.length === 1 ? 'type' : 'types'} available for you
                             </span>
-                        )}
+                        ) : null}
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    {isLoggedInUser && availableVisa.length > 0 && (
+                    {!hasApprovedEmbassy ? (
+                        <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200/80 rounded-full px-2.5 py-0.5 whitespace-nowrap">
+                            No Embassy Associated
+                        </span>
+                    ) : isLoggedInUser && availableVisa.length > 0 ? (
                         <span className="text-[10px] font-black text-white bg-[#e53935] rounded-full w-5 h-5 flex items-center justify-center">
                             {availableVisa.length}
                         </span>
-                    )}
+                    ) : null}
                     <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.3 }}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5 text-[#6c757d]">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -300,7 +309,35 @@ const VisaListDropdown = ({ availableVisa = [] }) => {
                         className="overflow-hidden"
                     >
                         <div className="mt-5">
-                            {!isLoggedInUser ? (
+                            {!hasApprovedEmbassy ? (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/60 via-white to-amber-50/40 p-6 sm:p-8 text-center relative overflow-hidden shadow-sm"
+                                >
+                                    <div className="flex flex-col items-center max-w-md mx-auto">
+                                        <div className="w-12 h-12 rounded-2xl bg-amber-100/90 border border-amber-200 flex items-center justify-center mb-3 shadow-sm text-amber-600">
+                                            <Building2 className="w-6 h-6 text-amber-600" />
+                                        </div>
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-100 border border-amber-200 text-amber-800 text-[11px] font-semibold uppercase tracking-wider mb-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                            Embassy Notice
+                                        </span>
+                                        <p className="text-base sm:text-lg font-bold text-gray-900 mb-1">
+                                            Embassies are not associated yet
+                                        </p>
+                                        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                                            There is currently no approved embassy associated with this country. Visa applications and consular services will become available once an official embassy is onboarded.
+                                        </p>
+                                        <div className="mt-4 pt-3 border-t border-amber-200/60 w-full flex items-center justify-center gap-2 text-[11px] text-gray-500">
+                                            <Globe className="w-3.5 h-3.5 text-gray-400" />
+                                            <span>Please check back later or explore other destinations</span>
+                                        </div>
+                                    </div>
+                                </motion.div>
+
+                            ) : !isLoggedInUser ? (
                                 <motion.div
                                     initial={{ opacity: 0, y: 8 }}
                                     animate={{ opacity: 1, y: 0 }}

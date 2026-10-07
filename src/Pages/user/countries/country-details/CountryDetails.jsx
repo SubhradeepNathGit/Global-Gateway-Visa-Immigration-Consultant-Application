@@ -11,6 +11,7 @@ import Disclaimer from "../../../../Components/user/country/country-details/Disc
 import VisaListDropdown from "../../../../Components/user/country/country-details/VisaListDropdown";
 import { decodeBase64Url } from "../../../../util/encodeDecode/base64";
 import { useVisaDetailsByCountryAndVisitor } from "../../../../tanstack/query/getVisaDetailsViaCountryNameAndVisitorCountryId";
+import { useEmbassyByCountryId } from "../../../../tanstack/query/getEmbassyByCountryId";
 import { useDispatch, useSelector } from "react-redux";
 import { checkLoggedInUser } from "../../../../Redux/Slice/auth/checkAuthSlice";
 import getSweetAlert from "../../../../util/alert/sweetAlert";
@@ -24,6 +25,15 @@ const CountryDetails = () => {
   const { data: countryData, isLoading: countryLoading, error: countryError } = useFullCountryDetails(countryId);
   const { isuserLoading, userAuthData, userError } = useSelector(state => state.checkAuth);
   const { data: countryWiseVisaDetails = [], isLoading: isCountryWiseVisaLoading, isError } = useVisaDetailsByCountryAndVisitor(countryId, userAuthData?.country);
+  const { data: embassyData, isLoading: isEmbassyLoading } = useEmbassyByCountryId(countryId);
+
+  let approvedEmbassies = [];
+  if (Array.isArray(embassyData)) {
+    approvedEmbassies = embassyData.filter(e => e?.is_approved === "fulfilled");
+  } else if (embassyData && typeof embassyData === "object") {
+    approvedEmbassies = embassyData.is_approved === "fulfilled" ? [embassyData] : [];
+  }
+  const hasApprovedEmbassy = approvedEmbassies.length > 0;
 
   useEffect(() => {
     dispatch(checkLoggedInUser())
@@ -86,7 +96,7 @@ const CountryDetails = () => {
   };
 
   // State to check if all necessary data is loaded
-  const isLoading = countryLoading || isCountryWiseVisaLoading;
+  const isLoading = countryLoading || isCountryWiseVisaLoading || isEmbassyLoading;
 
   if (countryError) {
     return (
@@ -311,7 +321,11 @@ const CountryDetails = () => {
                     </div>
                   </div>
                 ) : (
-                  <VisaListDropdown availableVisa={countryWiseVisaDetails} />
+                  <VisaListDropdown
+                    availableVisa={countryWiseVisaDetails}
+                    hasApprovedEmbassy={hasApprovedEmbassy}
+                    isEmbassyLoading={isEmbassyLoading}
+                  />
                 )}
               </div>
             </div>

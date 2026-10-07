@@ -4,7 +4,7 @@ import CountryRow from './CountryRow';
 import CountryFormModal from './CountryFormModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllCountryDetails, toggleCountryStatus } from '../../../Redux/Slice/countrySlice';
-import getSweetAlert from '../../../util/alert/sweetAlert';
+import getSweetAlert, { getConfirmSweetAlert } from '../../../util/alert/sweetAlert';
 import hotToast from '../../../util/alert/hot-toast';
 import ConfirmBlockUnblockAlert from '../common/alerts/ConfirmBlockUnblockAlert';
 import { useEmbassyByCountryId } from '../../../tanstack/query/getEmbassyByCountryId';
@@ -24,26 +24,22 @@ const CountryTable = ({ searchQuery, isLoading, filteredCountry, countries, filt
 
     const { data, isLoading: embassyLoading } = useEmbassyByCountryId(blockCountryId);
 
-    const isArray = Array.isArray(data);
-    const isObject = data && typeof data === 'object' && !isArray;
-
-    let approvedEmbassies = [];
-
-    if (Array.isArray(data)) {
-        approvedEmbassies = data.filter(
-            embassy => embassy?.is_approved === "fulfilled"
-        );
-    } else if (data && typeof data === "object") {
-        approvedEmbassies =
-            data.is_approved === "fulfilled" ? [data] : [];
-    }
-
     useEffect(() => {
-
         if (blockCountryId === null) return;
-
         if (embassyLoading) return;
 
+        // If country is currently active (currentStatus === false), admin wants to BLOCK it
+        if (!currentStatus) {
+            const status = "blocked";
+            const targetCountryId = blockCountryId;
+            setBlockCountryId(null);
+            setSelectedCountryId(targetCountryId);
+            setSetStatus(status);
+            setAlertModalOpen(true);
+            return;
+        }
+
+        // Country is currently inactive (currentStatus === true), admin wants to ACTIVATE (unblock) it
         let approvedEmbassies = [];
 
         if (Array.isArray(data)) {
@@ -55,19 +51,43 @@ const CountryTable = ({ searchQuery, isLoading, filteredCountry, countries, filt
                 data.is_approved === "fulfilled" ? [data] : [];
         }
 
+        const targetCountryId = blockCountryId;
+        setBlockCountryId(null);
+
+        // If no approved embassy is present, ask if admin wants to activate without embassy
         if (approvedEmbassies.length === 0) {
-            getSweetAlert("Oops...", "No approved embassy available right now", "error");
-            setBlockCountryId(null);
+            getConfirmSweetAlert({
+                title: "Activate without embassy?",
+                text: "Admin want to activate without embassy?",
+                confirmButtonText: "Yes, Proceed",
+                cancelButtonText: "Not Now",
+                icon: "warning",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    dispatch(toggleCountryStatus({ id: targetCountryId, currentStatus: true }))
+                        .then(res => {
+                            if (res?.meta?.requestStatus === "fulfilled") {
+                                hotToast("Country unblocked successfully", "success");
+                                dispatch(fetchAllCountryDetails());
+                            } else {
+                                hotToast("Country unblocked unsuccessful", "error");
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error occurred', err);
+                            getSweetAlert('Oops...', 'Something went wrong!', 'error');
+                        });
+                }
+            });
             return;
         }
 
-        const status = !currentStatus ? "blocked" : "unblocked";
-
-        setBlockCountryId(null);
-        setSelectedCountryId(blockCountryId);
+        // Normal flow with existing ConfirmBlockUnblockAlert when embassy exists
+        const status = "unblocked";
+        setSelectedCountryId(targetCountryId);
         setSetStatus(status);
         setAlertModalOpen(true);
-    }, [data, embassyLoading]);
+    }, [data, embassyLoading, blockCountryId, currentStatus]);
 
     const handleSaveCountry = (countryData) => {
         if (selectedCountry) {
