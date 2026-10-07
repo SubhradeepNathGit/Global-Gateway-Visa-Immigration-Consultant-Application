@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from 'react-router-dom';
 import { useFullCountryDetails } from '../../../tanstack/query/getCountryDetails';
@@ -117,16 +117,38 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
     const tagline     = countryDescription || "Discover opportunities & begin your journey";
     const countryLink = `/country/${encodeBase64Url(String(countryId))}`;
 
-    /* ── Per-card image load state ──────────────────────────────────────────
-       Both the banner AND flag must fire onLoad/onError before the skeleton
-       disappears. This guarantees zero pop-in in production.
+    /* ── Per-card image load state ─────────────────────────────────────────
+       Root-cause fix for jitter:
+
+       Problem 1 — Cache hit race:
+         When an image is already in the browser cache, the browser fires
+         onLoad *synchronously* while React is still committing the DOM.
+         This causes: render(skeleton=true) → immediate re-render(skeleton=false)
+         = 1-frame flash/jitter on every revisit.
+         Fix: useLayoutEffect checks img.complete BEFORE the first paint.
+         If images are cached, imagesReady becomes true with zero flicker.
+
+       Problem 2 — Double opacity animation:
+         The skeleton fade-out (0→0 opacity) overlapped with the image
+         fade-in (0→1 opacity), creating a stutter during the overlap.
+         Fix: images are always opacity:1. The solid skeleton COVERS them.
+         Only the skeleton animates. Zero overlap, zero stutter.
     ─────────────────────────────────────────────────────────────────────── */
+    const bannerRef = useRef(null);
+    const flagRef   = useRef(null);
+
     const [bannerLoaded, setBannerLoaded] = useState(false);
     const [flagLoaded,   setFlagLoaded]   = useState(false);
 
+    // Check cached images before the browser paints (useLayoutEffect = synchronous)
+    useLayoutEffect(() => {
+        if (bannerRef.current?.complete) setBannerLoaded(true);
+        if (flagRef.current?.complete)   setFlagLoaded(true);
+    }, []);
+
     const onBannerLoad  = useCallback(() => setBannerLoaded(true), []);
     const onFlagLoad    = useCallback(() => setFlagLoaded(true),   []);
-    // If an image errors, still reveal the card (fallback src is already set by browser)
+    // On error: still reveal the card — fallback bg-gray-900 is already visible
     const onBannerError = useCallback(() => setBannerLoaded(true), []);
     const onFlagError   = useCallback(() => setFlagLoaded(true),   []);
 
@@ -149,7 +171,7 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                                 key="card-skeleton"
                                 initial={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                transition={{ duration: 0.4, ease: 'easeOut' }}
+                                transition={{ duration: 0.25, ease: 'easeOut' }}
                                 style={{ position: 'absolute', inset: 0, zIndex: 30 }}
                             >
                                 <CardSkeleton />
@@ -160,6 +182,7 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                     {/* ── Background image ── */}
                     <div className="absolute inset-0 overflow-hidden bg-gray-900">
                         <img
+                            ref={bannerRef}
                             src={countryImage}
                             alt={countryName}
                             loading="eager"
@@ -171,8 +194,9 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                                 width: '100%',
                                 height: '100%',
                                 objectFit: 'cover',
-                                transition: 'transform 0.7s ease-out, opacity 0.3s ease-out',
-                                opacity: imagesReady ? 1 : 0,
+                                /* NO opacity animation — skeleton covers the image.
+                                   Removing it eliminates the double-animation stutter. */
+                                transition: 'transform 0.7s ease-out',
                             }}
                             className="group-hover:scale-105"
                         />
@@ -191,6 +215,7 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                         {/* Circular Flag Badge */}
                         <div className="h-14 w-14 p-[3px] bg-white/95 backdrop-blur-sm rounded-full shadow-lg border border-white/60 overflow-hidden transition-transform duration-300 group-hover:scale-110">
                             <img
+                                ref={flagRef}
                                 src={countryFlag}
                                 alt="flag"
                                 loading="eager"
@@ -203,8 +228,7 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                                     height: '100%',
                                     objectFit: 'cover',
                                     borderRadius: '50%',
-                                    opacity: imagesReady ? 1 : 0,
-                                    transition: 'opacity 0.3s ease-out',
+                                    /* NO opacity animation — skeleton covers the flag too */
                                 }}
                             />
                         </div>
