@@ -178,7 +178,7 @@ export const addOrUpdateCountry = createAsyncThunk("countrySlice/addOrUpdateCoun
 
             // check already exist or not
             const normalizedName = countryData.name.trim().toLowerCase();
-            const { data: existingCountry, error } = await supabase.from("countries").select("id").ilike("name", normalizedName).maybeSingle();
+            const { data: existingCountry, error } = await supabase.from("countries").select("id, is_blocked, is_approved").ilike("name", normalizedName).maybeSingle();
 
             if (error) return rejectWithValue(error.message);
 
@@ -206,8 +206,10 @@ export const addOrUpdateCountry = createAsyncThunk("countrySlice/addOrUpdateCoun
                 name: countryData.name.charAt(0).toUpperCase() + countryData.name.slice(1),
                 description: countryData.description || "",
                 imageFile: countryData.image || null,
-                is_blocked: countryData.is_blocked ?? true,
-                is_approved: countryData.is_approved ?? "pending",
+                is_blocked: countryData.is_blocked !== undefined 
+                    ? countryData.is_blocked 
+                    : (existingCountry?.is_blocked !== undefined ? existingCountry.is_blocked : true),
+                is_approved: countryData.is_approved || existingCountry?.is_approved || "pending",
                 code: countryData?.code || apiData?.code || apiData?.currency?.code || "",
                 official_name: countryData?.official_name || apiData?.officialName,
                 capital: countryData?.capital || apiData?.capital,
