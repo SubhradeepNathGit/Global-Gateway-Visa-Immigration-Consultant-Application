@@ -218,9 +218,7 @@ const CountryList = () => {
                         ))
                     ) : (
                         <div className="w-full py-24 text-center">
-                            <div className="inline-flex items-center justify-center h-16 w-16 bg-red-50 text-[#FF5252] rounded-full mb-6">
-                                <Globe size={32} />
-                            </div>
+                            
                             <h3 className="text-xl font-bold text-gray-900 mb-2">No results matching your filter</h3>
                             <button 
                                 onClick={() => {setSearchQuery(""); setSelectedContinent("All")}}
