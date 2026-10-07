@@ -1,9 +1,93 @@
-import React from 'react'
-import { motion } from "framer-motion";
+import React, { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from 'react-router-dom';
 import { useFullCountryDetails } from '../../../tanstack/query/getCountryDetails';
 import { encodeBase64Url } from '../../../util/encodeDecode/base64';
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   Shimmer keyframe — injected once at module level so it works in production
+   without any Tailwind dependency.
+───────────────────────────────────────────────────────────────────────────── */
+if (typeof document !== 'undefined' && !document.getElementById('cc-skeleton-style')) {
+    const style = document.createElement('style');
+    style.id = 'cc-skeleton-style';
+    style.textContent = `
+        @keyframes cc-shimmer {
+            0%   { background-position: -800px 0; }
+            100% { background-position:  800px 0; }
+        }
+        .cc-shimmer {
+            background: linear-gradient(
+                90deg,
+                rgba(255,255,255,0.04) 25%,
+                rgba(255,255,255,0.14) 50%,
+                rgba(255,255,255,0.04) 75%
+            );
+            background-size: 800px 100%;
+            animation: cc-shimmer 1.7s ease-in-out infinite;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Skeleton overlay — sits on top of the dark card bg, matches exact card shape
+───────────────────────────────────────────────────────────────────────────── */
+const CardSkeleton = () => (
+    <div
+        aria-hidden="true"
+        style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: 'inherit',
+            zIndex: 30,
+            background: '#111827',   /* same as bg-gray-900 */
+            overflow: 'hidden',
+        }}
+    >
+        {/* Full-card shimmer sweep */}
+        <div
+            className="cc-shimmer"
+            style={{ position: 'absolute', inset: 0 }}
+        />
+
+        {/* Top bar: continent pill + flag circle */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', position: 'relative', zIndex: 1 }}>
+            <div
+                style={{
+                    height: 22,
+                    width: 78,
+                    borderRadius: 999,
+                    background: 'rgba(255,255,255,0.12)',
+                    backdropFilter: 'blur(4px)',
+                }}
+            />
+            <div
+                style={{
+                    height: 56,
+                    width: 56,
+                    borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.12)',
+                }}
+            />
+        </div>
+
+        {/* Bottom text + button area */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px 20px 16px', zIndex: 1 }}>
+            {/* Country name bar */}
+            <div style={{ height: 26, width: '55%', borderRadius: 6, background: 'rgba(255,255,255,0.14)', marginBottom: 10 }} />
+            {/* Tagline bars */}
+            <div style={{ height: 13, width: '80%', borderRadius: 4, background: 'rgba(255,255,255,0.09)', marginBottom: 5 }} />
+            <div style={{ height: 13, width: '55%', borderRadius: 4, background: 'rgba(255,255,255,0.07)', marginBottom: 18 }} />
+            {/* Button placeholder */}
+            <div style={{ height: 44, width: '100%', borderRadius: 8, background: 'rgba(255,255,255,0.10)' }} />
+        </div>
+    </div>
+);
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CountryCard
+───────────────────────────────────────────────────────────────────────────── */
 const CountryCard = ({ countryId, countryName, countryDescription, countryData }) => {
     // Only fetch details if not already provided in countryData to prevent redundant network requests
     const hasSufficientData = Boolean(
@@ -12,7 +96,7 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
     const { data } = useFullCountryDetails(hasSufficientData ? null : countryId);
 
     // Prioritize pre-fetched data for instant rendering
-    const countryFlag = countryData?.country_details?.flag_url || data?.details?.flag_url || "/demo/demo-flag.png";
+    const countryFlag  = countryData?.country_details?.flag_url  || data?.details?.flag_url  || "/demo/demo-flag.png";
     const countryImage = countryData?.image_url || countryData?.country_details?.banner_url || data?.details?.banner_url || data?.image_url || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1000";
 
     const continentsData = countryData?.country_details?.continents || data?.details?.continents;
@@ -24,14 +108,29 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                 const parsed = JSON.parse(continentsData);
                 return Array.isArray(parsed) ? parsed[0] : parsed;
             } catch (e) {
-                return continentsData.replace(/[\[\]\" ]/g, ''); 
+                return continentsData.replace(/[\[\]\" ]/g, '');
             }
         }
         return continentsData;
     })();
 
-    const tagline = countryDescription || "Discover opportunities & begin your journey";
+    const tagline     = countryDescription || "Discover opportunities & begin your journey";
     const countryLink = `/country/${encodeBase64Url(String(countryId))}`;
+
+    /* ── Per-card image load state ──────────────────────────────────────────
+       Both the banner AND flag must fire onLoad/onError before the skeleton
+       disappears. This guarantees zero pop-in in production.
+    ─────────────────────────────────────────────────────────────────────── */
+    const [bannerLoaded, setBannerLoaded] = useState(false);
+    const [flagLoaded,   setFlagLoaded]   = useState(false);
+
+    const onBannerLoad  = useCallback(() => setBannerLoaded(true), []);
+    const onFlagLoad    = useCallback(() => setFlagLoaded(true),   []);
+    // If an image errors, still reveal the card (fallback src is already set by browser)
+    const onBannerError = useCallback(() => setBannerLoaded(true), []);
+    const onFlagError   = useCallback(() => setFlagLoaded(true),   []);
+
+    const imagesReady = bannerLoaded && flagLoaded;
 
     return (
         <div className="w-full sm:w-1/2 lg:w-1/3 p-3 sm:p-3.5 flex">
@@ -40,20 +139,45 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                 transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                 className="w-full relative group cursor-pointer"
             >
-                {/* ═══ CARD CONTAINER: Height (320px-350px), crisp rounded-xl ═══ */}
+                {/* ═══ CARD CONTAINER ═══ */}
                 <div className="country-card relative h-[360px] sm:h-[400px] w-full rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-gray-900">
-                    
-                    {/* ═══ BACKGROUND IMAGE: Instant solid render (NO pulsing, NO heartbeat animation) ═══ */}
+
+                    {/* ── Skeleton: visible until both images are ready ── */}
+                    <AnimatePresence>
+                        {!imagesReady && (
+                            <motion.div
+                                key="card-skeleton"
+                                initial={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.4, ease: 'easeOut' }}
+                                style={{ position: 'absolute', inset: 0, zIndex: 30 }}
+                            >
+                                <CardSkeleton />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* ── Background image ── */}
                     <div className="absolute inset-0 overflow-hidden bg-gray-900">
                         <img
                             src={countryImage}
                             alt={countryName}
                             loading="eager"
+                            fetchpriority="high"
                             decoding="async"
-                            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                            onLoad={onBannerLoad}
+                            onError={onBannerError}
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                transition: 'transform 0.7s ease-out, opacity 0.3s ease-out',
+                                opacity: imagesReady ? 1 : 0,
+                            }}
+                            className="group-hover:scale-105"
                         />
 
-                        {/* Soft subtle bottom gradient specifically to make white embossed text pop */}
+                        {/* Bottom gradient */}
                         <div className="absolute bottom-0 left-0 right-0 h-52 bg-gradient-to-t from-black/75 via-black/35 to-transparent pointer-events-none" />
                     </div>
 
@@ -70,16 +194,26 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                                 src={countryFlag}
                                 alt="flag"
                                 loading="eager"
+                                fetchpriority="high"
                                 decoding="async"
-                                className="w-full h-full object-cover rounded-full"
+                                onLoad={onFlagLoad}
+                                onError={onFlagError}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    borderRadius: '50%',
+                                    opacity: imagesReady ? 1 : 0,
+                                    transition: 'opacity 0.3s ease-out',
+                                }}
                             />
                         </div>
                     </div>
 
-                    {/* ═══ WHITE EMBOSSED TEXT: High readability over any landscape/city image ═══ */}
+                    {/* ── WHITE EMBOSSED TEXT ── */}
                     <div className="absolute inset-0 z-10 flex flex-col justify-end p-5 sm:p-6 pb-[74px] sm:pb-[78px] pointer-events-none">
                         <div className="relative z-10 transition-all duration-300 ease-out opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0">
-                            {/* Embossed Country Name */}
+                            {/* Country Name */}
                             <h2
                                 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight mb-1.5"
                                 style={{
@@ -90,7 +224,7 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                                 {countryName}
                             </h2>
 
-                            {/* Embossed Tagline */}
+                            {/* Tagline */}
                             <p
                                 className="text-white/95 text-xs sm:text-sm font-semibold leading-relaxed line-clamp-2"
                                 style={{
@@ -103,7 +237,7 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                         </div>
                     </div>
 
-                    {/* ═══ TRANSPARENT SQUARE-ISH BUTTON (White embossed text + glass finish) ═══ */}
+                    {/* ── CTA Button ── */}
                     <div className="absolute bottom-3.5 sm:bottom-4 left-3.5 sm:left-4 right-3.5 sm:right-4 z-20">
                         <Link
                             to={countryLink}
@@ -129,7 +263,7 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                         </Link>
                     </div>
 
-                    {/* Full-card clickable area to navigate */}
+                    {/* Full-card clickable area */}
                     <Link
                         to={countryLink}
                         aria-label={`View ${countryName}`}
@@ -138,7 +272,7 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                 </div>
             </motion.div>
         </div>
-    )
-}
+    );
+};
 
-export default CountryCard
+export default CountryCard;
