@@ -28,7 +28,7 @@ const ContactBanner = () => {
         color="secondary"
         onClick={() => {
           closeSnackbar(key);
-          window.location.href = 'tel:+918777777777';
+          window.location.href = 'tel:+918000123456';
         }}
       >
         📞 Call Now
@@ -36,14 +36,13 @@ const ContactBanner = () => {
     );
 
     enqueueSnackbar(
-      'Visa Consultation:\n+91 8777 777 777\nAvailable: Mon-Sat , 9 AM - 6 PM',
+      'Visa Consultation:\n+91 80001 23456\nAvailable: Mon-Sat , 9 AM - 6 PM',
       {
         variant: 'success',
         autoHideDuration: 6000,
         anchorOrigin: {
           vertical: 'bottom',
           horizontal: 'right',
-          
         },
         action
       }
@@ -54,71 +53,74 @@ const ContactBanner = () => {
     <Box
       sx={{
         background: 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)',
-        py: { xs: 4, md: 6 }
+        py: { xs: 5, md: 7 }
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="xl" sx={{ maxWidth: '1400px', px: { xs: 2, sm: 4, md: 6, lg: 10 } }}>
         <motion.div
           variants={ctaVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.5 }}
         >
+          {/* Single unified box — text and number together, no gap */}
           <Box
             display="flex"
             alignItems="center"
-            justifyContent="space-between"
-            flexDirection={{ xs: 'column', md: 'row' }}
-            gap={{ xs: 3, md: 4 }}
+            justifyContent="center"
           >
-            {/* CTA Text */}
-            <Typography
-              variant="h4"
+            <Box
+              component="a"
+              href="tel:+918000123456"
+              onClick={handleCallClick}
               sx={{
-                color: 'white',
-                fontWeight: 600,
-                fontSize: { xs: '1.5rem', md: '1.875rem' },
-                textAlign: { xs: 'center', md: 'left' },
-                lineHeight: 1.3
+                display: 'inline-flex',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 0,
+                color: '#ffffff',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease, opacity 0.2s ease',
+                '&:hover': {
+                  opacity: 0.92,
+                  transform: 'scale(1.02)'
+                }
               }}
             >
-              Are you Looking for Visa Applications? Just Call us!
-            </Typography>
-
-            {/* Phone Button */}
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<PhoneIcon />}
-                onClick={handleCallClick}
+              <Typography
+                variant="h3"
+                component="span"
                 sx={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                  backdropFilter: 'blur(10px)',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
                   color: 'white',
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: '12px',
-                  textTransform: 'none',
-                  minWidth: '200px',
-                  boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                    border: '2px solid rgba(255, 255, 255, 0.5)',
-                    boxShadow: '0 12px 30px rgba(0,0,0,0.2)',
-                    transform: 'translateY(-2px)'
-                  },
-                  '& .MuiButton-startIcon': {
-                    marginRight: 1
-                  }
+                  fontWeight: 700,
+                  fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.1rem', lg: '2.4rem' },
+                  lineHeight: 1.25,
+                  fontFamily: "'Outfit', sans-serif",
+                  mr: { xs: 1.5, md: 2.5 }
                 }}
               >
-                +91 8777 777 777
-              </Button>
-            </motion.div>
+                Are you Looking for Visa Applications? Just Call us!
+              </Typography>
+
+              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: { xs: 1, md: 1.5 } }}>
+                <PhoneIcon sx={{ fontSize: { xs: 28, sm: 32, md: 38 }, color: '#ffffff' }} />
+                <Typography
+                  component="span"
+                  sx={{
+                    color: '#ffffff',
+                    fontWeight: 700,
+                    fontSize: { xs: '1.4rem', sm: '1.75rem', md: '2.15rem' },
+                    letterSpacing: '0.02em',
+                    whiteSpace: 'nowrap',
+                    fontFamily: "'Outfit', sans-serif",
+                    lineHeight: 1
+                  }}
+                >
+                  +91 80001 23456
+                </Typography>
+              </Box>
+            </Box>
           </Box>
         </motion.div>
       </Container>

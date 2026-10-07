@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Container } from '@mui/material';
 import { motion } from 'framer-motion';
 import { People, Assignment, Security } from '@mui/icons-material';
 
@@ -27,18 +27,11 @@ const WhyChooseUs = () => {
       sx={{
         bgcolor: '#f8f9fa',
         py: 10,
-        px: 2,
         display: 'flex',
         justifyContent: 'center',
       }}
     >
-      <Box
-        sx={{
-          width: '100%',
-          maxWidth: '1200px',
-          px: { xs: 2, md: 4 },
-        }}
-      >
+      <Container maxWidth="xl" sx={{ maxWidth: '1400px', px: { xs: 2, sm: 4, md: 6, lg: 10 } }}>
         <Box
           sx={{
             display: 'flex',
@@ -54,7 +47,7 @@ const WhyChooseUs = () => {
               / OUR BENEFITS
             </p>
 
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.6rem] font-bold text-gray-900 tracking-tight leading-tight mb-3 font-['Outfit',sans-serif]">
+            <h2 className="text-2xl sm:text-[1.8rem] md:text-[2rem] lg:text-[2.5rem] font-bold text-[#2c3e50] leading-[1.2] tracking-[-0.015em] mb-3 font-['Outfit',sans-serif]">
               The Reasons <br />
               To Choose Our Company
             </h2>
@@ -211,7 +204,7 @@ const WhyChooseUs = () => {
             </Box>
           </Box>
         </Box>
-      </Box>
+      </Container>
     </Box>
   );
 };

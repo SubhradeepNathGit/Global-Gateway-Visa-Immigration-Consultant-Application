@@ -1,21 +1,33 @@
 import React from 'react'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { deleteCart } from '../../../Redux/Slice/cartSlice';
 import hotToast from '../../../util/alert/hot-toast';
 import getSweetAlert from '../../../util/alert/sweetAlert';
 
 const CartHeaderWithAction = ({ cartItems, cartId }) => {
     const dispatch = useDispatch();
+    const { currentCart } = useSelector(state => state.cart);
+    const effectiveCartId = cartId || currentCart?.id || cartItems?.[0]?.cart_id;
 
     const handleClearCart = () => {
-        dispatch(deleteCart(cartId))
+        if (!effectiveCartId) {
+            getSweetAlert('Oops...', 'Cart ID not found', 'error');
+            return;
+        }
+
+        dispatch(deleteCart(effectiveCartId))
             .then(res => {
-                hotToast(`All course removed from cart`, "success");
+                if (res.meta.requestStatus === "fulfilled") {
+                    hotToast(`All courses removed from cart`, "success");
+                } else {
+                    console.error('Failed to clear cart:', res);
+                    getSweetAlert('Oops...', res.payload || 'Failed to remove courses from cart', 'error');
+                }
             })
             .catch(err => {
-                console.log('Error occured', err);
+                console.log('Error occurred', err);
                 getSweetAlert('Oops...', 'Something went wrong!', 'error');
-            })
+            });
     };
 
     return (

@@ -99,22 +99,48 @@ export default function VisaPolicyManage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  const scrollToEditForm = () => {
+    const scroll = () => {
+      if (editFormRef.current) {
+        const yOffset = -90;
+        const rect = editFormRef.current.getBoundingClientRect();
+        const top = rect.top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        editFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+    requestAnimationFrame(scroll);
+    setTimeout(scroll, 50);
+    setTimeout(scroll, 150);
+    setTimeout(scroll, 300);
+  };
+
+  const scrollToAddForm = () => {
+    const scroll = () => {
+      if (addVisaFormRef.current) {
+        const yOffset = -90;
+        const rect = addVisaFormRef.current.getBoundingClientRect();
+        const top = rect.top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        addVisaFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+    requestAnimationFrame(scroll);
+    setTimeout(scroll, 50);
+    setTimeout(scroll, 150);
+    setTimeout(scroll, 300);
+  };
+
   // Scroll to form when editing or adding
   useEffect(() => {
-    if (editingVisa && editFormRef.current) {
-      const timer = setTimeout(() => {
-        editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-      return () => clearTimeout(timer);
+    if (editingVisa) {
+      scrollToEditForm();
     }
   }, [editingVisa]);
 
   useEffect(() => {
-    if (isAddingVisaType && addVisaFormRef.current) {
-      const timer = setTimeout(() => {
-        addVisaFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-      return () => clearTimeout(timer);
+    if (isAddingVisaType) {
+      scrollToAddForm();
     }
   }, [isAddingVisaType]);
 
@@ -122,9 +148,7 @@ export default function VisaPolicyManage() {
     setEditingVisa(visa);
     setExpandedVisa(null);
     setIsAddingVisaType(false);
-    setTimeout(() => {
-      editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    scrollToEditForm();
   };
 
   const handleDragStart = (e, index) => {

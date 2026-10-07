@@ -251,7 +251,7 @@ const CountrySupportSection = () => {
             <p className="text-xs md:text-sm font-semibold tracking-[0.15em] text-red-600 uppercase mb-1.5">
               / COUNTRIES WE OFFER
             </p>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.6rem] font-bold text-gray-900 tracking-tight leading-tight">
+            <h2 className="text-2xl sm:text-[1.8rem] md:text-[2rem] lg:text-[2.5rem] font-bold text-[#2c3e50] leading-[1.2] tracking-[-0.015em]">
               Countries We Support for Immigration.
             </h2>
           </div>

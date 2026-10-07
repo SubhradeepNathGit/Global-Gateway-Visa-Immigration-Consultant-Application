@@ -7,6 +7,7 @@ import getSweetAlert from '../../../../util/alert/sweetAlert';
 import VisaProcessSteps from '../../../../Components/user/apply-visa/process/VisaProcessSteps';
 import { decodeBase64Url, encodeBase64Url } from '../../../../util/encodeDecode/base64';
 import { ArrowRight } from 'lucide-react';
+import { Container } from '@mui/material';
 
 const VisaProcess = () => {
   const navigate = useNavigate();
@@ -33,8 +34,19 @@ const VisaProcess = () => {
   };
 
   return (
-    <div className="w-full min-h-screen md:h-screen md:max-h-screen md:overflow-hidden bg-white flex flex-col justify-between py-6 lg:py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto w-full h-full flex flex-col justify-between flex-1">
+    <div className="w-full min-h-screen bg-white flex flex-col justify-between py-6 md:py-10">
+      <Container
+        maxWidth="xl"
+        sx={{
+          maxWidth: '1400px',
+          px: { xs: 2, sm: 4, md: 6, lg: 10 },
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          flex: 1
+        }}
+      >
 
         {/* Section Heading */}
         <motion.div
@@ -49,7 +61,7 @@ const VisaProcess = () => {
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-bold text-[#2c3e50] tracking-tight leading-tight">
             Get your Visa Approved in <span className="text-[#e53935]">3 Simple Steps</span>
           </h1>
-          <p className="mt-1.5 text-[#6c757d] text-xs sm:text-sm max-w-lg mx-auto leading-relaxed">
+          <p className="mt-1.5 text-[#6c757d] text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed">
             Our streamlined process makes applying for a visa simple, fast and completely online.
           </p>
         </motion.div>
@@ -78,7 +90,7 @@ const VisaProcess = () => {
           </button>
         </motion.div>
 
-      </div>
+      </Container>
     </div>
   );
 };

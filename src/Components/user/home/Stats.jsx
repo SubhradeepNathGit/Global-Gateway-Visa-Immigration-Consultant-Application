@@ -169,7 +169,7 @@ const StatsSection = () => {
         }
       }}
     >
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1, maxWidth: '1400px', px: { xs: 2, sm: 4, md: 6, lg: 10 } }}>
         <Box
           sx={{
             display: 'grid',

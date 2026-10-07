@@ -1,5 +1,6 @@
 import React from 'react'
 import { CheckCircle } from 'lucide-react';
+import { Container } from '@mui/material';
 import OverviewSection from './course-content/OverviewSection';
 import DocumentSection from './course-content/DocumentSection';
 import InstructorSection from './course-content/InstructorSection';
@@ -9,7 +10,14 @@ import CourseFeatures from './CourseFeatures';
 const CourseContent = ({ isPurchased, course, activeTab, setActiveTab, ratingAvg, userCount, certificates, userAuthData }) => {
 
     return (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-8">
+        <Container
+            maxWidth="xl"
+            sx={{
+                maxWidth: '1400px',
+                px: { xs: 2, sm: 4, md: 6, lg: 10 },
+                py: { xs: 4, md: 6 }
+            }}
+        >
             <div className="grid lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                     <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
@@ -59,7 +67,7 @@ const CourseContent = ({ isPurchased, course, activeTab, setActiveTab, ratingAvg
                 {/* Sidebar */}
                 <CourseFeatures course={course} />
             </div>
-        </div>
+        </Container>
     )
 }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Grid, Typography, Button, IconButton } from '@mui/material';
+import { Box, Grid, Typography, Button, IconButton, Container } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -16,13 +16,12 @@ const About = () => {
       component="section"
       sx={{
         py: { xs: 8, md: 12 },
-        px: { xs: 2.5, sm: 6, md: 8, lg: 12 },
         backgroundColor: '#f8fafc',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      <Box sx={{ maxWidth: 1360, mx: 'auto' }}>
+      <Container maxWidth="xl" sx={{ maxWidth: '1400px', px: { xs: 2, sm: 4, md: 6, lg: 10 } }}>
         <Grid container spacing={{ xs: 6, lg: 7 }} alignItems="center">
 
           {/* LEFT SIDE – ENLARGED HERO IMAGE + STAMP + BADGE */}
@@ -185,14 +184,14 @@ const About = () => {
                 viewport={{ once: true }}
               >
                 <Typography
-                  variant="h3"
-                  fontWeight={700}
+                  variant="h2"
                   sx={{
-                    mt: 2,
-                    mb: 3,
-                    color: '#2c3e50',
+                    fontWeight: 'bold',
+                    fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem', lg: '2.5rem' },
                     lineHeight: 1.2,
-                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                    color: '#2c3e50',
+                    mt: 2,
+                    mb: 3
                   }}
                 >
                   Award Winning Visa &amp;<br />
@@ -387,7 +386,7 @@ const About = () => {
             </Box>
           </Grid>
         </Grid>
-      </Box>
+      </Container>
     </Box>
   );
 };

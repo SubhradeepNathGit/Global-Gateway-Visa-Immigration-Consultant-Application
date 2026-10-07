@@ -101,7 +101,7 @@ const Cart = () => {
       <CartBanner />
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 max-w-7xl">
+      <div className="mx-auto px-4 sm:px-8 md:px-12 lg:px-20 py-10 sm:py-14 max-w-[1400px]">
         {(isCartLoading || isChargesLoading || isCodeLoading) ? (
           <div className="flex items-center justify-center py-32">
             <div className="text-center">

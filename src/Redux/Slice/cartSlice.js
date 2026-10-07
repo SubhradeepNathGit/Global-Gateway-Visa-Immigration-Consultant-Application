@@ -31,7 +31,7 @@ export const fetchCartItems = createAsyncThunk("cartSlice/fetchCartItems",
 
         try {
             const res = await supabase.from("cart_items").select(`
-          id,course_id, courses (*,course_content (*))`).eq("cart_id", cartId);
+          id,cart_id,course_id, courses (*,course_content (*))`).eq("cart_id", cartId);
 
             if (res?.error) throw res?.error;
 
@@ -80,17 +80,36 @@ export const removeCartItem = createAsyncThunk("cartSlice/removeCartItem",
     }
 );
 
-// delete Cart
+// delete Cart / clear all items in cart
 export const deleteCart = createAsyncThunk("cartSlice/deleteCart",
-    async (cartId, { rejectWithValue }) => {
-        // console.log('Deleting cart id', cartId);
-
+    async (cartId, { getState, rejectWithValue }) => {
         try {
-            const { error } = await supabase.from("carts").delete().eq("id", cartId);
+            const state = getState();
+            const targetCartId = cartId || state?.cart?.currentCart?.id || state?.cart?.cartItems?.[0]?.cart_id;
 
-            if (error) throw error;
+            if (!targetCartId) {
+                return rejectWithValue("Cart ID is missing");
+            }
 
-            return cartId;
+            // 1. Delete all items belonging to this cart
+            const { error: itemsError } = await supabase
+                .from("cart_items")
+                .delete()
+                .eq("cart_id", targetCartId);
+
+            if (itemsError) throw itemsError;
+
+            // 2. Also try deleting the cart row from carts table if allowed
+            const { error: cartError } = await supabase
+                .from("carts")
+                .delete()
+                .eq("id", targetCartId);
+
+            if (cartError) {
+                console.warn("Notice: carts record delete skipped/failed:", cartError.message);
+            }
+
+            return targetCartId;
         } catch (error) {
             return rejectWithValue(error.message);
         }
@@ -176,7 +195,6 @@ export const cartSlice = createSlice({
             })
             .addCase(deleteCart.fulfilled, (state) => {
                 state.isCartLoading = false;
-                state.currentCart = null;
                 state.cartItems = [];
             })
             .addCase(deleteCart.rejected, (state, action) => {

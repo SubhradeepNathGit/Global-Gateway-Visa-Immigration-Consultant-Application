@@ -3,7 +3,7 @@ import { CheckCircle, User, FileText, PlaneTakeoff } from 'lucide-react';
 import { formatDateDDMMYYYY } from '../../../../util/dateFormat/dateFormatConvertion';
 import { calculateExpirationDate } from '../../../../util/expiration-date/calculateVisaExpirationDate';
 
-const ApproveLetter = forwardRef(({ visa, countryDetails, visaData, applicationDetails }, ref) => {
+const ApproveLetter = forwardRef(({ visa, countryDetails, visaData, applicationDetails, className = '' }, ref) => {
 
   // console.log('visa', visa);
   // console.log('country', countryDetails);
@@ -14,15 +14,15 @@ const ApproveLetter = forwardRef(({ visa, countryDetails, visaData, applicationD
   const expirationDate = calculateExpirationDate(applicationDetails?.approval_date, applicationDetails?.application_visa_details?.validity);
 
   return (
-    <div ref={ref} className="bg-white p-8 max-w-4xl mx-auto text-gray-900" style={{ fontFamily: 'Times New Roman, serif', fontSize: '11pt', lineHeight: '1.5' }}>
+    <div ref={ref} className={`bg-white text-gray-900 ${className || 'p-8 max-w-4xl mx-auto'}`} style={{ fontFamily: 'Times New Roman, serif', fontSize: '11pt', lineHeight: '1.5' }}>
 
       {/* Header with Official Logo */}
       <div className="text-center mb-6 pb-4 border-b-2 border-gray-800">
-        <div className="relative w-20 h-20 border-4 border-blue-900 rounded-full mx-auto mb-3 flex items-center justify-center bg-white">
-          <PlaneTakeoff className="w-10 h-10 text-blue-900" strokeWidth={2.5} />
+        <div className="flex items-center justify-center gap-2.5 mb-1">
+          <PlaneTakeoff className="w-7 h-7 text-gray-800" strokeWidth={2.5} />
+          <h1 className="text-2xl font-bold uppercase text-gray-900" style={{ letterSpacing: '0.15em' }}>GLOBAL GATEWAY</h1>
         </div>
-        <h1 className="text-2xl font-bold uppercase mb-1 text-gray-900" style={{ letterSpacing: '0.15em' }}>GLOBAL GATEWAY</h1>
-        <p className="text-base font-semibold text-gray-800">International Visa Services</p>
+        <p className="text-base font-semibold text-gray-800">International Visa & Immigration Services</p>
         <p className="text-xs text-gray-600 mt-1">In partnership with {countryDetails?.name} Embassy</p>
       </div>
 

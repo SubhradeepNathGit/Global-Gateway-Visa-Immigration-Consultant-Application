@@ -42,53 +42,58 @@ const PricingCard = ({ isPurchased, course, setCartDrawer, setActiveTab, userId 
 
     const purchasedCourse = allOrders?.map(order => order?.id);
 
+    // Client-side duplicate guard — check redux cart state before hitting API
+    const isAlreadyInCart = cartItems?.some(item => item?.courses?.id === course?.id);
+
     const addToCart = (course) => {
 
         if (!userAuthData) {
             navigate('/authentication');
+            return;
         }
-        else if (purchasedCourse?.includes(course?.id)) {
+        if (purchasedCourse?.includes(course?.id)) {
             hotToast("Course already purchased", "info", <Info className='text-orange-600' />);
             return;
         }
-        else {
-            if (!course) return;
-
-            dispatch(getOrCreateCart(userId))
-                .then(res => {
-                    // console.log('Response for getting cart details for specific user', res);
-
-                    dispatch(addCartItem({ cartId: res?.payload?.id, courseId: course?.id }))
-                        .then(res => {
-                            // console.log('Response for adding new product', res);
-
-                            if (res.meta.requestStatus === "fulfilled") {
-                                hotToast(`Course added to cart`, "success");
-                                setCartDrawer(true);
-                                dispatch(fetchCartItems(res?.payload?.cart_id))
-                            }
-                            else if (res?.payload == 'duplicate key value violates unique constraint "cart_items_cart_id_course_id_key"') {
-                                hotToast(`Course already added in cart`, "info", <Info className='text-orange-400' />);
-                            }
-                            else {
-                                getSweetAlert("Error", "Update failed", "error");
-                            }
-                        })
-                        .catch(err => {
-                            console.log('Error occured', err);
-                            getSweetAlert('Oops...', 'Something went wrong!', 'error');
-                        })
-                })
-                .catch(err => {
-                    console.log(err);
-                    getSweetAlert('Oops...', 'Something went wrong!', 'error');
-                })
+        // Prevent duplicate cart add — show friendly message before API call
+        if (isAlreadyInCart) {
+            hotToast("Already in your cart!", "info", <Info className='text-orange-400' />);
+            setCartDrawer(true);
+            return;
         }
+        if (!course) return;
+
+        dispatch(getOrCreateCart(userId))
+            .then(res => {
+                dispatch(addCartItem({ cartId: res?.payload?.id, courseId: course?.id }))
+                    .then(res => {
+                        if (res.meta.requestStatus === "fulfilled") {
+                            hotToast(`Course added to cart`, "success");
+                            setCartDrawer(true);
+                            dispatch(fetchCartItems(res?.payload?.cart_id));
+                        }
+                        else if (res?.payload == 'duplicate key value violates unique constraint "cart_items_cart_id_course_id_key"') {
+                            hotToast(`Already in your cart!`, "info", <Info className='text-orange-400' />);
+                            dispatch(fetchCartItems(res?.payload?.cart_id));
+                        }
+                        else {
+                            getSweetAlert("Error", "Update failed", "error");
+                        }
+                    })
+                    .catch(err => {
+                        console.log('Error occured', err);
+                        getSweetAlert('Oops...', 'Something went wrong!', 'error');
+                    });
+            })
+            .catch(err => {
+                console.log(err);
+                getSweetAlert('Oops...', 'Something went wrong!', 'error');
+            });
     };
 
     return (
         <div className="lg:col-span-2">
-            <div className=" bg-white/20 backdrop-blur-lg border border-white/50 rounded-2xl sticky top-4 shadow-lg overflow-hidden">
+            <div className="bg-white/20 backdrop-blur-lg border border-white/50 rounded-2xl sticky top-24 shadow-lg overflow-y-auto max-h-[calc(100vh-6rem)]" style={{ scrollbarWidth: 'none' }}>
 
                 {/* Image with Icon */}
                 <div className="relative h-56">
@@ -145,15 +150,24 @@ const PricingCard = ({ isPurchased, course, setCartDrawer, setActiveTab, userId 
                                 </p>
                             </div>
 
-                            {/* Add to Cart Button */}
+                            {/* Add to Cart Button — disabled + labelled when already in cart */}
                             <button
                                 onClick={() => addToCart(course)}
-                                className="w-full bg-red-400 hover:bg-[#E63946] text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] text-lg cursor-pointer"
+                                disabled={isAlreadyInCart}
+                                className={`w-full font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg text-lg
+                                    ${ isAlreadyInCart
+                                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                        : 'bg-red-400 hover:bg-[#E63946] text-white hover:shadow-xl transform hover:scale-[1.02] cursor-pointer'
+                                    }`}
                             >
                                 {isCartAddLoading ? (
                                     <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                ) : (<ShoppingCart className="w-6 h-6" />)}
-                                Add to Cart
+                                ) : isAlreadyInCart ? (
+                                    <CheckCircle className="w-6 h-6 text-gray-400" />
+                                ) : (
+                                    <ShoppingCart className="w-6 h-6" />
+                                )}
+                                {isAlreadyInCart ? 'Already in Cart' : 'Add to Cart'}
                             </button>
                         </>
                     )}

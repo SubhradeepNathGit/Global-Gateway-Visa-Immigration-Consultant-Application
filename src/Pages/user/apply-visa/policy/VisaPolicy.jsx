@@ -12,6 +12,7 @@ import { decodeBase64Url, encodeBase64Url } from '../../../../util/encodeDecode/
 import { useDispatch, useSelector } from 'react-redux';
 import { checkLoggedInUser } from '../../../../Redux/Slice/auth/checkAuthSlice';
 import { useVisaDetailsByCountryAndVisitor } from '../../../../tanstack/query/getVisaDetailsViaCountryNameAndVisitorCountryId';
+import { Container } from '@mui/material';
 
 const policyData = {
     'General Policies': {
@@ -112,9 +113,15 @@ const VisaPolicies = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 py-6 md:py-10">
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-10 py-8 md:py-12">
+            <Container
+                maxWidth="xl"
+                sx={{
+                    maxWidth: '1400px',
+                    px: { xs: 2, sm: 4, md: 6, lg: 10 }
+                }}
+            >
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
                     {/* Left Sidebar */}
                     <PolicySidebar visaPolicyCategories={countryWiseVisaDetails} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} currentPolicy={currentPolicy} />
@@ -173,7 +180,7 @@ const VisaPolicies = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </Container>
         </div>
     );
 };

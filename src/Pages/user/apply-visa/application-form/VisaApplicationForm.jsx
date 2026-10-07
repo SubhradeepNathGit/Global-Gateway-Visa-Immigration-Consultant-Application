@@ -15,6 +15,7 @@ import { useVisaDetailsByCountryAndVisitor } from "../../../../tanstack/query/ge
 import { decodeBase64Url } from "../../../../util/encodeDecode/base64";
 import { Loader2 } from "lucide-react";
 import { useFullApplicationDetailsById } from "../../../../tanstack/query/getFullApplicationDetails";
+import { Container } from "@mui/material";
 
 export default function VisaApplicationForm() {
   const dispatch = useDispatch();
@@ -96,11 +97,16 @@ export default function VisaApplicationForm() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-
-      {step !== 6 && (
-        <header className="bg-white">
-          <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
+    <div className="min-h-screen bg-white py-6 md:py-10">
+      <Container
+        maxWidth="xl"
+        sx={{
+          maxWidth: '1400px',
+          px: { xs: 2, sm: 4, md: 6, lg: 10 }
+        }}
+      >
+        {step !== 6 && (
+          <header className="mb-6 flex items-center justify-between">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Visa Application</h1>
               <p className="text-sm text-gray-600 mt-1">
@@ -116,36 +122,34 @@ export default function VisaApplicationForm() {
                 </p>
               </div>
             )}
-          </div>
-        </header>
-      )}
+          </header>
+        )}
 
-      {/* Progress bar*/}
-      {step !== 6 && (
-        <div className="bg-white">
-          <div className="max-w-6xl mx-auto px-4">
+        {/* Progress bar*/}
+        {step !== 6 && (
+          <div className="mb-6">
             <ProgressBar step={Math.min(step, 6)} />
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Main Content Container */}
-      <div className={`${step === 6 ? "w-full" : "max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8"}`}>
-        <div
-          className={`transition-all duration-300 ${step === 6
-            ? ""
-            : "bg-white rounded-2xl overflow-hidden"
-            }`}
-        >
-          {step === 1 && <Step1PersonalInfo onNext={next} onApplicationCreated={(id) => setApplicationId(id)} country_id={countryId} application_id={finalAppId} user_data={userAuthData} />}
-          {step === 2 && <Step2PassportDetails onNext={next} onBack={prev} user_id={userAuthData?.id} application_id={finalAppId} />}
-          {step === 3 && <Step3VisaType onNext={next} onBack={prev} countryWiseVisaDetails={countryWiseVisaDetails} user_id={userAuthData?.id} application_id={finalAppId} />}
-          {step === 4 && <Step4UploadDocuments onNext={next} onBack={prev} user_id={userAuthData?.id} application_id={finalAppId} />}
-          {step === 5 && <Step5Review onNext={next} onBack={prev} onEdit={goToStep} user_id={userAuthData?.id} application_id={finalAppId} />}
-          {step === 6 && <Payment onBack={prev} countryWiseVisaDetails={countryWiseVisaDetails} application_id={finalAppId} applicationDetails={applicationDetails} />}
+        {/* Main Content Container */}
+        <div className="w-full">
+          <div
+            className={`transition-all duration-300 ${step === 6
+              ? ""
+              : "bg-white rounded-2xl overflow-hidden"
+              }`}
+          >
+            {step === 1 && <Step1PersonalInfo onNext={next} onApplicationCreated={(id) => setApplicationId(id)} country_id={countryId} application_id={finalAppId} user_data={userAuthData} />}
+            {step === 2 && <Step2PassportDetails onNext={next} onBack={prev} user_id={userAuthData?.id} application_id={finalAppId} />}
+            {step === 3 && <Step3VisaType onNext={next} onBack={prev} countryWiseVisaDetails={countryWiseVisaDetails} user_id={userAuthData?.id} application_id={finalAppId} />}
+            {step === 4 && <Step4UploadDocuments onNext={next} onBack={prev} user_id={userAuthData?.id} application_id={finalAppId} />}
+            {step === 5 && <Step5Review onNext={next} onBack={prev} onEdit={goToStep} user_id={userAuthData?.id} application_id={finalAppId} />}
+            {step === 6 && <Payment onBack={prev} countryWiseVisaDetails={countryWiseVisaDetails} application_id={finalAppId} applicationDetails={applicationDetails} />}
+          </div>
         </div>
-      </div>
 
+      </Container>
     </div>
   );
 }

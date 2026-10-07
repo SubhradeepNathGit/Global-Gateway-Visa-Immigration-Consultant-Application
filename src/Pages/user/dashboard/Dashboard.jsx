@@ -150,7 +150,7 @@ const Dashboard = () => {
       />
 
       {/* Tabs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-8 md:px-12 lg:px-20 mb-8">
         <div className="bg-white rounded-xl shadow-sm border border-slate-200">
           <div className="border-b border-slate-200">
             <nav className="flex -mb-px overflow-x-auto">

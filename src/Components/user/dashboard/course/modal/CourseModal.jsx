@@ -1,28 +1,144 @@
-import React from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Download, X } from 'lucide-react'
 import CourseCertificate from '../../letter/CourseCertificate'
 import { handleDownloadCertificate } from '../../../../../util/pdfUtils'
 
+const CERT_W = 1056
+const CERT_H = 816
+
 const CourseModal = ({ course, certificateRef, certificate, userAuthData, setShowCertificateModal }) => {
+    const [scale, setScale] = useState(1)
+
+    const computeScale = useCallback(() => {
+        // Reserve space: 56px for top bar + 32px vertical padding
+        const availW = window.innerWidth - 32
+        const availH = window.innerHeight - 56 - 32
+        const s = Math.min(availW / CERT_W, availH / CERT_H, 1)
+        setScale(s)
+    }, [])
+
+    useEffect(() => {
+        computeScale()
+        window.addEventListener('resize', computeScale)
+        return () => window.removeEventListener('resize', computeScale)
+    }, [computeScale])
+
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-300">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="flex items-center justify-between px-8 py-5 border-b border-slate-100 bg-slate-50/50">
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-900">Course Certificate</h2>
-                        <p className="text-sm text-slate-500 font-medium">{course?.course_name}</p>
-                    </div>
-                    <button
-                        onClick={() => setShowCertificateModal(false)}
-                        className="p-2 hover:bg-white hover:shadow-md rounded-xl transition-all group"
-                        type="button"
-                    >
-                        <X className="w-6 h-6 text-slate-400 group-hover:text-red-500 transition-colors cursor-pointer" />
-                    </button>
+        <div
+            style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 1000,
+                display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: 'rgba(0,0,0,0.88)',
+                backdropFilter: 'blur(8px)',
+            }}
+        >
+            {/* ── Top Bar ── */}
+            <div
+                style={{
+                    height: '56px',
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0 24px',
+                    borderBottom: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.04)',
+                }}
+            >
+                <div>
+                    <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>
+                        Course Certificate
+                    </p>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.55)', marginTop: '2px' }}>
+                        {course?.course_name}
+                    </p>
                 </div>
 
-                <div className="flex-1 overflow-y-auto bg-slate-100/50 p-8 glass-scrollbar">
-                    <div className="shadow-2xl">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <button
+                        onClick={() => handleDownloadCertificate(userAuthData, course, certificate)}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '8px 18px',
+                            borderRadius: '10px',
+                            border: 'none',
+                            background: 'linear-gradient(135deg,#1d4ed8,#2563eb)',
+                            color: '#fff',
+                            fontWeight: 700,
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 14px rgba(37,99,235,0.45)',
+                        }}
+                        type="button"
+                    >
+                        <Download style={{ width: 15, height: 15 }} />
+                        Download PDF
+                    </button>
+
+                    <button
+                        onClick={() => setShowCertificateModal(false)}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '10px',
+                            border: 'none',
+                            background: 'rgba(255,255,255,0.1)',
+                            cursor: 'pointer',
+                        }}
+                        type="button"
+                        aria-label="Close"
+                    >
+                        <X style={{ width: 18, height: 18, color: 'rgba(255,255,255,0.8)' }} />
+                    </button>
+                </div>
+            </div>
+
+            {/* ── Certificate Viewport ── */}
+            <div
+                style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '16px',
+                    overflow: 'hidden',
+                }}
+            >
+                {/*
+                  Outer shell: sized to exactly what the scaled certificate occupies,
+                  so box-shadow / rounded corners wrap it cleanly.
+                */}
+                <div
+                    style={{
+                        width: `${CERT_W * scale}px`,
+                        height: `${CERT_H * scale}px`,
+                        position: 'relative',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        boxShadow: '0 32px 80px rgba(0,0,0,0.7)',
+                        flexShrink: 0,
+                    }}
+                >
+                    {/* Scale the certificate from its top-left origin */}
+                    <div
+                        style={{
+                            width: `${CERT_W}px`,
+                            height: `${CERT_H}px`,
+                            transform: `scale(${scale})`,
+                            transformOrigin: 'top left',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                        }}
+                    >
                         <CourseCertificate
                             ref={certificateRef}
                             userAuthData={userAuthData}
@@ -30,22 +146,6 @@ const CourseModal = ({ course, certificateRef, certificate, userAuthData, setSho
                             certificateData={certificate}
                         />
                     </div>
-                </div>
-
-                <div className="px-8 py-5 border-t border-slate-100 bg-white flex justify-end gap-4">
-                    <button
-                        onClick={() => setShowCertificateModal(false)}
-                        className="px-6 py-2.5 text-sm font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-all cursor-pointer"
-                    >
-                        Close
-                    </button>
-                    <button
-                        onClick={() => handleDownloadCertificate(userAuthData, course, certificate)}
-                        className="px-8 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all flex items-center gap-2 cursor-pointer"
-                    >
-                        <Download className="w-4 h-4" />
-                        Download Certificate
-                    </button>
                 </div>
             </div>
         </div>

@@ -78,7 +78,7 @@ const VisaProcessSection = () => {
         overflow: 'hidden'
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="xl" sx={{ maxWidth: '1400px', px: { xs: 2, sm: 4, md: 6, lg: 10 } }}>
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -105,18 +105,18 @@ const VisaProcessSection = () => {
             
             <motion.div variants={itemVariants}>
               <Typography
-                variant="h1"
+                variant="h2"
                 sx={{
-                  fontSize: { xs: '2.5rem', md: '3.75rem', lg: '4.5rem' },
-                  fontWeight: 700,
-                  color: '#1e293b',
-                  lineHeight: 1.1,
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem', lg: '2.5rem' },
+                  lineHeight: 1.2,
+                  color: '#2c3e50',
                   maxWidth: '900px',
                   mx: 'auto'
                 }}
               >
                 Get your Visa Approved in{' '}
-                <Box component="span" sx={{ display: 'block' }}>
+                <Box component="span" sx={{ display: { xs: 'inline', sm: 'block' } }}>
                   3 Simple Steps
                 </Box>
               </Typography>

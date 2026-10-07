@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { Container } from '@mui/material';
+import { AnimatePresence } from 'framer-motion';
 import CourseDetailsHeader from '../../../../Components/user/course/course-details/CourseDetailsHeader';
 import PricingCard from '../../../../Components/user/course/course-details/PricingCard';
 import CourseContent from '../../../../Components/user/course/course-details/CourseContent';
@@ -148,7 +150,14 @@ const CourseDetails = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
         {/* Hero Section */}
         <div className="bg-gradient-to-r from-gray-900 to-[#556b7a] text-white shadow-2xl">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-8 sm:py-12">
+          <Container
+            maxWidth="xl"
+            sx={{
+              maxWidth: '1400px',
+              px: { xs: 2, sm: 4, md: 6, lg: 10 },
+              py: { xs: 4, sm: 6 }
+            }}
+          >
             <button onClick={() => navigate('/course')} className="flex items-center text-white/80 hover:text-white mb-6 transition-colors font-medium text-sm cursor-pointer">
               <ArrowLeft className="w-4 h-4 mr-2" />Back to Courses
             </button>
@@ -158,7 +167,7 @@ const CourseDetails = () => {
               {/* Price Card */}
               <PricingCard isPurchased={isPurchased} course={course} setCartDrawer={setCartDrawer} setActiveTab={setActiveTab} userId={userAuthData?.id} />
             </div>
-          </div>
+          </Container>
         </div>
 
         {/* Course Content */}
@@ -166,9 +175,11 @@ const CourseDetails = () => {
       </div>
 
       {/* Cart Drawer */}
-      {cartDrawer && (
-        <CartDrawer cartItems={cartItems} cartId={currentCart?.id} setCartDrawer={setCartDrawer} />
-      )}
+      <AnimatePresence>
+        {cartDrawer && (
+          <CartDrawer cartItems={cartItems} cartId={currentCart?.id} setCartDrawer={setCartDrawer} />
+        )}
+      </AnimatePresence>
     </>
   );
 };

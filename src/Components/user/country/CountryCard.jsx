@@ -41,7 +41,7 @@ const CountryCard = ({ countryId, countryName, countryDescription, countryData }
                 className="w-full relative group cursor-pointer"
             >
                 {/* ═══ CARD CONTAINER: Height (320px-350px), crisp rounded-xl ═══ */}
-                <div className="country-card relative h-[320px] sm:h-[350px] w-full rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-gray-900">
+                <div className="country-card relative h-[360px] sm:h-[400px] w-full rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-gray-900">
                     
                     {/* ═══ BACKGROUND IMAGE: Instant solid render (NO pulsing, NO heartbeat animation) ═══ */}
                     <div className="absolute inset-0 overflow-hidden bg-gray-900">

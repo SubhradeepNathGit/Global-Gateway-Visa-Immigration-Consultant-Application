@@ -12,6 +12,8 @@ export default function AdminLayout() {
   useEffect(() => {
     document.documentElement.style.backgroundColor = '#0b1020';
     document.body.style.backgroundColor = '#0b1020';
+    document.documentElement.classList.add('admin-theme');
+    document.body.classList.add('admin-theme');
     window.history.pushState(null, document.title, window.location.href);
     const handlePopState = () => {
       if (window.location.pathname === '/admin/dashboard') {
@@ -19,7 +21,13 @@ export default function AdminLayout() {
       }
     };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      document.documentElement.classList.remove('admin-theme');
+      document.body.classList.remove('admin-theme');
+      document.documentElement.style.backgroundColor = '';
+      document.body.style.backgroundColor = '';
+    };
   }, []);
 
 

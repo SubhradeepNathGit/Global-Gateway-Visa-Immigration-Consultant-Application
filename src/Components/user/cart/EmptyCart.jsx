@@ -55,9 +55,6 @@ const EmptyCart = ({ navigateBack }) => {
                 </button>
             </div>
 
-            {/* Divider */}
-            <div className="border-t border-gray-200 mb-10" />
-
             {/* Popular Services */}
             <div className="max-w-3xl mx-auto">
                 <h3 className="text-base font-semibold text-gray-900 mb-5 text-center">Popular Services</h3>

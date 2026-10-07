@@ -31,7 +31,7 @@ const CartItemCard = ({ item, index, cartId }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, x: -100, height: 0 }}
             transition={{ duration: 0.3 }}
-            className={`relative bg-white rounded-xl shadow-sm transition-all p-5 sm:p-6 border border-slate-200 group
+            className={`relative bg-white rounded-xl shadow-sm transition-all p-5 sm:p-6 border border-slate-200 group overflow-hidden
             ${isInactive ? "opacity-50 grayscale" : "hover:shadow-lg"} `}>
 
             <div className="flex flex-col sm:flex-row gap-5">

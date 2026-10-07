@@ -12,7 +12,9 @@ const ContactInfo = () => {
                     </div>
                     <div>
                         <p className="text-[10px] font-black text-[#6c757d] uppercase tracking-[0.2em] mb-1.5 opacity-60">Call Anytime</p>
-                        <p className="text-[15px] lg:text-[17px] font-bold text-[#2c3e50] tracking-tight whitespace-nowrap">+91-80001-23456</p>
+                        <a href="tel:+918000123456" className="text-[15px] lg:text-[17px] font-bold text-[#2c3e50] tracking-tight whitespace-nowrap hover:text-[#e53935] transition-colors block">
+                            +91-80001-23456
+                        </a>
                     </div>
                 </div>
 
@@ -23,7 +25,9 @@ const ContactInfo = () => {
                     </div>
                     <div>
                         <p className="text-[10px] font-black text-[#6c757d] uppercase tracking-[0.2em] mb-1.5 opacity-60">Email Us</p>
-                        <p className="text-[15px] lg:text-[17px] font-bold text-[#2c3e50] tracking-tight truncate">info@globalgateway.com</p>
+                        <a href="mailto:info@globalgateway.com" className="text-[15px] lg:text-[17px] font-bold text-[#2c3e50] tracking-tight truncate hover:text-[#e53935] transition-colors block">
+                            info@globalgateway.com
+                        </a>
                     </div>
                 </div>
 

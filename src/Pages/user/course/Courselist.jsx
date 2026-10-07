@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllCourses } from '../../../Redux/Slice/courseSlice';
 import getSweetAlert from '../../../util/alert/sweetAlert';
 import { Loader2 } from 'lucide-react';
+import { Container } from '@mui/material';
 
 const CourseList = () => {
 
@@ -48,8 +49,14 @@ const CourseList = () => {
       <CourseBanner />
 
       {/* Course Cards Section */}
-      <div className="py-8 sm:py-12 lg:py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+      <div className="py-6 md:py-10">
+        <Container
+          maxWidth="xl"
+          sx={{
+            maxWidth: '1400px',
+            px: { xs: 2, sm: 4, md: 6, lg: 10 }
+          }}
+        >
 
           {isCourseLoading ? (
             <div className="flex flex-wrap justify-center -m-4 lg:mx-8 md:mx-2">
@@ -66,7 +73,7 @@ const CourseList = () => {
               ))}
             </div>
           )}
-        </div>
+        </Container>
       </div>
 
       <style>{`

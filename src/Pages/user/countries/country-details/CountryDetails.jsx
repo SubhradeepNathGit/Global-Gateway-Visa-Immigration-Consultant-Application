@@ -8,15 +8,13 @@ import CountryDescription from "../../../../Components/user/country/country-deta
 import KeyInformation from "../../../../Components/user/country/country-details/KeyInformation";
 import CountryMap from "../../../../Components/user/country/country-details/CountryMap";
 import Disclaimer from "../../../../Components/user/country/country-details/Disclaimer";
-import ContactInfo from "../../../../Components/user/country/country-details/ContactInfo";
-import CountryCTA from "../../../../Components/user/country/country-details/CountryCTA";
 import VisaListDropdown from "../../../../Components/user/country/country-details/VisaListDropdown";
 import { decodeBase64Url } from "../../../../util/encodeDecode/base64";
 import { useVisaDetailsByCountryAndVisitor } from "../../../../tanstack/query/getVisaDetailsViaCountryNameAndVisitorCountryId";
 import { useDispatch, useSelector } from "react-redux";
 import { checkLoggedInUser } from "../../../../Redux/Slice/auth/checkAuthSlice";
 import getSweetAlert from "../../../../util/alert/sweetAlert";
-import { Skeleton } from "@mui/material";
+import { Skeleton, Container } from "@mui/material";
 
 const CountryDetails = () => {
   const { country_id } = useParams();
@@ -35,9 +33,6 @@ const CountryDetails = () => {
       });
   }, [dispatch]);
 
-  const handleContinue = () => {
-    alert("Continue without Applying clicked - would navigate to /coachingcards");
-  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -57,6 +52,37 @@ const CountryDetails = () => {
       y: 0,
       transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
     }
+  };
+
+  // Helpers for formatting large numbers
+  const formatPopulation = (pop) => {
+    if (!pop) return '—';
+    if (pop >= 1_000_000_000) return `${(pop / 1_000_000_000).toFixed(1)}B`;
+    if (pop >= 1_000_000) return `${(pop / 1_000_000).toFixed(1)}M`;
+    if (pop >= 1_000) return `${(pop / 1_000).toFixed(0)}K`;
+    return pop.toLocaleString();
+  };
+  const formatArea = (area) => {
+    if (!area) return '—';
+    return `${Number(area).toLocaleString()} sq km`;
+  };
+  // currency comes from API as {code, name, symbol} or a plain string
+  const formatCurrency = (currency) => {
+    if (!currency) return '—';
+    if (typeof currency === 'string') return currency;
+    if (typeof currency === 'object') {
+      const parts = [currency.name, currency.code && `(${currency.code})`].filter(Boolean);
+      return parts.join(' ') || '—';
+    }
+    return '—';
+  };
+  // languages comes from API as an array, object, or string
+  const formatLanguages = (languages) => {
+    if (!languages) return '—';
+    if (typeof languages === 'string') return languages;
+    if (Array.isArray(languages)) return languages.join(', ') || '—';
+    if (typeof languages === 'object') return Object.values(languages).join(', ') || '—';
+    return '—';
   };
 
   // State to check if all necessary data is loaded
@@ -87,24 +113,32 @@ const CountryDetails = () => {
   }
 
   return (
-    <div className="bg-[#FAFAFA] min-h-screen pb-10 lg:pb-12">
-      {/* Premium Back Navigation */}
-      <div className="max-w-8xl mx-auto  sm:px-6 lg:px-12 pt-2 lg:pt-2">
-        <Link to='/country'
-          className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl text-gray-400 hover:text-[#FF5252] hover:border-[#FF5252]/20 transition-all group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
-          <span className="text-xs font-bold uppercase ">Back</span>
-        </Link>
-      </div>
-
-      {/* Main Content Dashboard */}
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-0 lg:py-0"
+    <div className="bg-[#FAFAFA] min-h-screen pt-2 sm:pt-3 md:pt-4 pb-8 md:pb-12">
+      <Container
+        maxWidth="xl"
+        sx={{
+          maxWidth: '1400px',
+          px: { xs: 2, sm: 4, md: 6, lg: 10 }
+        }}
       >
+        {/* Premium Back Navigation */}
+        <div className="mb-2 sm:mb-3">
+          <Link
+            to="/country"
+            className="inline-flex items-center gap-2 py-1 text-gray-400 hover:text-[#e53935] transition-all group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
+            <span className="text-xs font-bold uppercase tracking-wider">Back</span>
+          </Link>
+        </div>
+
+        {/* Main Content Dashboard */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+          className="w-full"
+        >
 
         {/* Hero Section */}
         <section className="mb-16 lg:mb-20">
@@ -162,33 +196,42 @@ const CountryDetails = () => {
           )}
         </section>
 
-        {/* Split Info Section: Vital Stats & Map */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 mb-16 lg:mb-20">
-          {/* Left: Vital Statistics Grid or Skeleton */}
+        {/* Vital Statistics — full width */}
+        <div className="mb-16 lg:mb-20">
           {isLoading ? (
-            <div className="h-full flex flex-col">
+            <div className="flex flex-col">
               <div className="flex items-center mb-6">
                 <h3 className="text-[13px] font-bold text-[#6c757d] uppercase tracking-[0.2em] whitespace-nowrap">
                   / Vital Statistics
                 </h3>
               </div>
-              <div className="flex-1 min-h-[520px] bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.015)] border border-gray-100 p-6 flex flex-col justify-between overflow-hidden">
-                <div className="divide-y divide-gray-50">
+              <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.015)] border border-gray-100 p-6 sm:p-8 overflow-hidden">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-12 gap-y-1">
+                  {/* Official Name Skeleton (Spans 2 cols) */}
+                  <div className="md:col-span-2 flex items-center justify-between py-3.5 px-4 rounded-xl border-b border-gray-100 pb-3.5 mb-1">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-9 h-9 rounded-xl bg-[#FAFAFA] border border-gray-100 flex items-center justify-center shadow-sm">
+                        <Skeleton variant="rounded" width={18} height={18} sx={{ borderRadius: '0.25rem' }} />
+                      </div>
+                      <Skeleton variant="text" width={100} height={14} sx={{ borderRadius: '0.25rem' }} />
+                    </div>
+                    <Skeleton variant="text" width={220} height={18} sx={{ borderRadius: '0.25rem' }} />
+                  </div>
+                  {/* Remaining 6 items in 2 columns */}
                   {[
-                    { width: "160px" },
                     { width: "120px" },
-                    { width: "130px" },
-                    { width: "140px" },
                     { width: "110px" },
                     { width: "130px" },
+                    { width: "140px" },
+                    { width: "125px" },
                     { width: "150px" },
                   ].map((row, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-4 border-b border-gray-50 last:border-0 px-4 rounded-xl">
-                      <div className="flex items-center gap-4">
-                        <div className="w-9 h-9 rounded-xl bg-[#FAFAFA] flex items-center justify-center shadow-sm">
+                    <div key={idx} className="flex items-center justify-between py-3.5 px-4 rounded-xl border-b border-gray-50 last:border-0">
+                      <div className="flex items-center gap-3.5">
+                        <div className="w-9 h-9 rounded-xl bg-[#FAFAFA] border border-gray-100 flex items-center justify-center shadow-sm">
                           <Skeleton variant="rounded" width={18} height={18} sx={{ borderRadius: '0.25rem' }} />
                         </div>
-                        <Skeleton variant="text" width={90} height={14} sx={{ borderRadius: '0.25rem' }} />
+                        <Skeleton variant="text" width={85} height={14} sx={{ borderRadius: '0.25rem' }} />
                       </div>
                       <Skeleton variant="text" width={row.width} height={18} sx={{ borderRadius: '0.25rem' }} />
                     </div>
@@ -208,27 +251,24 @@ const CountryDetails = () => {
               area={countryData?.details?.area}
             />
           )}
+        </div>
 
-          {/* Right: Premium Map Integration or Skeleton */}
+
+        {/* Full-Width Regional Geography Map */}
+        <div className="mb-16 lg:mb-20">
           {isLoading ? (
-            <div className="h-full flex flex-col">
+            <div className="flex flex-col">
               <div className="flex items-center mb-6">
                 <h3 className="text-[13px] font-bold text-[#6c757d] uppercase tracking-[0.2em] whitespace-nowrap">
                   / Regional Geography
                 </h3>
               </div>
-              <div className="flex-1 min-h-[520px] bg-white rounded-[2.5rem] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col relative z-10 overflow-hidden">
-                <div className="relative flex-grow h-full w-full min-h-[460px] bg-[#EAE8E2] flex items-center justify-center">
-                  <Skeleton variant="rectangular" width="100%" height="100%" sx={{ position: 'absolute', inset: 0 }} />
-                  {/* Map marker center placeholder */}
-                  <div className="relative z-10 px-5 py-3 bg-white/70 backdrop-blur-md rounded-2xl shadow-lg flex items-center gap-3 border border-white/40">
+              <div className="min-h-[520px] bg-white rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.04)] border border-gray-100 relative overflow-hidden">
+                <Skeleton variant="rectangular" width="100%" height="100%" sx={{ position: 'absolute', inset: 0 }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="px-5 py-3 bg-white/70 backdrop-blur-md rounded-2xl shadow-lg flex items-center gap-3 border border-white/40">
                     <div className="w-3 h-3 rounded-full bg-[#e53935]/40 animate-ping" />
                     <Skeleton variant="text" width={120} height={16} />
-                  </div>
-                  {/* Zoom controls placeholder */}
-                  <div className="absolute top-4 right-4 z-10 flex flex-col gap-1 bg-white/80 p-1 rounded-xl shadow-sm border border-gray-100">
-                    <Skeleton variant="rounded" width={28} height={28} sx={{ borderRadius: '0.5rem' }} />
-                    <Skeleton variant="rounded" width={28} height={28} sx={{ borderRadius: '0.5rem' }} />
                   </div>
                 </div>
               </div>
@@ -246,7 +286,7 @@ const CountryDetails = () => {
         {/* Bottom Detailed Sections: Sequential Flow */}
         <div className="space-y-12 mb-12">
           {/* 1. Available Visa Section */}
-          <motion.div variants={itemVariants} className="space-y-4">
+          <motion.div id="available-visas" variants={itemVariants} className="space-y-4">
             <div className="flex items-center gap-6">
               <h3 className="text-[13px] font-bold text-[#6c757d] uppercase tracking-[0.2em] whitespace-nowrap">
                 / Available Visa Categories
@@ -277,97 +317,42 @@ const CountryDetails = () => {
             </div>
           </motion.div>
 
-          {/* 2. Support & Contact Section */}
+          {/* 2. Important Notice */}
           <motion.div variants={itemVariants} className="space-y-4">
             <div className="flex items-center gap-6">
               <h3 className="text-[13px] font-bold text-[#6c757d] uppercase tracking-[0.2em] whitespace-nowrap">
-                / Support & Contact
+                / Important Notice
               </h3>
             </div>
             {isLoading ? (
-              <div className="bg-white rounded-[2.5rem] p-8 lg:p-12 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.04)] border border-gray-100">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-0 lg:divide-x lg:divide-gray-100">
-                  {/* Phone */}
-                  <div className="flex items-center gap-6 lg:px-10 xl:px-12 lg:first:pl-0">
-                    <div className="w-16 h-16 rounded-2xl bg-[#FAFAFA] border border-gray-50 flex items-center justify-center shadow-sm shrink-0">
-                      <Skeleton variant="rounded" width={28} height={28} sx={{ borderRadius: '0.5rem' }} />
-                    </div>
-                    <div className="space-y-1.5 flex-1">
-                      <Skeleton variant="text" width={80} height={14} sx={{ borderRadius: '0.25rem' }} />
-                      <Skeleton variant="text" width={130} height={22} sx={{ borderRadius: '0.25rem' }} />
-                    </div>
-                  </div>
-                  {/* Email */}
-                  <div className="flex items-center gap-6 lg:px-10 xl:px-12">
-                    <div className="w-16 h-16 rounded-2xl bg-[#FAFAFA] border border-gray-50 flex items-center justify-center shadow-sm shrink-0">
-                      <Skeleton variant="rounded" width={28} height={28} sx={{ borderRadius: '0.5rem' }} />
-                    </div>
-                    <div className="space-y-1.5 flex-1">
-                      <Skeleton variant="text" width={70} height={14} sx={{ borderRadius: '0.25rem' }} />
-                      <Skeleton variant="text" width={160} height={22} sx={{ borderRadius: '0.25rem' }} />
-                    </div>
-                  </div>
-                  {/* Visit */}
-                  <div className="flex items-center gap-6 lg:px-10 xl:px-12 lg:last:pr-0">
-                    <div className="w-16 h-16 rounded-2xl bg-[#FAFAFA] border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
-                      <Skeleton variant="rounded" width={28} height={28} sx={{ borderRadius: '0.5rem' }} />
-                    </div>
-                    <div className="space-y-1.5 flex-1">
-                      <Skeleton variant="text" width={60} height={14} sx={{ borderRadius: '0.25rem' }} />
-                      <Skeleton variant="text" width={120} height={22} sx={{ borderRadius: '0.25rem' }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <ContactInfo />
-            )}
-          </motion.div>
-
-          {/* 3. Center Call to Action */}
-          <motion.div variants={itemVariants} className="flex justify-center text-center py-4 lg:py-8">
-            <div className="max-w-2xl w-full">
-              {isLoading ? (
-                <div className="flex flex-col items-center gap-6">
-                  <Skeleton variant="rounded" width={360} height={44} sx={{ borderRadius: '0.75rem', maxWidth: '90%' }} />
-                  <div className="flex flex-wrap justify-center gap-6">
-                    <Skeleton variant="rounded" width={160} height={52} sx={{ borderRadius: '0.75rem' }} />
-                    <Skeleton variant="rounded" width={160} height={52} sx={{ borderRadius: '0.75rem' }} />
-                  </div>
-                </div>
-              ) : (
-                <CountryCTA 
-                    countryId={countryData?.id} 
-                    countryName={countryData?.name}
-                    availableVisas={countryWiseVisaDetails}
-                    handleContinue={handleContinue} 
-                />
-              )}
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Global Footer Disclaimer */}
-        <motion.div variants={itemVariants} className="pt-8 border-t border-gray-100 opacity-60">
-          {isLoading ? (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 sm:p-6 mt-8">
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="w-6 h-6 rounded-full bg-white border border-gray-300 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Skeleton variant="circular" width={16} height={16} />
+              <div className="bg-white rounded-[2rem] p-6 sm:p-8 border border-gray-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.04)] flex items-start gap-4 sm:gap-5">
+                <div className="w-11 h-11 rounded-2xl bg-gray-50 flex items-center justify-center shrink-0">
+                  <Skeleton variant="rounded" width={22} height={22} sx={{ borderRadius: '0.375rem' }} />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Skeleton variant="text" width={140} height={18} sx={{ borderRadius: '0.25rem' }} />
+                  <Skeleton variant="text" width={160} height={18} sx={{ borderRadius: '0.25rem' }} />
                   <Skeleton variant="text" width="100%" height={16} sx={{ borderRadius: '0.25rem' }} />
                   <Skeleton variant="text" width="75%" height={16} sx={{ borderRadius: '0.25rem' }} />
                 </div>
               </div>
-            </div>
-          ) : (
-            <Disclaimer />
-          )}
+            ) : (
+              <Disclaimer />
+            )}
+          </motion.div>
+        </div>
+
+        {/* Global Footer Credits */}
+        <motion.div variants={itemVariants} className="pt-8 border-t border-gray-200/70 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 gap-4">
+          <p>© {new Date().getFullYear()} Global Gateway. All rights reserved.</p>
+          <div className="flex items-center gap-6 font-medium">
+            <Link to="/country" className="hover:text-[#e53935] transition-colors">All Countries</Link>
+            <Link to="/contact" className="hover:text-[#e53935] transition-colors">Help & Support</Link>
+            <Link to="/about" className="hover:text-[#e53935] transition-colors">About Us</Link>
+          </div>
         </motion.div>
 
       </motion.div>
+      </Container>
     </div>
   );
 };

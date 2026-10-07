@@ -6,7 +6,7 @@ const DashboardHeader = ({ isLoading }) => {
   if (isLoading) {
     return (
       <div className="relative h-40 sm:h-56 md:h-72 overflow-hidden bg-slate-200 animate-pulse">
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
+        <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-8 md:px-12 lg:px-20 h-full flex flex-col justify-center">
           <Skeleton className="h-10 w-64 mb-4 bg-white/20" />
           <div className="flex items-center space-x-2">
             <Skeleton className="h-4 w-12 bg-white/20" />
@@ -26,7 +26,7 @@ const DashboardHeader = ({ isLoading }) => {
       />
       <div className="absolute inset-0 bg-black/60" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
+      <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-8 md:px-12 lg:px-20 h-full flex flex-col justify-center">
         <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-2 md:-mt-10">Global Gateway Profile</h1>
         <div className="flex items-center text-red-300 space-x-2">
           <Link to='/' className="hover:text-white cursor-pointer transition">Home</Link>

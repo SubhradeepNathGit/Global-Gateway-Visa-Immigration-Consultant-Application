@@ -14,6 +14,8 @@ const VisaCardConfigBtn = ({ handleEditVisa, visaType, visaId: propVisaId, visaD
         ? propVisaId 
         : (typeof visaType === 'object' && !Array.isArray(visaType) && Object.keys(visaType)[0] !== "0" ? Object.keys(visaType)[0] : null);
 
+    const targetVisaId = effectiveVisaId || propVisaId || (typeof visaType === 'object' && visaType !== null && !Array.isArray(visaType) ? Object.keys(visaType)[0] : visaType);
+
     const [visaId, setVisaId] = useState(null);
     const [alertModalOpen, setAlertModalOpen] = useState(false);
 
@@ -61,7 +63,7 @@ const VisaCardConfigBtn = ({ handleEditVisa, visaType, visaId: propVisaId, visaD
         <>
             <div className="space-y-2">
                 <button
-                    onClick={() => handleEditVisa(effectiveVisaId)}
+                    onClick={() => handleEditVisa(targetVisaId)}
                     className="w-full py-3 px-4 bg-gray-50 hover:bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                     <Plus className="w-4 h-4" />

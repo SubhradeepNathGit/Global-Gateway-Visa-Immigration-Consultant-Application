@@ -8,11 +8,11 @@ const CourseCertificate = forwardRef(({ userAuthData, course, certificateData },
   const completionDate = certificateData?.certificate_reg_date
     ? formatDateDDMMYYYY(certificateData.certificate_reg_date)
     : formatDateDDMMYYYY(new Date());
+  const instructorName = (typeof course?.instructor === 'object' ? course?.instructor?.name : course?.instructor) || 'Dr. Sarah Johnson';
 
   return (
-    <div style={{ width: '100%', height: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0' }}>
-      <div
-        ref={ref}
+    <div
+      ref={ref}
         style={{
           fontFamily: 'Georgia, serif',
           lineHeight: '1.4',
@@ -61,25 +61,14 @@ const CourseCertificate = forwardRef(({ userAuthData, course, certificateData },
 
           {/* Header Section */}
           <div style={{ textAlign: 'center', marginTop: '8px' }}>
-            {/* Premium Logo & Emblem */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  width: '64px', height: '64px', border: '2px solid #ca8a04', borderRadius: '9999px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'linear-gradient(to bottom right, #172554, #1e3a8a, #172554)',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', position: 'relative'
-                }}>
-                  <FlightTakeoffIcon style={{ fontSize: '32px', color: '#eab308' }} />
-                  <div style={{ position: 'absolute', inset: '0', borderRadius: '9999px', border: '1px solid rgba(250, 204, 21, 0.3)', margin: '2px' }}></div>
-                </div>
-              </div>
-            </div>
-
+            {/* Brand Logo & Title */}
             <div style={{ marginBottom: '8px' }}>
-              <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#172554', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '4px', fontFamily: 'Palatino, serif' }}>
-                Global Gateway
-              </h1>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '4px' }}>
+                <FlightTakeoffIcon style={{ fontSize: '32px', color: '#172554' }} />
+                <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#172554', textTransform: 'uppercase', letterSpacing: '0.2em', margin: 0, fontFamily: 'Palatino, serif' }}>
+                  Global Gateway
+                </h1>
+              </div>
               <p style={{ fontSize: '12px', color: '#a16207', textTransform: 'uppercase', letterSpacing: '0.3em', fontWeight: '600' }}>
                 Your Gateway to Global Opportunities
               </p>
@@ -117,12 +106,11 @@ const CourseCertificate = forwardRef(({ userAuthData, course, certificateData },
               has successfully completed
             </p>
 
-            {/* Course Name Box */}
+            {/* Course Name */}
             <div style={{
-              paddingTop: '16px', paddingBottom: '16px', paddingLeft: '24px', paddingRight: '24px', marginBottom: '16px',
-              borderTop: '1px solid rgba(202, 138, 4, 0.2)', borderBottom: '1px solid rgba(202, 138, 4, 0.2)',
+              paddingTop: '8px', paddingBottom: '8px', paddingLeft: '24px', paddingRight: '24px', marginBottom: '16px',
               margin: '0 auto', maxWidth: '896px',
-              background: 'linear-gradient(to right, rgba(23, 37, 84, 0.05), rgba(30, 58, 138, 0.1), rgba(23, 37, 84, 0.05))'
+              background: '#ffffff'
             }}>
               <h4 style={{ fontSize: '30px', fontWeight: 'bold', color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: '1.25', fontFamily: 'Palatino, serif' }}>
                 {course?.course_name || 'N/A'}
@@ -138,25 +126,29 @@ const CourseCertificate = forwardRef(({ userAuthData, course, certificateData },
           {/* Verification Details */}
           <div style={{ paddingTop: '16px', paddingBottom: '16px', marginBottom: '16px', background: 'linear-gradient(to right, transparent, rgba(23, 37, 84, 0.05), transparent)' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '32px', maxWidth: '896px', margin: '0 auto', paddingLeft: '16px', paddingRight: '16px' }}>
-              <div style={{ textAlign: 'left', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              
+              {/* Left: Completion Date */}
+              <div style={{ textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ padding: '8px', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', flexShrink: '0', background: 'linear-gradient(to bottom right, #172554, #1e3a8a)' }}>
                   <Calendar style={{ width: '20px', height: '20px', color: '#facc15' }} strokeWidth={2} />
                 </div>
-                <div style={{ minWidth: '0' }}>
-                  <p style={{ fontSize: '10px', textTransform: 'uppercase', color: '#a16207', fontWeight: 'bold', letterSpacing: '0.1em', marginBottom: '2px' }}>
+                <div>
+                  <p style={{ fontSize: '10px', textTransform: 'uppercase', color: '#a16207', fontWeight: 'bold', letterSpacing: '0.1em', marginBottom: '2px', lineHeight: '1.2' }}>
                     Completion Date
                   </p>
-                  <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#172554', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: 'Palatino, serif' }}>
+                  <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#172554', whiteSpace: 'nowrap', fontFamily: 'Palatino, serif', lineHeight: '1.4', paddingBottom: '4px', margin: 0 }}>
                     {completionDate}
                   </p>
                 </div>
               </div>
-              <div style={{ textAlign: 'right', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end', gap: '12px' }}>
-                <div style={{ textAlign: 'right', minWidth: '0' }}>
-                  <p style={{ fontSize: '10px', textTransform: 'uppercase', color: '#a16207', fontWeight: 'bold', letterSpacing: '0.1em', marginBottom: '2px' }}>
+
+              {/* Right: Certificate ID */}
+              <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
+                <div>
+                  <p style={{ fontSize: '10px', textTransform: 'uppercase', color: '#a16207', fontWeight: 'bold', letterSpacing: '0.1em', marginBottom: '2px', lineHeight: '1.2' }}>
                     Certificate ID
                   </p>
-                  <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#172554', fontFamily: 'monospace', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#172554', fontFamily: 'monospace', whiteSpace: 'nowrap', lineHeight: '1.4', paddingBottom: '4px', margin: 0 }}>
                     GG-{certificateData?.id?.substring(0, 12).toUpperCase() || 'OFFICIAL'}
                   </p>
                 </div>
@@ -164,49 +156,52 @@ const CourseCertificate = forwardRef(({ userAuthData, course, certificateData },
                   <ShieldCheck style={{ width: '20px', height: '20px', color: '#facc15' }} strokeWidth={2} />
                 </div>
               </div>
+
             </div>
           </div>
 
           {/* Signature Section */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '16px', alignItems: 'end', borderTop: '1px solid rgba(202, 138, 4, 0.2)', paddingTop: '16px', position: 'relative' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '24px', maxWidth: '896px', margin: '0 auto', width: '100%', alignItems: 'center', borderTop: '1px solid rgba(202, 138, 4, 0.2)', paddingTop: '16px', position: 'relative' }}>
 
-            {/* Stamp Image */}
-            <div style={{ position: 'absolute', top: '-60px', right: '18%', opacity: '0.9', transform: 'rotate(-10deg)', pointerEvents: 'none' }}>
-              <img src="/Stamp3.png" alt="Official Stamp" style={{ width: '128px', height: '128px', objectFit: 'contain' }} />
+            {/* Stamp Image - Authentically positioned over the Authorized Signature without overlapping above */}
+            <div style={{ position: 'absolute', top: '-25px', right: '5%', opacity: '0.85', transform: 'rotate(-10deg)', pointerEvents: 'none' }}>
+              <img src="/Stamp3.png" alt="Official Stamp" style={{ width: '120px', height: '120px', objectFit: 'contain' }} />
             </div>
 
+            {/* Left: Course Instructor */}
             <div style={{ textAlign: 'center', zIndex: '10' }}>
-              <div style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
+              <div style={{ height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
                 <p style={{ fontSize: '24px', color: '#1e3a8a', pointerEvents: 'none', userSelect: 'none', fontFamily: 'Brush Script MT, cursive' }}>
-                  Global Gateway
+                  {instructorName}
                 </p>
               </div>
               <div style={{ borderTop: '1px solid #d1d5db', paddingTop: '4px' }}>
                 <p style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#374151', letterSpacing: '0.05em' }}>
-                  Training Director
+                  Course Instructor
                 </p>
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', zIndex: '10' }}>
-              <div style={{ position: 'relative', bottom: '16px' }}>
-                <div style={{
-                  width: '80px', height: '80px', border: '2px solid #ca8a04', borderRadius: '9999px',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  background: 'linear-gradient(to bottom right, #172554, #1e3a8a, #172554)',
-                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
-                }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#facc15', lineHeight: '1.25', letterSpacing: '0.05em' }}>GG</div>
-                  <ShieldCheck style={{ width: '24px', height: '24px', color: '#facc15', marginTop: '2px', marginBottom: '2px' }} strokeWidth={2.5} />
-                  <div style={{ fontSize: '6px', fontWeight: 'bold', color: '#facc15', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Certified</div>
-                </div>
+            {/* Center: GG Certified Emblem */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: '10' }}>
+              <div style={{
+                width: '74px', height: '74px', border: '2px solid #ca8a04', borderRadius: '9999px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                background: 'transparent',
+                position: 'relative', flexShrink: 0
+              }}>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#b45309', lineHeight: '1.25', letterSpacing: '0.05em' }}>GG</div>
+                <ShieldCheck style={{ width: '22px', height: '22px', color: '#ca8a04', marginTop: '1px', marginBottom: '1px' }} strokeWidth={2.5} />
+                <div style={{ fontSize: '6px', fontWeight: 'bold', color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Certified</div>
+                <div style={{ position: 'absolute', inset: '0', borderRadius: '9999px', border: '1px solid rgba(202, 138, 4, 0.35)', margin: '2px' }}></div>
               </div>
             </div>
 
+            {/* Right: Authorized Signature */}
             <div style={{ textAlign: 'center', zIndex: '10' }}>
-              <div style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
+              <div style={{ height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
                 <p style={{ fontSize: '24px', color: '#1e3a8a', pointerEvents: 'none', userSelect: 'none', fontFamily: 'Brush Script MT, cursive' }}>
-                  Consular Services
+                  Global Gateway
                 </p>
               </div>
               <div style={{ borderTop: '1px solid #d1d5db', paddingTop: '4px' }}>
@@ -215,6 +210,7 @@ const CourseCertificate = forwardRef(({ userAuthData, course, certificateData },
                 </p>
               </div>
             </div>
+
           </div>
 
           {/* Footer */}
@@ -225,7 +221,6 @@ const CourseCertificate = forwardRef(({ userAuthData, course, certificateData },
           </div>
         </div>
       </div>
-    </div>
   );
 });
 

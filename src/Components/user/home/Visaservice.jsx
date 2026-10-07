@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Container } from '@mui/material';
 import { motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
@@ -34,13 +34,23 @@ const services = [
 
 const VisaServicesSection = () => {
   return (
-    <Box sx={{ py: 8, px: 2, textAlign: 'center', bgcolor: '#ffffff' }}>
+    <Box sx={{ py: 8, textAlign: 'center', bgcolor: '#ffffff' }}>
+      <Container maxWidth="xl" sx={{ maxWidth: '1400px', px: { xs: 2, sm: 4, md: 6, lg: 10 } }}>
       <p className="text-xs md:text-sm font-semibold tracking-[0.15em] text-red-600 uppercase mb-1.5 font-['Inter',sans-serif]">
         / WHAT DO WE OFFER
       </p>
-      <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.6rem] font-bold text-gray-900 tracking-tight leading-tight mb-6 font-['Outfit',sans-serif]">
+      <Typography
+        variant="h2"
+        sx={{
+          fontWeight: 'bold',
+          fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem', lg: '2.5rem' },
+          lineHeight: 1.2,
+          color: '#2c3e50',
+          mb: { xs: 3, md: 4 }
+        }}
+      >
         Outstanding Immigration &amp; Visa Services
-      </h2>
+      </Typography>
 
       <Swiper
         modules={[Autoplay]}
@@ -58,7 +68,6 @@ const VisaServicesSection = () => {
         {services.map((service, index) => (
           <SwiperSlide key={index}>
             <motion.div
-              whileHover={{ scale: 1.05 }}
               style={{
                 width: '100%',
                 height: 300,
@@ -104,6 +113,7 @@ const VisaServicesSection = () => {
           </SwiperSlide>
         ))}
       </Swiper>
+      </Container>
     </Box>
   );
 };

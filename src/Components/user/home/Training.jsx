@@ -265,7 +265,7 @@ const Training = () => {
         }
       }}
     >
-      <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 4, md: 6 } }}>
+      <Container maxWidth="xl" sx={{ maxWidth: '1400px', px: { xs: 2, sm: 4, md: 6, lg: 10 } }}>
         <Box sx={{ mb: 4 }}>
           <p className="text-xs md:text-sm font-semibold tracking-[0.15em] text-red-600 uppercase mb-1.5 font-['Inter',sans-serif]">
             / TRAINING & CERTIFICATION
@@ -273,7 +273,7 @@ const Training = () => {
 
           <Grid container spacing={4} alignItems="center" justifyContent="space-between">
             <Grid size={{ xs: 12, md: 8 }}>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.6rem] font-bold text-gray-900 tracking-tight leading-tight mb-0 font-['Outfit',sans-serif] text-left">
+              <h2 className="text-2xl sm:text-[1.8rem] md:text-[2rem] lg:text-[2.5rem] font-bold text-[#2c3e50] leading-[1.2] tracking-[-0.015em] mb-0 font-['Outfit',sans-serif] text-left">
                 Get the Immigration<br />
                 Trainings you Deserve
               </h2>

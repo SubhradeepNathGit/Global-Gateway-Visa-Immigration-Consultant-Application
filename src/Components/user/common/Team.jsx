@@ -30,7 +30,7 @@ const teamMembers = [
   {
     name: 'David Cooper',
     title: 'Consultant',
-    img: 'Team3.jpg',
+    img: '/Team3.jpg',
     showIcons: true,
   },
   {
@@ -43,8 +43,8 @@ const teamMembers = [
 
 const TeamSection = () => {
   return (
-    <Box sx={{ py: { xs: 6, md: 10 }, px: { xs: 2, md: 2 }, backgroundColor: '#fdfdfd' }}>
-      <Container maxWidth="lg">
+    <Box sx={{ py: { xs: 6, md: 10 }, backgroundColor: '#fdfdfd' }}>
+      <Container maxWidth="xl" sx={{ maxWidth: '1400px', px: { xs: 2, sm: 4, md: 6, lg: 10 } }}>
         <Box
           flex={1}
           sx={{
@@ -59,12 +59,13 @@ const TeamSection = () => {
             / OUR PANNEL
           </Typography>
           <Typography
-            variant="h4"
+            variant="h2"
             sx={{
-              fontWeight: 700,
+              fontWeight: 'bold',
+              fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem', lg: '2.5rem' },
+              lineHeight: 1.2,
+              color: '#2c3e50',
               mt: 1,
-              color: '#0f172a',
-              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' },
             }}
           >
             Meet Our Team
@@ -78,7 +79,7 @@ const TeamSection = () => {
           </Typography>
         </Box>
 
-        <Grid container justifyContent="center" spacing={{ xs: 4, md: 5 }}>
+        <Grid container justifyContent="center" spacing={{ xs: 4, sm: 4, md: 3, lg: 4 }}>
           {teamMembers.map((member, index) => (
             <Grid
               key={index}
@@ -90,16 +91,23 @@ const TeamSection = () => {
             >
               <Box sx={{ textAlign: 'center', position: 'relative' }}>
                 {/* Avatar with semi-circle background */}
-                <Box sx={{ position: 'relative', width: 170, mx: 'auto' }}>
+                <Box
+                  sx={{
+                    position: 'relative',
+                    width: { xs: 200, sm: 220, md: 210, lg: 240, xl: 250 },
+                    height: { xs: 200, sm: 220, md: 210, lg: 240, xl: 250 },
+                    mx: 'auto',
+                  }}
+                >
                   <Box
                     sx={{
                       position: 'absolute',
                       top: 0,
                       left: 0,
-                      width: 170,
-                      height: 85,
-                      borderTopLeftRadius: '85px',
-                      borderTopRightRadius: '85px',
+                      width: '100%',
+                      height: '50%',
+                      borderTopLeftRadius: '999px',
+                      borderTopRightRadius: '999px',
                       background: member.showIcons
                         ? 'linear-gradient(135deg, #4A00E0, #FF416C)'
                         : '#e9ecf2',
@@ -110,8 +118,8 @@ const TeamSection = () => {
                     src={member.img}
                     alt={member.name}
                     sx={{
-                      width: 170,
-                      height: 170,
+                      width: '100%',
+                      height: '100%',
                       zIndex: 2,
                       position: 'relative',
                     }}

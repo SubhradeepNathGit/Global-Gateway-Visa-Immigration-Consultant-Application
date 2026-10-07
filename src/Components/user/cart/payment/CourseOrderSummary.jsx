@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 const CourseOrderSummary = ({ subtotal, total, discountAmount, discount, allCharges, cartItems }) => {
 
     return (
-        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-6 lg:p-12 flex flex-col lg:overflow-hidden">
+        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-6 lg:p-12 flex flex-col lg:overflow-y-auto lg:justify-center">
             <Link to="/cart"
                 className=" flex items-center gap-2 text-gray-300 hover:text-white transition-colors mb-8 group w-fit cursor-pointer" >
                 <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
@@ -28,15 +28,16 @@ const CourseOrderSummary = ({ subtotal, total, discountAmount, discount, allChar
                 </div>
             </div>
 
-            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-6 border border-gray-700/50 shadow-xl backdrop-blur-sm">
+            <div className="w-full max-w-2xl mx-auto">
+            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-7 border border-gray-700/50 shadow-xl backdrop-blur-sm">
                 {/* <div className="flex flex-col items-start justify-between mb-6"> */}
-                <div className="mb-6 space-y-4 h-[60px] overflow-y-auto glass-scrollbar">
+                <div className="mb-6 space-y-4">
                     {cartItems?.map(item => (
                         <div
                             key={item?.id} className="flex items-start justify-between gap-4">
                             {/* Left side */}
                             <div>
-                                <h2 className="text-xl font-semibold mb-2">
+                                <h2 className="text-xl font-semibold mb-1.5">
                                     {item?.courses?.course_name ?? 'N/A'}
                                 </h2>
                                 <p className="text-gray-400 text-sm">
@@ -45,7 +46,7 @@ const CourseOrderSummary = ({ subtotal, total, discountAmount, discount, allChar
                             </div>
 
                             {/* Right side */}
-                            <div className="bg-green-500/20 text-green-400 w-24 text-center py-1 rounded-full text-xs font-bold border border-green-500/30 whitespace-nowrap">
+                            <div className="bg-green-500/20 text-green-400 w-24 text-center py-1 rounded-full text-xs font-bold border border-green-500/30 whitespace-nowrap flex-shrink-0">
                                 {item?.courses?.skill_level ?? 'N/A'}
                             </div>
                         </div>
@@ -96,6 +97,7 @@ const CourseOrderSummary = ({ subtotal, total, discountAmount, discount, allChar
                         <p className="text-xs text-gray-500 mt-2">Amount payable now</p>
                     </div>
                 </div>
+            </div>
             </div>
 
             <div className="flex items-center gap-2 text-gray-400 text-xs mt-auto pt-8">

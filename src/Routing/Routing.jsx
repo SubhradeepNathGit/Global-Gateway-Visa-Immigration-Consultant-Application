@@ -110,6 +110,7 @@ const Routing = () => {
                 <Route path="/payment" element={<ProtectedRoute allowedRoles={['user']}><PaymentInterfaceCourse /></ProtectedRoute>} />
                 <Route path="/application-form/:country_id" element={<ProtectedRoute allowedRoles={['user']}><VisaApplicationForm /></ProtectedRoute>} />
                 <Route path="/payment-preview" element={<ProtectedRoute allowedRoles={['user']}><PaymentPreview /></ProtectedRoute>} />
+                <Route path="/payment-status" element={<ProtectedRoute allowedRoles={['user']}><PaymentStatus /></ProtectedRoute>} />
                 <Route
                     path="/dashboard"
                     element={

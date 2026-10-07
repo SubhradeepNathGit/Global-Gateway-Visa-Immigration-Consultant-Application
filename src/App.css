@@ -30,29 +30,69 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
-/* Works on Chrome, Edge, and Safari */
-html::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* User Part Scrollbar (Default): Invisible / Thinnest possible (0px width) */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  display: none !important;
+  background: transparent !important;
 }
 
-html::-webkit-scrollbar-track {
-  background: #1e293b; /* slate-800 */
+html,
+body {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
-html::-webkit-scrollbar-thumb {
-  background: #808c9e; /* slate-600 */
-  border-radius: 4px;
+/* Admin Part Scrollbar: Blue slate */
+html.admin-theme::-webkit-scrollbar,
+body.admin-theme::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+  display: block !important;
 }
 
-html::-webkit-scrollbar-thumb:hover {
-  background: #64748b; /* slate-500 */
+html.admin-theme::-webkit-scrollbar-track,
+body.admin-theme::-webkit-scrollbar-track {
+  background: #1e293b !important; /* slate-800 */
 }
 
-/* Firefox support */
-html {
-  scrollbar-width: thin;
-  scrollbar-color: #475569 #1e293b;
+html.admin-theme::-webkit-scrollbar-thumb,
+body.admin-theme::-webkit-scrollbar-thumb {
+  background: #808c9e !important; /* slate-600 */
+  border-radius: 4px !important;
+}
+
+html.admin-theme::-webkit-scrollbar-thumb:hover,
+body.admin-theme::-webkit-scrollbar-thumb:hover {
+  background: #64748b !important; /* slate-500 */
+}
+
+html.admin-theme,
+body.admin-theme {
+  scrollbar-width: thin !important;
+  scrollbar-color: #475569 #1e293b !important;
+}
+
+/* Approval Letter Full Screen Viewport: White invisible scrollbar */
+.letter-scroll-invisible::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+
+.letter-scroll-invisible::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.letter-scroll-invisible::-webkit-scrollbar-thumb {
+  background: transparent !important;
+}
+
+.letter-scroll-invisible {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 /* Glassmorphic Scrollbar */

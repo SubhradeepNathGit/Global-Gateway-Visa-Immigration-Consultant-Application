@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom';
 import { useFullCountryDetails } from '../../../tanstack/query/getCountryDetails'
 import { useVisaDetailsByApplicationId } from '../../../tanstack/query/getApplicationVisaDetails';
 import { useCountryWiseVisaDetails } from '../../../tanstack/query/getCountryWiseVisaDetails';
 import { calculateProcessingRange } from '../../../functions/calculateExpectedDate';
-import { X, History, Eye, Printer, FileText } from 'lucide-react';
+import { X, History, Eye, Printer, FileText, ArrowLeft } from 'lucide-react';
 import RejectionModal from './modal/RejectModal';
 import ApprovalTimeline from './modal/ApproveModal';
 import ApproveLetter from './letter/ApproveLetter';
@@ -128,6 +129,25 @@ const VisaApplicationsSection = ({ visaApplications, getStatusColor, getStatusIc
         setSelectedVisaData(null);
     };
 
+    useEffect(() => {
+        if (!showLetterModal) return;
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                handleCloseLetterModal();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        const originalBodyOverflow = document.body.style.overflow;
+        const originalHtmlOverflow = document.documentElement.style.overflow;
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = originalBodyOverflow;
+            document.documentElement.style.overflow = originalHtmlOverflow;
+        };
+    }, [showLetterModal]);
+
     if (isLoading) {
         return (
             <div className="space-y-4">
@@ -217,44 +237,126 @@ const VisaApplicationsSection = ({ visaApplications, getStatusColor, getStatusIc
                 </div>
             )}
 
-            {/* Approval Letter Modal */}
-            {showLetterModal && selectedVisaForLetter && selectedCountryDetails && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                            <h2 className="text-xl font-bold text-gray-900">
-                                Visa Approval Letter
-                            </h2>
+            {/* Approval Letter Modal — Full Screen & Scrollable */}
+            {showLetterModal && selectedVisaForLetter && createPortal(
+                <div
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 99999,
+                        width: '100vw',
+                        height: '100vh',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        backgroundColor: '#ffffff',
+                        overflow: 'hidden',
+                    }}
+                >
+                    {/* ── Top Bar ── */}
+                    <div
+                        style={{
+                            height: '56px',
+                            flexShrink: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '0 24px',
+                            backgroundColor: '#ffffff',
+                            borderBottom: '1px solid #e2e8f0',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                            zIndex: 10,
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                             <button
                                 onClick={handleCloseLetterModal}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: '36px',
+                                    height: '36px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #e2e8f0',
+                                    background: '#f8fafc',
+                                    color: '#1e293b',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.15s ease',
+                                }}
+                                className="hover:bg-slate-100 transition-colors"
                                 type="button"
+                                title="Back to Dashboard"
+                                aria-label="Back to Dashboard"
                             >
-                                <X className="w-5 h-5 text-gray-600 cursor-pointer" />
+                                <ArrowLeft style={{ width: 18, height: 18 }} />
                             </button>
+
+                           
+                            <div>
+                                <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#0f172a', lineHeight: 1.2 }}>
+                                    Visa Approval Letter
+                                </p>
+                                <p style={{ margin: 0, fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                                    {selectedCountryDetails?.name || 'Visa Application'} • {selectedVisaData?.visa_type || 'Approved'}
+                                </p>
+                            </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto bg-gray-50 p-6 glass-scrollbar">
+                        <div>
+                            <button
+                                onClick={() => handlePrintApproval(selectedVisaForLetter, selectedCountryDetails, selectedVisaData, selectedApplicationDetails)}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    padding: '7px 18px',
+                                    borderRadius: '8px',
+                                    border: '1.5px solid #dc2626',
+                                    fontWeight: 600,
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                }}
+                                className="text-red-600 bg-transparent hover:bg-red-600 hover:text-white transition-all duration-200 shadow-sm hover:shadow"
+                                type="button"
+                            >
+                                <Printer style={{ width: 15, height: 15 }} />
+                                Print Letter
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* ── Letter Viewport — Full Screen & Scrollable (Invisible Scrollbar) ── */}
+                    <div
+                        className="letter-scroll-invisible"
+                        style={{
+                            flex: 1,
+                            minHeight: 0,
+                            overflowY: 'auto',
+                            backgroundColor: '#ffffff',
+                            width: '100%',
+                            WebkitOverflowScrolling: 'touch',
+                        }}
+                    >
+                        <div
+                            style={{
+                                width: '100%',
+                                minHeight: '100%',
+                                padding: '32px 16px 80px 16px',
+                                boxSizing: 'border-box',
+                            }}
+                        >
                             <ApproveLetter
                                 ref={letterRef}
                                 visa={selectedVisaForLetter}
                                 countryDetails={selectedCountryDetails}
                                 visaData={selectedVisaData}
                                 applicationDetails={selectedApplicationDetails}
+                                className="w-full max-w-5xl mx-auto px-4 sm:px-8 md:px-12 py-6"
                             />
                         </div>
-
-                        <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
-                            <button
-                                onClick={handleCloseLetterModal}
-                                className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-                                type="button"
-                            >
-                                Close
-                            </button>
-                        </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             <style>{`
@@ -271,4 +373,4 @@ const VisaApplicationsSection = ({ visaApplications, getStatusColor, getStatusIc
     )
 }
 
-export default VisaApplicationsSection;
+export default VisaApplicationsSection;

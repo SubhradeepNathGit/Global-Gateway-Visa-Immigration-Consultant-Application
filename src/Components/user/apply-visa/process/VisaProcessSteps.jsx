@@ -30,7 +30,7 @@ const VisaProcessSteps = () => {
         <div className="relative w-full max-w-5xl mx-auto">
             {/* Dashed connector line through centers of the circles on md+ screens */}
             <div
-                className="hidden md:block absolute top-14 lg:top-16 left-[16.67%] right-[16.67%] -translate-y-1/2 z-0 pointer-events-none"
+                className="hidden md:block absolute top-[90px] sm:top-[100px] left-[16.67%] right-[16.67%] -translate-y-1/2 z-0 pointer-events-none"
                 aria-hidden="true"
             >
                 <svg className="w-full h-1 overflow-visible" preserveAspectRatio="none">
@@ -47,7 +47,7 @@ const VisaProcessSteps = () => {
             </div>
 
             {/* Grid of 3 step cards with equal heights */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 relative z-10 items-stretch">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 relative z-10 items-stretch">
                 {steps.map((step) => (
                     <VisaProcessCard
                         key={step.id}

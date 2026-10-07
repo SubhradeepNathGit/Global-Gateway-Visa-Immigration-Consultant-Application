@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Avatar } from '@mui/material';
+import { Box, Typography, Avatar, Container } from '@mui/material';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -46,12 +46,9 @@ const Testimonials = () => {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         py: 10,
-        px: 2,
-        display: 'flex',
-        justifyContent: 'center',
       }}
     >
-      <Box sx={{ width: '100%', maxWidth: '1200px' }}>
+      <Container maxWidth="xl" sx={{ maxWidth: '1400px', px: { xs: 2, sm: 4, md: 6, lg: 10 } }}>
         {/* Section Heading */}
         <Typography
           sx={{
@@ -67,14 +64,13 @@ const Testimonials = () => {
         </Typography>
 
         <Typography
-          variant="h3"
+          variant="h2"
           sx={{
-            fontWeight: 700,
-            fontSize: { xs: '2rem', md: '2.8rem' },
-            color: '#1e293b',
+            fontWeight: 'bold',
+            fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem', lg: '2.5rem' },
             lineHeight: 1.2,
+            color: '#2c3e50',
             mb: 5,
-           
           }}
         >
           What They are <br /> Talking About Us
@@ -152,7 +148,7 @@ const Testimonials = () => {
             </SwiperSlide>
           ))}
         </Swiper>
-      </Box>
+      </Container>
     </Box>
   );
 };

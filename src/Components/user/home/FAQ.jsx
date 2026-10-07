@@ -40,7 +40,7 @@ const FAQSection = ({ faqs = defaultFaqs }) => {
 
   return (
     <Box sx={{ bgcolor: '#ffffff', py: 6 }}>
-      <Container maxWidth="lg">
+      <Container maxWidth="xl" sx={{ maxWidth: '1400px', px: { xs: 2, sm: 4, md: 6, lg: 10 } }}>
         <Box
           sx={{
             display: 'flex',

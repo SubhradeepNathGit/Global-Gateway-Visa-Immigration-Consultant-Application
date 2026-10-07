@@ -312,7 +312,7 @@ const VisaListDropdown = ({ availableVisa = [] }) => {
                                     </div>
                                     <Link to="/authentication" className="flex-1 min-w-0 group cursor-pointer block">
                                         <p className="text-sm font-bold text-[#2c3e50] group-hover:text-[#e53935] transition-colors leading-snug">
-                                            <span className="text-[#e53935] underline underline-offset-2">Sign in</span> to discover available visas for you
+                                            <span className="text-[#e53935] no-underline">Sign in</span> to discover available visas for you
                                         </p>
                                         <p className="text-[11px] text-[#6c757d]/70 mt-0.5">
                                             Visa options are personalised based on your nationality.

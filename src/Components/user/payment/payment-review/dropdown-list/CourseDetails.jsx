@@ -1,36 +1,39 @@
 import React from 'react'
-import { Globe, Mail, Clock } from "lucide-react";
+import { Globe, Clock } from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 const CourseDetails = ({ InfoRow, cartItems }) => {
 
     return (
-        <div className="space-y-4 h-[185px] overflow-y-auto glass-scrollbar">
-            {cartItems?.map(course => (
+        <div className="space-y-3">
+            {cartItems?.map((course, idx) => (
                 <div key={course?.id}
-                    className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-200 hover:shadow-lg transition-all">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 items-center">
-                        {/* Left side */}
-                        <div className="space-y-2">
-                            <InfoRow icon={Mail} label="Course Name" value={course?.courses?.course_name ?? 'N/A'}
-                                className="text-slate-900 font-semibold" />
+                    className="bg-white rounded-xl border border-gray-200 hover:border-blue-200 hover:shadow-md transition-all p-4 flex items-center justify-between gap-4">
 
-                            <InfoRow icon={Globe} label="Language" value={course?.courses?.language ?? 'N/A'}
-                                className="text-slate-700" />
+                    {/* Index badge + Info */}
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-50 border border-cyan-200 flex items-center justify-center text-xs font-bold text-cyan-700">
+                            {idx + 1}
                         </div>
-
-                        {/* Right side */}
-                        <div className="flex sm:justify-end items-center">
-                            <div className="bg-green-50 text-green-700 w-30 py-1.5 rounded-full font-semibold text-sm border border-green-100 flex items-center justify-center gap-2">
-                                <Clock className="w-4 h-4" />
-                                {course?.courses?.skill_level ?? 'N/A'}
+                        <div className="min-w-0">
+                            <p className="text-sm font-semibold text-slate-900 truncate leading-snug">
+                                {course?.courses?.course_name ?? 'N/A'}
+                            </p>
+                            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-gray-500">
+                                <Globe className="w-3 h-3 flex-shrink-0" />
+                                <span>{course?.courses?.language ?? 'N/A'}</span>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Skill level badge */}
+                    <div className="flex-shrink-0 bg-green-50 text-green-700 px-3 py-1 rounded-full font-semibold text-xs border border-green-100 flex items-center gap-1.5 whitespace-nowrap">
+                        <Clock className="w-3 h-3" />
+                        {course?.courses?.skill_level ?? 'N/A'}
                     </div>
                 </div>
             ))}
         </div>
-
-
     )
 }
 

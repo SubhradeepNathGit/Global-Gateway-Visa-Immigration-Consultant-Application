@@ -28,7 +28,7 @@ const CourseCard = ({ course, index }) => {
             transition={{ delay: index * 0.1 }}
             whileHover={{ y: -6, scale: 1.01 }}
             onClick={handleViewCourse}
-            className="w-full bg-white rounded-md overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col relative h-[360px] sm:h-[380px] cursor-pointer group"
+            className="w-full bg-white rounded-md overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col relative h-[420px] sm:h-[440px] cursor-pointer group"
         >
             {/* Pricing Badge */}
             <div className="absolute top-4 right-4 bg-[#FF5252] text-white rounded-[20px] px-3 sm:px-4 py-1 text-xs sm:text-sm font-semibold z-10 shadow-sm">

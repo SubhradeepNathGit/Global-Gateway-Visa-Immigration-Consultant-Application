@@ -102,28 +102,38 @@ const CountryList = () => {
 
     return (
         <div className="space-y-10">
-            {/* Search and Filters - Lean Version */}
-            <div className="flex flex-col lg:flex-row gap-6 items-center justify-between sticky top-4 z-20">
+            {/* Search + Filter chips — unified sticky bar on mobile */}
+            <div className="sticky top-16 z-40 lg:static
+                            bg-white/80 lg:bg-transparent
+                            backdrop-blur-md lg:backdrop-blur-none
+                            border-b border-white/40 lg:border-none
+                            shadow-[0_4px_24px_rgba(255,255,255,0.6)] lg:shadow-none
+                            -mx-4 px-4 lg:mx-0 lg:px-0
+                            py-3 lg:py-0
+                            flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-4">
+
+                {/* Search bar */}
                 <div className="relative w-full lg:max-w-lg group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#FF5252] transition-colors" size={18} />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#FF5252] transition-colors" size={17} />
                     <input 
                         type="text" 
                         placeholder="Search countries..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white border border-gray-200 rounded-3xl py-3 pl-12 pr-6 focus:ring-2 focus:ring-[#FF5252]/10 focus:border-[#FF5252]/30 focus:outline-none transition-all text-sm font-medium text-gray-800 placeholder:text-gray-400"
+                        className="w-full bg-white/70 lg:bg-gray-50 border border-gray-200 rounded-lg py-2.5 pl-10 pr-5 focus:ring-2 focus:ring-[#FF5252]/10 focus:border-[#FF5252]/40 focus:outline-none transition-all text-sm font-medium text-gray-800 placeholder:text-gray-400"
                     />
                 </div>
 
-                <div className="flex flex-wrap items-center justify-center gap-2">
+                {/* Filter chips */}
+                <div className="flex flex-wrap items-center justify-start lg:justify-end gap-1.5">
                     {continents.map((continent) => (
                         <button
                             key={continent}
                             onClick={() => setSelectedContinent(continent)}
-                            className={`px-4 py-2 rounded-xl text-[13px] font-semibold transition-all ${
+                            className={`px-3.5 py-2 rounded-lg text-[13px] font-semibold transition-all ${
                                 selectedContinent === continent 
-                                ? "bg-[#FF5252] text-white" 
-                                : "bg-white text-gray-500 border border-gray-100 hover:border-[#FF5252] hover:text-[#FF5252]"
+                                ? "bg-[#FF5252] text-white shadow-sm" 
+                                : "bg-white/70 lg:bg-gray-50 text-gray-500 border border-gray-200 hover:border-[#FF5252]/50 hover:text-[#FF5252]"
                             }`}
                         >
                             {continent}

@@ -141,6 +141,11 @@ export default function PaymentStatus() {
     }
 
     useEffect(() => {
+        if (!location?.state || !paymentDetails) {
+            navigate('/dashboard', { replace: true });
+            return;
+        }
+
         let timeout;
         let progressInterval;
 
