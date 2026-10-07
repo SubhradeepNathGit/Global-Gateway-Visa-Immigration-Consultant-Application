@@ -348,7 +348,7 @@ const Navbar = () => {
           />
 
           {/* Drawer */}
-          <div className="fixed left-0 top-0 bottom-0 w-[280px] bg-black/70 text-red-600 z-50 p-8 overflow-y-auto">
+          <div className="fixed left-0 top-0 bottom-0 w-[280px] bg-black/70 text-red-600 z-50 p-8 pt-20 overflow-y-auto">
            
             {navLinks?.map(link => (
               <div key={link.label} className="mb-4">
