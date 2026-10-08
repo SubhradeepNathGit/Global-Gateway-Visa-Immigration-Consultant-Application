@@ -33,7 +33,7 @@ const CountryDescription = ({ image_url, name, continents, description, flag_url
 
             <div className="relative rounded-[2rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] aspect-[19/9]">
                 <img 
-                    src={image_url || "/placeholder-country.jpg"} 
+                    src={image_url || "/PageBanner.jpg"} 
                     alt={name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out"
                 />

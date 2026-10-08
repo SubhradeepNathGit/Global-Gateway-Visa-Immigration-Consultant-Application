@@ -8,7 +8,7 @@ import 'swiper/css';
 const services = [
   {
     title: 'Student Visa',
-    image: '/student-visa.jpg',
+    image: '/Student-Visa.jpg',
   },
   {
     title: 'Family Visa',
@@ -20,7 +20,7 @@ const services = [
   },
   {
     title: 'Resident Visa',
-    image: '/resident-visa.jpg',
+    image: '/Resident-Visa.jpg',
   },
   {
     title: 'Working Visa',

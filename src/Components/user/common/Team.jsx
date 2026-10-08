@@ -18,25 +18,25 @@ const teamMembers = [
   {
     name: 'Mike Hardson',
     title: 'Consultant',
-    img: '/team1.jpg',
+    img: '/Team1.jpg',
     showIcons: true,
   },
   {
     name: 'Jessica Brown',
     title: 'Consultant',
-    img: '/team2.jpg',
+    img: '/Team2.jpg',
     showIcons: true,
   },
   {
     name: 'David Cooper',
     title: 'Consultant',
-    img: '/team3.jpg',
+    img: '/Team3.jpg',
     showIcons: true,
   },
   {
     name: 'Christine Eve',
     title: 'Consultant',
-    img: '/team5.jpg',
+    img: '/Team5.jpg',
     showIcons: true,
   },
 ];
