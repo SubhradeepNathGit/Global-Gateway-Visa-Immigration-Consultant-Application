@@ -14,21 +14,21 @@ const VisaProcessSection = () => {
     {
       id: '01',
       title: 'Complete Online Form',
-      description: 'Lorem Ipsum. Proin gravida nibh vel velit auctor aliquet.',
+      description: 'Fill out your personal and visa details through our streamlined, guided digital application.',
       image: '/Process1.jpg', 
       delay: 0.2
     },
     {
       id: '02', 
       title: 'Documents & Payments',
-      description: 'Lorem Ipsum. Proin gravida nibh vel velit auctor aliquet.',
+      description: 'Securely upload your verified documents and complete application fees via encrypted gateways.',
       image: '/Process2.jpg', 
       delay: 0.4
     },
     {
       id: '03',
       title: 'Receive Your Visa',
-      description: 'Lorem Ipsum. Proin gravida nibh vel velit auctor aliquet.',
+      description: 'Track real-time progress and receive your approved visa documentation directly and securely.',
       image: '/Process3.jpg', 
       delay: 0.6
     }

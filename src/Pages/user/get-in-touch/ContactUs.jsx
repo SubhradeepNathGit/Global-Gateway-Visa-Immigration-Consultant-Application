@@ -4,7 +4,7 @@ import PhoneIcon from '@mui/icons-material/AddIcCall';
 import EmailIcon from '@mui/icons-material/Email';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { MdCheckCircle } from 'react-icons/md';
-import ContactFAQ from '../../../Components/user/contact/ContactFAQ';
+import FAQSection from '../../../Components/user/home/FAQ';
 import ContactHeader from '../../../Components/user/contact/ContactHeader';
 import GetInTouchSection from '../../../Components/user/contact/GetInTouchSection';
 import ContactForm from '../../../Components/user/contact/ContactForm';
@@ -111,7 +111,7 @@ const Contact = () => {
       </Box>
 
       {/* FAQ Section */}
-      <ContactFAQ faqs={faqs} />
+      <FAQSection faqs={faqs} />
 
       {/* Full Width Map Section */}
       <Box sx={{ width: '100%', height: { xs: '350px', md: '450px' }, position: 'relative', bgcolor: '#f8f9fa' }}>

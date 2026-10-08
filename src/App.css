@@ -187,10 +187,16 @@ select:not(.text-white):-webkit-autofill {
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* Custom Notification Scrollbar */
+/* Custom Notification Scrollbar (Invisible) */
 .custom-notification-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #ef4444 #ffffff;
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
+}
+
+.custom-notification-scrollbar::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* Hide scrollbar utility */
@@ -200,25 +206,6 @@ select:not(.text-white):-webkit-autofill {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
-
-.custom-notification-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.custom-notification-scrollbar::-webkit-scrollbar-track {
-  background: #ffffff;
-}
-
-.custom-notification-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #ef4444;
-  border-radius: 20px;
-  border: 2px solid #ffffff;
-}
-
-.custom-notification-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #dc2626;
 }
 
 /* ── Home splash loader (CSS-only motion = smooth on low-end devices) ── */

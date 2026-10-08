@@ -5,19 +5,25 @@ import { People, Assignment, Security } from '@mui/icons-material';
 
 const benefits = [
   {
-    icon: <People sx={{ color: '#ef4444', fontSize: 32 }} />,
+    icon: <People sx={{ color: '#ef4444', fontSize: 26 }} />,
     title: 'Direct Online Interviews',
     label: 'BENEFIT 01',
+    cardRadius: '22px 10px 22px 14px',
+    podRadius: '44% 56% 62% 38% / 54% 46% 54% 46%',
   },
   {
-    icon: <Assignment sx={{ color: '#ef4444', fontSize: 32 }} />,
+    icon: <Assignment sx={{ color: '#ef4444', fontSize: 26 }} />,
     title: 'Quick & Easy Process',
     label: 'BENEFIT 02',
+    cardRadius: '14px 24px 12px 22px',
+    podRadius: '58% 42% 46% 54% / 46% 54% 46% 54%',
   },
   {
-    icon: <Security sx={{ color: '#ef4444', fontSize: 32 }} />,
+    icon: <Security sx={{ color: '#ef4444', fontSize: 26 }} />,
     title: '99% Visa Approvals',
     label: 'BENEFIT 03',
+    cardRadius: '22px 14px 24px 10px',
+    podRadius: '48% 52% 58% 42% / 54% 46% 54% 46%',
   },
 ];
 
@@ -64,57 +70,121 @@ const WhyChooseUs = () => {
               Empowering your global journey with certified immigration consultants, verified visa strategies, and end-to-end relocation support tailored to your success.
             </Typography>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}>
               {benefits.map((benefit, index) => (
-                <Box
+                <motion.div
                   key={index}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    bgcolor: 'white',
-                    borderRadius: '10px',
-                    px: 3,
-                    py: 2,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateX(5px)',
-                    },
-                  }}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.45, delay: index * 0.12 }}
+                  whileHover={{ y: -3 }}
+                  style={{ willChange: 'transform' }}
                 >
                   <Box
                     sx={{
-                      width: 48,
-                      height: 48,
-                      bgcolor: '#fef2f2',
-                      borderRadius: '8px',
+                      position: 'relative',
+                      overflow: 'hidden',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      mr: 2,
+                      borderRadius: benefit.cardRadius,
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.9) 100%)',
+                      backdropFilter: 'blur(16px)',
+                      WebkitBackdropFilter: 'blur(16px)',
+                      border: '1px solid rgba(226, 232, 240, 0.85)',
+                      px: { xs: 2.5, sm: 3 },
+                      py: 2,
+                      boxShadow: 'none',
+                      transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        borderColor: 'rgba(239, 68, 68, 0.3)',
+                        boxShadow: 'none',
+                        '& .benefit-pod': {
+                          transform: 'scale(1.05)',
+                        },
+                        '& .liquid-sheen': {
+                          transform: 'translateX(100%)',
+                        },
+                      },
                     }}
                   >
-                    {benefit.icon}
-                  </Box>
-                  <Box>
-                    <Typography
-                      variant="caption"
-                      sx={{ fontSize: 12, color: '#ef4444', fontWeight: 700 }}
-                    >
-                      {benefit.label}
-                    </Typography>
-                    <Typography
+                    {/* Subtle dynamic liquid refraction sheen */}
+                    <Box
+                      className="liquid-sheen"
                       sx={{
-                        fontSize: '1.1rem',
-                        color: '#2c3e50',
-                        fontWeight: 600,
+                        position: 'absolute',
+                        top: 0,
+                        left: '-100%',
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%)',
+                        pointerEvents: 'none',
+                        transition: 'transform 0.75s ease',
                       }}
-                    >
-                      {benefit.title}
-                    </Typography>
-                  </Box>
+                    />
 
-                </Box>
+                    {/* Left icon + text group */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.2, minWidth: 0, zIndex: 1 }}>
+                      <Box
+                        className="benefit-pod"
+                        sx={{
+                          width: 50,
+                          height: 50,
+                          flexShrink: 0,
+                          background: 'linear-gradient(140deg, #ffffff 0%, #fee2e2 55%, #fecaca 100%)',
+                          borderRadius: benefit.podRadius,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: 'none',
+                          border: '1px solid rgba(254, 202, 202, 0.7)',
+                          transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+                        }}
+                      >
+                        {benefit.icon}
+                      </Box>
+
+                      <Box sx={{ minWidth: 0 }}>
+                        <Box
+                          sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            px: 1,
+                            py: 0.2,
+                            borderRadius: '999px',
+                            bgcolor: 'rgba(239, 68, 68, 0.08)',
+                            mb: 0.5,
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              fontSize: '0.7rem',
+                              color: '#dc2626',
+                              fontWeight: 700,
+                              letterSpacing: '0.08em',
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {benefit.label}
+                          </Typography>
+                        </Box>
+
+                        <Typography
+                          sx={{
+                            fontSize: { xs: '1rem', sm: '1.08rem' },
+                            color: '#1e293b',
+                            fontWeight: 650,
+                            lineHeight: 1.3,
+                            letterSpacing: '-0.01em',
+                          }}
+                        >
+                          {benefit.title}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </motion.div>
               ))}
             </Box>
           </Box>

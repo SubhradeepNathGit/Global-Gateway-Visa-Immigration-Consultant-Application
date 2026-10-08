@@ -35,6 +35,9 @@ const CountryList = () => {
     const isFirstRender = useRef(true);
 
     useEffect(() => {
+        // Skip fetch if data is already loaded — prevents skeleton re-flash on navigation
+        if (getAllCountryList && getAllCountryList.length > 0) return;
+
         dispatch(fetchAllCountryDetails())
             .catch(err => {
                 console.error('Error fetching countries', err);

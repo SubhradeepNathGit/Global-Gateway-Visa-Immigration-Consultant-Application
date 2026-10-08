@@ -94,8 +94,9 @@ const FAQSection = ({ faqs = defaultFaqs }) => {
                     borderRadius: '8px !important',
                     border: '1px solid #e9ecef',
                     '&:before': { display: 'none' },
+                    margin: '0 !important',
                     '&.Mui-expanded': {
-                      margin: '0 0 16px 0',
+                      margin: '0 !important',
                     }
                   }}
                 >
@@ -150,7 +151,8 @@ const FAQSection = ({ faqs = defaultFaqs }) => {
               minWidth: 0,
               display: 'flex',
               flexDirection: 'column',
-              gap: { xs: 3, md: 4 }
+              gap: { xs: 2.5, md: 3 },
+              alignSelf: 'stretch'
             }}
           >
             {/* Blue Banner */}
@@ -159,11 +161,10 @@ const FAQSection = ({ faqs = defaultFaqs }) => {
               sx={{
                 bgcolor: 'rgba(50, 132, 209, 1)',
                 borderRadius: '12px',
-                p: { xs: 3, md: 4 },
+                p: { xs: 2.5, sm: 3, md: 3.5 },
                 color: 'white',
                 position: 'relative',
                 overflow: 'hidden',
-                minHeight: { xs: '150px', md: '170px' },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
@@ -173,9 +174,9 @@ const FAQSection = ({ faqs = defaultFaqs }) => {
               <Box
                 sx={{
                   position: 'absolute',
-                  top: { xs: 15, md: 20 },
-                  left: { xs: 20, md: 30 },
-                  opacity: 0.3
+                  top: { xs: 12, md: 16 },
+                  left: { xs: 16, md: 24 },
+                  opacity: 0.25
                 }}
               >
                 <DescriptionIcon sx={{ fontSize: { xs: '2.5rem', md: '3rem' } }} />
@@ -185,7 +186,7 @@ const FAQSection = ({ faqs = defaultFaqs }) => {
                 variant="h4"
                 sx={{
                   fontWeight: 'bold',
-                  fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem' },
+                  fontSize: { xs: '1.15rem', sm: '1.3rem', md: '1.45rem', lg: '1.6rem' },
                   lineHeight: 1.3,
                   position: 'relative',
                   zIndex: 1
@@ -202,7 +203,7 @@ const FAQSection = ({ faqs = defaultFaqs }) => {
                 borderRadius: '12px',
                 overflow: 'hidden',
                 flex: 1,
-                minHeight: { xs: '260px', md: '320px' },
+                minHeight: { xs: '260px', sm: '300px', lg: 0 },
                 display: 'flex',
                 flexDirection: 'column'
               }}
@@ -212,9 +213,12 @@ const FAQSection = ({ faqs = defaultFaqs }) => {
                 src="/Faq2.jpg"
                 alt="Immigration Consultant Agency"
                 sx={{
+                  position: { xs: 'relative', lg: 'absolute' },
+                  top: 0,
+                  left: 0,
                   width: '100%',
-                  height: '100%',
-                  flex: 1,
+                  height: { xs: '100%', lg: '100%' },
+                  minHeight: { xs: '260px', sm: '300px', lg: 0 },
                   objectFit: 'cover'
                 }}
               />
@@ -228,14 +232,16 @@ const FAQSection = ({ faqs = defaultFaqs }) => {
                   right: 0,
                   width: '100%',
                   bgcolor: 'rgba(255, 255, 255, 0.95)',
-                  backdropFilter: 'none',
-                  WebkitBackdropFilter: 'none',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
                   borderRadius: 0,
-                  p: { xs: 2.5, md: 3 },
+                  py: { xs: 2, md: 2.2 },
+                  px: { xs: 2, md: 3 },
                   textAlign: 'center',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  zIndex: 1
                 }}
               >
                 <Typography
@@ -243,13 +249,13 @@ const FAQSection = ({ faqs = defaultFaqs }) => {
                   sx={{
                     fontWeight: 'bold',
                     color: '#2c3e50',
-                    fontSize: { xs: '1.05rem', md: '1.25rem', lg: '1.35rem' },
-                    lineHeight: 1.3,
+                    fontSize: { xs: '0.98rem', md: '1.08rem', lg: '1.15rem' },
+                    lineHeight: 1.25,
                     textAlign: 'center',
                     width: '100%'
                   }}
                 >
-                  Global Gateway - Visa Consultant Agency
+                  Global Gateway - Visa & Immigration Consultant Agency
                 </Typography>
               </Paper>
             </Box>
