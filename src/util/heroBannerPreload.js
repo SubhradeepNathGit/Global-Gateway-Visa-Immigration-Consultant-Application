@@ -3,14 +3,48 @@ export const HERO_FALLBACK_SRC = '/Slider-front1.jpg';
 
 export const BANNER_IMAGE_SRCS = [
   HERO_FALLBACK_SRC,
-  '/About-new.jpg',
-  '/About-banner4.jpg',
-  '/About2.jpg',
-  '/Stamp.png',
+  '/Slider-front.jpg',
+  '/Slider1.jpg',
   '/Slider2.jpg',
   '/Slider3.jpg',
   '/Slider6.jpg',
-  '/Slider-front.jpg',
+  '/Gateway AI.png',
+  // Featured Visa Services
+  '/Student-Visa.jpg',
+  '/family.jpg',
+  '/tourist.jpg',
+  '/Resident-Visa.jpg',
+  '/Worker-Visa.jpeg',
+  '/Student.jpg',
+  // About & Benefits
+  '/About-new.jpg',
+  '/About-banner4.jpg',
+  '/About2.jpg',
+  '/About.jpg',
+  '/About1.jpg',
+  '/Choose.png',
+  '/Choose2.jpg',
+  '/Plane-icon.png',
+  '/Stamp.png',
+  '/Stamp2.png',
+  // Team
+  '/Team1.jpg',
+  '/Team2.jpg',
+  '/Team3.jpg',
+  '/Team5.jpg',
+  // Visa Process & FAQ
+  '/Process1.jpg',
+  '/Process2.jpg',
+  '/Process3.jpg',
+  '/Faq2.jpg',
+  '/PageBanner.jpg',
+  // Footer
+  '/Footer1.jpg',
+  '/Footer2.jpeg',
+  '/Footer3.jpeg',
+  '/Footer4.jpg',
+  '/Footer5.jpg',
+  '/Footer6.jpg',
 ];
 
 /** In-memory cache of fully loaded & decoded images */
@@ -188,10 +222,16 @@ export async function warmHeroBannerImages() {
       await new Promise((r) => setTimeout(r, 200));
     }
   } else {
-    // FAST CONNECTION: Load in parallel
-    await Promise.all(remainingSrcs.map((src) => decodeImageWithRetry(src)));
+    // FAST CONNECTION: Load in controlled batches of 5 so requests don't choke the network
+    const batchSize = 5;
+    for (let i = 0; i < remainingSrcs.length; i += batchSize) {
+      const batch = remainingSrcs.slice(i, i + batchSize);
+      await Promise.all(batch.map((src) => decodeImageWithRetry(src)));
+    }
   }
 }
+
+export const warmWebsiteImages = warmHeroBannerImages;
 
 // Initial warm-up on page load
 if (typeof window !== 'undefined') {
